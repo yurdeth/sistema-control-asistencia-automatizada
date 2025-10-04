@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->string('categoria', 50)->nullable();
             $table->boolean('modificable')->default(true);
             $table->foreignId('usuario_identificacion_id')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->timestamps();

@@ -14,11 +14,11 @@ class UserSeeder extends Seeder {
     // Creación del superusuario
 
     public function run(): void {
-        DB::table('usuarios')->insert([
+        DB::table('users')->insert([
             'nombre_completo' => 'root',
-            'email' => 'admin@admin.com',
+            'email' => env('ADMIN_EMAIL'),
             'telefono' => '+503 0000-0000',
-            'password_hash' => Hash::make(env('ADMIN_PASSWORD')),
+            'password' => Hash::make(env('ADMIN_PASSWORD')),
             'departamento_id' => 1,
             'email_verificado' => true,
             'token_verificacion' => null,

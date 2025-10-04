@@ -16,7 +16,7 @@ return new class extends Migration {
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreignId('usuario_modificacion_id')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->string('campo_modificado', 100);

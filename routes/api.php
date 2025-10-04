@@ -1,8 +1,13 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\AuthController;
+use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:api');
+// routes/api.php
+
+Route::post('/login', [AuthController::class, "login"])->name('login');
+
+Route::middleware(['auth:api', NoBrowserCacheMiddleware::class])->group(function () {
+    Route::post('/logout', [AuthController::class, "logout"])->name('logout');
+});

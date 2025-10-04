@@ -19,13 +19,13 @@ class User extends Authenticatable {
      * @var list<string>
      */
 
-    protected $table = "usuarios";
+    protected $table = "users";
 
     protected $fillable = [
         'nombre_completo',
         'email',
         'telefono',
-        'password_hash',
+        'password',
         'departamento_id',
         'email_verificado',
         'token_verificacion',

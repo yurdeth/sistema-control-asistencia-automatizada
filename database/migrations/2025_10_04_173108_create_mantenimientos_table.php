@@ -16,7 +16,7 @@ return new class extends Migration {
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreignId('usuario_registro_id')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->text('motivo');

@@ -20,7 +20,7 @@ return new class extends Migration {
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreignId('docente_id')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->integer('numero_grupo');

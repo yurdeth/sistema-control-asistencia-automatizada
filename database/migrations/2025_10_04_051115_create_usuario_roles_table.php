@@ -12,7 +12,7 @@ return new class extends Migration {
         Schema::create('usuario_roles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('usuario_id')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreignId('rol_id')
@@ -20,7 +20,7 @@ return new class extends Migration {
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreignId('asignado_por_id')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->timestamps();

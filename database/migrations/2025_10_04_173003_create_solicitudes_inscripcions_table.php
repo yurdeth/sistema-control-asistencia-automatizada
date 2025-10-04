@@ -12,7 +12,7 @@ return new class extends Migration {
         Schema::create('solicitudes_inscripcions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('estudiante_id')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->foreignId('grupo_id')
@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->enum('tipo_solicitud', ['estudiante_solicita', 'docente_invita'])->default('estudiante_solicita');
             $table->enum('estado', ['pendiente', 'aceptada', 'rechazada', 'cancelada'])->default('pendiente');
             $table->foreignId('respondido_por')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->timestamps();

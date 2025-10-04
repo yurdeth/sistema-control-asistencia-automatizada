@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('modulo', 100);
             $table->string('accion', 255);
             $table->foreignId('usuario_id')
-                ->constrained('usuarios')
+                ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->json('contexto')->nullable();

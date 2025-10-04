@@ -9,12 +9,12 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('usuarios', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('nombre_completo');
             $table->string('email')->unique();
             $table->string('telefono')->nullable();
-            $table->string('password_hash');
+            $table->string('password');
             $table->foreignId('departamento_id')
                 ->constrained('departamentos')
                 ->onDelete('cascade')
@@ -47,7 +47,7 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::dropIfExists('usuarios');
+        Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }
