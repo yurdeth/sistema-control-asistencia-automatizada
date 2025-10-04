@@ -18,7 +18,6 @@ class departamentos extends Model {
     protected $table = 'departamentos';
 
     protected $fillable = [
-        'id',
         'nombre',
         'descripcion',
         'estado',

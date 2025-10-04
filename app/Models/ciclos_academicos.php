@@ -17,7 +17,6 @@ class ciclos_academicos extends Model {
     protected $table = 'ciclos_academicos';
 
     protected $fillable = [
-        'id',
         'nombre',
         'anio',
         'numero_ciclo',

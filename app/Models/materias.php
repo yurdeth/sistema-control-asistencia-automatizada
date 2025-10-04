@@ -16,7 +16,6 @@ class materias extends Model {
     protected $table = "materias";
 
     protected $fillable = [
-        'id',
         'codigo',
         'nombre',
         'descripcion',
