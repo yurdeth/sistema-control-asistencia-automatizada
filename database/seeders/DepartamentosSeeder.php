@@ -10,14 +10,16 @@ class DepartamentosSeeder extends Seeder {
      * Run the database seeds.
      */
 
-    //Ingenieria y arquitectura
-    //Medicina
-    //Economía
-    //Ciencias y humanidades
-    //Jurisprudencia y ciencias sociales
-    //Agronomía
-    //Departamento de ciencias naturales y matemática
-    //Quimica y farmacia
+    /*
+     * Ingenieria y arquitectura
+     * Medicina
+     * Economía
+     * Ciencias y humanidades
+     * Jurisprudencia y ciencias sociales
+     * Agronomía
+     * Departamento de ciencias naturales y matemática
+     * Quimica y farmacia
+     * */
 
     public function run(): void {
         DB::table("departamentos")->insert([

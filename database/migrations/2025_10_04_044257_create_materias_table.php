@@ -14,8 +14,7 @@ return new class extends Migration {
             $table->string('codigo', 50)->unique();
             $table->string('nombre', 150);
             $table->string('descripcion', 255)->nullable();
-            $table->unsignedBigInteger('departamento_id');
-            $table->foreign('departamento_id')
+            $table->foreignId('departamento_id')
                 ->references('id')
                 ->on('departamentos')
                 ->onDelete('cascade')

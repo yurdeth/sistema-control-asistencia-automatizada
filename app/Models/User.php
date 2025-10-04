@@ -3,13 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
 
     /**
@@ -17,10 +18,20 @@ class User extends Authenticatable {
      *
      * @var list<string>
      */
+
+    protected $table = "usuarios";
+
     protected $fillable = [
-        'name',
+        'id',
+        'nombre_completo',
         'email',
-        'password',
+        'telefono',
+        'password_hash',
+        'departamento_id',
+        'email_verificado',
+        'token_verificacion',
+        'estado',
+        'ultimo_acceso',
     ];
 
     /**
@@ -28,10 +39,7 @@ class User extends Authenticatable {
      *
      * @var list<string>
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token',];
 
     /**
      * Get the attributes that should be cast.
@@ -39,9 +47,6 @@ class User extends Authenticatable {
      * @return array<string, string>
      */
     protected function casts(): array {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return ['email_verified_at' => 'datetime', 'password' => 'hashed',];
     }
 }
