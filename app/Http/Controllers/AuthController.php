@@ -6,7 +6,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -21,14 +20,14 @@ class AuthController extends Controller {
             ], 400);
         }
 
-        if (!$request->email){
+        if (!$request->email) {
             return response()->json([
                 'message' => 'El correo electrónico es obligatorio',
                 'success' => false
             ], 400);
         }
 
-        if (!$request->password){
+        if (!$request->password) {
             return response()->json([
                 'message' => 'La contraseña es obligatoria',
                 'success' => false
@@ -41,13 +40,6 @@ class AuthController extends Controller {
         ]);
 
         try {
-            if ($request->user()) {
-                return response()->json([
-                    'message' => 'Ya has iniciado sesión',
-                    'user' => $request->user(),
-                ], 200);
-            }
-
             $user = User::where('email', $credentials['email'])->first();
             if (!$user || !Hash::check($credentials['password'], $user->password)) {
                 return response()->json([
@@ -55,6 +47,18 @@ class AuthController extends Controller {
                     'success' => false
                 ], 401);
             }
+
+            if ($user->estado !== 'activo') {
+                return response()->json([
+                    'message' => 'El usuario no está activo',
+                    'success' => false
+                ], 403);
+            }
+
+            $user->ultimo_acceso = Carbon::now();
+            $user->save();
+
+            Auth::login($user);
 
             $tokenResult = $user->createToken('Personal Access Token');
             $token = $tokenResult->token;

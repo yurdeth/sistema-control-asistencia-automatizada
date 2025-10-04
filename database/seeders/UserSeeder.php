@@ -27,5 +27,13 @@ class UserSeeder extends Seeder {
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        DB::table('usuario_roles')->insert([
+            'usuario_id' => 1,
+            'rol_id' => 1,
+            'asignado_por_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }
