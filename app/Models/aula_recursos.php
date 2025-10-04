@@ -9,6 +9,11 @@ class aula_recursos extends Model {
     /** @use HasFactory<\Database\Factories\AulaRecursosFactory> */
     use HasFactory;
 
+    /*
+     * Tabla pivote que establece una relación muchos-a-muchos entre aulas y recursos_tipo,
+     * creando un inventario detallado para cada aula
+     * */
+
     protected $table = 'aula_recursos';
 
     protected $fillable = [

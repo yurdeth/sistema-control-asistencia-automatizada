@@ -10,6 +10,10 @@ class aulas extends Model {
     /** @use HasFactory<AulasFactory> */
     use HasFactory;
 
+    /*
+     * Registra cada espacio físico que puede ser asignado para actividades académicas
+     * */
+
     protected $table = 'aulas';
 
     protected $fillable = [
