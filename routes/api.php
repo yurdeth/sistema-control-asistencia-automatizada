@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DepartamentosController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
@@ -25,9 +26,16 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/users/get/{id}', [UserController::class, 'show'])->name('users.show');
     Route::post('/users/new', [UserController::class, 'store'])->name('users.store');
     Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
-    Route::patch('/users/edit/{id}', [UserController::class, 'update'])->name('users.edit');
+    Route::patch('/users/edit/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::get('/users/get/role/{id}', [UserController::class, 'getByRole'])->name('users.getByRole');
     Route::get('/users/get/department/{id}', [UserController::class, 'getByDepartment'])->name('users.getByDepartment');
     Route::get('/users/get/status/{estado}', [UserController::class, 'getByStatus'])->name('users.getByRoleAndDepartment');
     Route::get('/users/get/subject/{id}', [UserController::class, 'getBySubject'])->name('users.getBySubject');
+
+    //************************************ MANAGE DEPARTMENTS ************************************//
+    Route::get('/departaments/get/all', [DepartamentosController::class, 'index'])->name('departamentos.index');
+    Route::get('/departaments/get/{id}', [DepartamentosController::class, 'show'])->name('departamentos.show');
+    Route::post('/departaments/new', [DepartamentosController::class, 'store'])->name('departamentos.store');
+    Route::delete('/departaments/delete/{id}', [DepartamentosController::class, 'destroy'])->name('departamentos.delete');
+    Route::patch('/departaments/edit/{id}', [DepartamentosController::class, 'edit'])->name('departamentos.edit');
 });

@@ -78,8 +78,8 @@ class User extends Authenticatable {
             1 => $all_users,
             2 => $all_users->where('rol_id', '!=', 1),
             3 => $all_users->whereNotIn('rol_id', [1, 2]),
-            4 => $all_users->whereIn('rol_id', [1, 2, 3]),
-            5 => $all_users->whereIn('rol_id', [1, 2, 3, 4]),
+            4 => $all_users->whereNotIn('rol_id', [1, 2, 3]),
+            5 => $all_users->whereNotIn('rol_id', [1, 2, 3, 4]),
             default => collect(),
         };
     }
