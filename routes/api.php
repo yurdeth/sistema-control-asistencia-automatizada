@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RolesController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -10,4 +11,11 @@ Route::post('/login', [AuthController::class, "login"])->name('login');
 
 Route::middleware(['auth:api', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
+
+    //************************************ MANAGE ROLES ************************************//
+    Route::get('/roles/get/all', [RolesController::class, 'index'])->name('roles.index');
+    Route::get('/roles/get/{id}', [RolesController::class, 'show'])->name('roles.show');
+    Route::post('/roles/new', [RolesController::class, 'store'])->name('roles.store');
+    Route::delete('/roles/delete/{id}', [RolesController::class, 'destroy'])->name('roles.delete');
+    Route::patch('/roles/edit/{id}', [RolesController::class, 'edit'])->name('roles.edit');
 });
