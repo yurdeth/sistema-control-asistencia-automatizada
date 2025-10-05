@@ -38,4 +38,8 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/departaments/new', [DepartamentosController::class, 'store'])->name('departamentos.store');
     Route::delete('/departaments/delete/{id}', [DepartamentosController::class, 'destroy'])->name('departamentos.delete');
     Route::patch('/departaments/edit/{id}', [DepartamentosController::class, 'edit'])->name('departamentos.edit');
+    Route::get('/departaments/get/name/{nombre}', [DepartamentosController::class, 'getByDepartmentName'])->name('departamentos.getByName');
+    Route::get('/departaments/get/status/{estado}', [DepartamentosController::class, 'getByStatus'])->name('departamentos.getByStatus');
+    Route::get('/departaments/get/manager/name', [DepartamentosController::class, 'getManagers'])->name('departamentos.getManagers');
+    Route::get('/departaments/get/manager/{id}', [DepartamentosController::class, 'getByManager'])->name('departamentos.getByManager');
 });

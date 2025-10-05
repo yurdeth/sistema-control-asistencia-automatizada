@@ -46,13 +46,17 @@ class RolesController extends Controller {
      */
     public function store(Request $request): JsonResponse {
         $user_rol = $this->getUserRole();
-
         if (!Auth::check() || $user_rol != 1) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
         }
+
+        $request->merge([
+            'nombre' => $this->sanitizeInput($request->input('nombre', '')),
+            'descripcion' => $this->sanitizeInput($request->input('descripcion', '')),
+        ]);
 
         $rules = [
             'nombre' => 'required|string|max:255|unique:roles,nombre',
@@ -71,6 +75,7 @@ class RolesController extends Controller {
 
         try {
             $validator = Validator::make($request->all(), $rules, $messages);
+
             if ($validator->fails()){
                 return response()->json([
                     'message' => 'Error de validación',
@@ -79,16 +84,14 @@ class RolesController extends Controller {
                 ], 422);
             }
 
-            $rol = roles::create([
-                'nombre' => $validator['nombre'],
-                'descripcion' => $validator['descripcion'],
-            ]);
+            $rol = roles::create($validator->validated());
 
             return response()->json([
                 'message' => 'Rol creado exitosamente',
                 'success' => true,
                 'data' => $rol
             ], 201);
+
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Error de validación',
@@ -146,6 +149,18 @@ class RolesController extends Controller {
             ], 401);
         }
 
+        $dataToMerge = [];
+
+        if ($request->has('nombre')) {
+            $dataToMerge['nombre'] = $this->sanitizeInput($request->input('nombre', ''));
+        }
+
+        if ($request->has('descripcion')) {
+            $dataToMerge['descripcion'] = $this->sanitizeInput($request->input('descripcion', ''));
+        }
+
+        $request->merge($dataToMerge);
+
         $rules = [
             'nombre' => 'sometimes|required|string|max:255|unique:roles,nombre,' . $rol_id,
             'descripcion' => 'sometimes|required|string|max:500',
@@ -163,6 +178,7 @@ class RolesController extends Controller {
 
         try {
             $validator = Validator::make($request->all(), $rules, $messages);
+
             if ($validator->fails()){
                 return response()->json([
                     'message' => 'Error de validación',
@@ -180,21 +196,14 @@ class RolesController extends Controller {
                 ], 404);
             }
 
-            if($request->has('nombre')) {
-                $rol->nombre = $request->input('nombre');
-            }
-
-            if($request->has('descripcion')) {
-                $rol->descripcion = $request->input('descripcion');
-            }
-
-            $rol->save();
+            $rol->update($validator->validated());
 
             return response()->json([
                 'message' => 'Rol actualizado exitosamente',
                 'success' => true,
                 'data' => $rol
-            ]);
+            ], 200);
+
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al actualizar el rol',
@@ -247,5 +256,9 @@ class RolesController extends Controller {
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
             ->where('users.id', Auth::id())
             ->value('usuario_roles.rol_id');
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 }
