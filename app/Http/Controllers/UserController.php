@@ -342,7 +342,7 @@ class UserController extends Controller {
 
             DB::beginTransaction();
 
-            $user = User::findOrFail($id);
+            $user = User::where('id', $id)->lockForUpdate()->firstOrFail();
 
             if ($request->has('nombre_completo')) {
                 $user->nombre_completo = $request->nombre_completo;
@@ -401,7 +401,7 @@ class UserController extends Controller {
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id) {
+    public function destroy(string $id): JsonResponse {
         $user_rol = $this->getUserRole();
 
         if (!Auth::check() || $user_rol != 1) {
@@ -412,7 +412,8 @@ class UserController extends Controller {
         }
 
         try {
-            $user = User::find($id);
+            DB::beginTransaction();
+            $user = User::where('id', $id)->lockForUpdate()->first();
 
             if ($user->id == 1) {
                 return response()->json([
@@ -429,12 +430,14 @@ class UserController extends Controller {
             }
 
             $user->delete();
+            DB::commit();
 
             return response()->json([
                 'message' => 'Usuario eliminado exitosamente',
                 'success' => true
             ]);
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => 'Error al eliminar el usuario',
                 'error' => $e->getMessage(),
