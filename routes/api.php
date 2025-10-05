@@ -26,4 +26,8 @@ Route::middleware(['auth:api', NoBrowserCacheMiddleware::class])->group(function
     Route::post('/users/new', [UserController::class, 'store'])->name('users.store');
     Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
     Route::patch('/users/edit/{id}', [UserController::class, 'update'])->name('users.edit');
+    Route::get('/users/get/role/{id}', [UserController::class, 'getByRole'])->name('users.getByRole');
+    Route::get('/users/get/department/{id}', [UserController::class, 'getByDepartment'])->name('users.getByDepartment');
+    Route::get('/users/get/status/{estado}', [UserController::class, 'getByStatus'])->name('users.getByRoleAndDepartment');
+    Route::get('/users/get/subject/{id}', [UserController::class, 'getBySubject'])->name('users.getBySubject');
 });

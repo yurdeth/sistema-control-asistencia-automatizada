@@ -28,7 +28,7 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = (new User())->getUsers();
+        $users = (new User())->getUsersBasedOnMyUserRole($user_rol);
 
         if ($users->isEmpty()) {
             return response()->json([
@@ -168,6 +168,110 @@ class UserController extends Controller {
             'message' => 'Usuario encontrado',
             'success' => true,
             'data' => $user
+        ]);
+    }
+
+    public function getByRole(int $role_id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = (new User())->getUsersByRole($role_id);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios con el rol especificado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function getByDepartment(int $department_id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = (new User())->getUsersByDepartment($department_id);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios en el departamento especificado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function getByStatus(string $status): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = (new User())->getUsersByStatus($status);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios con el estado especificado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function getBySubject(int $subject_id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = (new User())->getUsersBySubject($subject_id);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios asociados a la materia especificada',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
         ]);
     }
 
