@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RolesController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -18,4 +19,11 @@ Route::middleware(['auth:api', NoBrowserCacheMiddleware::class])->group(function
     Route::post('/roles/new', [RolesController::class, 'store'])->name('roles.store');
     Route::delete('/roles/delete/{id}', [RolesController::class, 'destroy'])->name('roles.delete');
     Route::patch('/roles/edit/{id}', [RolesController::class, 'edit'])->name('roles.edit');
+
+    //************************************ MANAGE USERS ************************************//
+    Route::get('/users/get/all', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/get/{id}', [UserController::class, 'show'])->name('users.show');
+    Route::post('/users/new', [UserController::class, 'store'])->name('users.store');
+    Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
+    Route::patch('/users/edit/{id}', [UserController::class, 'update'])->name('users.edit');
 });

@@ -79,6 +79,13 @@ class DepartamentosSeeder extends Seeder {
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'nombre' => 'Administrativos Académicos',
+                'descripcion' => 'Administradores académicos.',
+                'estado' => 'activo',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         ]);
     }
 }
