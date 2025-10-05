@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -28,7 +29,9 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = (new User())->getUsersBasedOnMyUserRole($user_rol);
+        $users = Cache::remember('all_users', 60, function () use ($user_rol) {
+            return (new User())->getUsersBasedOnMyUserRole($user_rol);
+        });
 
         if ($users->isEmpty()) {
             return response()->json([
@@ -181,7 +184,9 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = (new User())->getUsersByRole($role_id);
+        $users = Cache::remember('all_users', 60, function () use ($role_id) {
+            return (new User())->getUsersByRole($role_id);
+        });
 
         if ($users->isEmpty()) {
             return response()->json([
@@ -207,7 +212,9 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = (new User())->getUsersByDepartment($department_id);
+        $users = Cache::remember('all_users', 60, function () use ($department_id) {
+            return (new User())->getUsersByDepartment($department_id);
+        });
 
         if ($users->isEmpty()) {
             return response()->json([
@@ -233,7 +240,9 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = (new User())->getUsersByStatus($status);
+        $users = Cache::remember('all_users', 60, function () use ($status) {
+            return (new User())->getUsersByStatus($status);
+        });
 
         if ($users->isEmpty()) {
             return response()->json([
@@ -259,7 +268,9 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = (new User())->getUsersBySubject($subject_id);
+        $users = Cache::remember('all_users', 60, function () use ($subject_id) {
+            return (new User())->getUsersBySubject($subject_id);
+        });
 
         if ($users->isEmpty()) {
             return response()->json([
