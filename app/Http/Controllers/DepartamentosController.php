@@ -253,7 +253,7 @@ class DepartamentosController extends Controller {
 
         try {
             DB::beginTransaction();
-            $departamento = departamentos::find($departament_id);
+            $departamento = departamentos::where('id', $departament_id)->lockForUpdate()->first();
 
             if (!$departamento) {
                 return response()->json([

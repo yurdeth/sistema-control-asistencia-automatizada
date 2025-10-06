@@ -84,7 +84,9 @@ class RolesController extends Controller {
                 ], 422);
             }
 
+            DB::beginTransaction();
             $rol = roles::create($validator->validated());
+            DB::commit();
 
             return response()->json([
                 'message' => 'Rol creado exitosamente',
@@ -93,12 +95,14 @@ class RolesController extends Controller {
             ], 201);
 
         } catch (ValidationException $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => 'Error de validación',
                 'errors' => $e->errors(),
                 'success' => false
             ], 422);
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => 'Error al crear el rol',
                 'error' => $e->getMessage(),

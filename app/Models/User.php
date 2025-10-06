@@ -84,15 +84,15 @@ class User extends Authenticatable {
         };
     }
 
-    public function getUser($user_id): Collection {
+    public function getUser(int $user_id): Collection {
         return $this->getAllUsers()->where('id', $user_id);
     }
 
-    public function getUsersByRole($role_id): Collection {
+    public function getUsersByRole(int $role_id): Collection {
         return $this->getAllUsers()->where('rol_id', $role_id);
     }
 
-    public function getUsersByDepartment($department_id): Collection {
+    public function getUsersByDepartment(int $department_id): Collection {
         return $this->getAllUsers()->where('departamento_id', $department_id);
     }
 
@@ -100,7 +100,7 @@ class User extends Authenticatable {
         return $this->getAllUsers()->where('estado', $status);
     }
 
-    public function getUsersBySubject($subject_id): Collection {
+    public function getUsersBySubject(int $subject_id): Collection {
         return DB::table('users')
             ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
             ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
@@ -119,5 +119,25 @@ class User extends Authenticatable {
                 'materias.nombre as materia_nombre'
             )
             ->get();
+    }
+
+    public function getAdministradoresAcademicosOnly(): Collection {
+        return $this->getAllUsers()->where('rol_id', '=', 2);
+    }
+
+    public function getDepartmentManagersOnly(): Collection {
+        return $this->getAllUsers()->where('rol_id', '=', 3);
+    }
+
+    public function getCareerManagersOnly(): Collection {
+        return $this->getAllUsers()->where('rol_id', '=', 4);
+    }
+
+    public function getProfessorsOnly(): Collection {
+        return $this->getAllUsers()->where('rol_id', '=', 5);
+    }
+
+    public function myProfile(): HasMany {
+        return $this->hasMany(User::class, 'id', '=', 'id');
     }
 }

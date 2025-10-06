@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepartamentosController;
+use App\Http\Controllers\MateriasController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
@@ -31,6 +32,11 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/users/get/department/{id}', [UserController::class, 'getByDepartment'])->name('users.getByDepartment');
     Route::get('/users/get/status/{estado}', [UserController::class, 'getByStatus'])->name('users.getByRoleAndDepartment');
     Route::get('/users/get/subject/{id}', [UserController::class, 'getBySubject'])->name('users.getBySubject');
+    Route::get('/users/get/academics/all', [UserController::class, 'getAdministradoresAcademicosOnly'])->name('users.getAcademics');
+    Route::get('/users/get/department-managers/all', [UserController::class, 'getDepartmentManagersOnly'])->name('users.getDepManagers');
+    Route::get('/users/get/career-managers/all', [UserController::class, 'getCareerManagersOnly'])->name('users.getCareerManagers');
+    Route::get('/users/get/professors/all', [UserController::class, 'getProfessorsOnly'])->name('users.getProfessors');
+    Route::get('/users/get/profile', [UserController::class, 'getMyProfile'])->name('users.getMyProfile');
 
     //************************************ MANAGE DEPARTMENTS ************************************//
     Route::get('/departaments/get/all', [DepartamentosController::class, 'index'])->name('departamentos.index');
@@ -42,4 +48,15 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/departaments/get/status/{estado}', [DepartamentosController::class, 'getByStatus'])->name('departamentos.getByStatus');
     Route::get('/departaments/get/manager/name', [DepartamentosController::class, 'getManagers'])->name('departamentos.getManagers');
     Route::get('/departaments/get/manager/{id}', [DepartamentosController::class, 'getByManager'])->name('departamentos.getByManager');
+
+    //************************************ MANAGE SUBJECTS ************************************//
+    Route::get('/subjects/get/all', [MateriasController::class, 'index'])->name('materias.index');
+    Route::get('/subjects/get/{id}', [MateriasController::class, 'show'])->name('materias.show');
+    Route::post('/subjects/new', [MateriasController::class, 'store'])->name('materias.store');
+    Route::patch('/subjects/edit/{id}', [MateriasController::class, 'edit'])->name('materias.edit');
+    Route::delete('/subjects/delete/{id}', [MateriasController::class, 'destroy'])->name('materias.delete');
+    Route::get('/subjects/get/department/{id}', [MateriasController::class, 'getMateriasByDepartment'])->name('materias.getByDepartment');
+    Route::get('/subjects/get/status/{estado}', [MateriasController::class, 'getMateriasByStatus'])->name('materias.getByStatus');
+//    Route::get('/subjects/get/user/{id}', [MateriasController::class, 'getMateriasByUserId'])->name('materias.getByUserId');
+//    Route::get('/subjects/my-subjects/get', [MateriasController::class, 'getMySubjects'])->name('materias.getMySubjects');
 });

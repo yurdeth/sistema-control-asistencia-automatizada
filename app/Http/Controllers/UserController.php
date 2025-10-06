@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller {
@@ -430,7 +431,7 @@ class UserController extends Controller {
         ]);
     }
 
-    public function getByStatus(string $status): JsonResponse {
+    public function getByStatus(string $estado): JsonResponse {
         $user_rol = $this->getUserRole();
 
         if (!Auth::check() || $user_rol == 6) {
@@ -438,6 +439,14 @@ class UserController extends Controller {
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
+        }
+
+        $status = $this->sanitizeInput($estado);
+        if (!in_array($estado, ['activo', 'inactivo', 'suspendido'])) {
+            return response()->json([
+                'message' => 'Estado inválido',
+                'success' => false
+            ], 422);
         }
 
         $users = Cache::remember('all_users', 60, function () use ($status) {
@@ -483,6 +492,142 @@ class UserController extends Controller {
             'message' => 'Usuarios encontrados',
             'success' => true,
             'data' => $users
+        ]);
+    }
+
+    public function getAdministradoresAcademicosOnly(): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = Cache::remember('administradores_academicos', 60, function () {
+            return (new User())->getAdministradoresAcademicosOnly();
+        });
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron administradores académicos',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Administradores académicos encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function getDepartmentManagersOnly(): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = Cache::remember('coordinadores', 60, function () {
+            return (new User())->getDepartmentManagersOnly();
+        });
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron coordinadores',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Coordinadores encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function getCareerManagersOnly(): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = Cache::remember('docentes', 60, function () {
+            return (new User())->getCareerManagersOnly();
+        });
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron coordinadores de carrera',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Coordinadores de carrera encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function getProfessorsOnly(): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = Cache::remember('docentes', 60, function () {
+            return (new User())->getProfessorsOnly();
+        });
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron docentes',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Docentes encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function getMyProfile(): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user = (new User())->myProfile()->where('id', Auth::id())->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Usuario no encontrado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Perfil del usuario encontrado',
+            'success' => true,
+            'data' => $user
         ]);
     }
 
