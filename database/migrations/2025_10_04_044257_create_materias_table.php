@@ -19,7 +19,7 @@ return new class extends Migration {
                 ->on('departamentos')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            $table->enum('estado', ['activa', 'inactiva'])->default('activo');
+            $table->enum('estado', ['activa', 'inactiva'])->default('activa');
             $table->timestamps();
         });
     }
