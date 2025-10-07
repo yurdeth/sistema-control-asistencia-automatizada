@@ -185,7 +185,7 @@ class UserController extends Controller {
         ]);
     }
 
-    public function update(Request $request, int $id): JsonResponse {
+    public function edit(Request $request, int $id): JsonResponse {
         $user_rol = $this->getUserRole();
 
         if (!Auth::check() || $user_rol == 6) {
