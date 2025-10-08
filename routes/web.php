@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,14 +15,33 @@ Route::get('/', function () {
     ]);
 });
 
+// Route::get('/dashboard', function () {
+//     return Inertia::render('Dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/login', function () {
+    return Inertia::render('Auth/Login', [
+        'canResetPassword' => true,
+    ]);
+})->name('login');
+
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    // Renderiza el dashboard y pasa una bandera
+    return Inertia::render('Dashboard', [
+        'mustCheckAuth' => true
+    ]);
+})->name('dashboard');
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// en routes/web.php
+
+
 
 require __DIR__.'/auth.php';
