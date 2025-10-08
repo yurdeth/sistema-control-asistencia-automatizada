@@ -8,22 +8,22 @@ use App\Models\grupos;
 
 class GrupoController extends Controller
 {
-   
+
     public function index()
     {
         $grupos = Grupo::with(['materia', 'ciclo', 'docente'])->get();
         return response()->json($grupos, 200);
     }
 
-  
+
     public function show($id)
     {
         $grupo = Grupo::with(['materia', 'ciclo', 'docente', 'horarios'])->find($id);
-        
+
         if (!$grupo) {
             return response()->json(['message' => 'Grupo no encontrado'], 404);
         }
-        
+
         return response()->json($grupo, 200);
     }
 
@@ -51,11 +51,11 @@ class GrupoController extends Controller
         return response()->json($grupo, 201);
     }
 
-   
+
     public function edit(Request $request, $id)
     {
         $grupo = Grupo::find($id);
-        
+
         if (!$grupo) {
             return response()->json(['message' => 'Grupo no encontrado'], 404);
         }
@@ -70,21 +70,21 @@ class GrupoController extends Controller
         ]);
 
         $grupo->update($request->all());
-        
+
         return response()->json($grupo, 200);
     }
 
-  
+
     public function destroy($id)
     {
         $grupo = Grupo::find($id);
-        
+
         if (!$grupo) {
             return response()->json(['message' => 'Grupo no encontrado'], 404);
         }
 
         $grupo->delete();
-        
+
         return response()->json(['message' => 'Grupo eliminado exitosamente'], 204);
     }
 
@@ -94,7 +94,7 @@ class GrupoController extends Controller
         $grupos = Grupo::with(['ciclo', 'docente'])
             ->where('materia_id', $id)
             ->get();
-        
+
         return response()->json($grupos, 200);
     }
 
@@ -104,42 +104,42 @@ class GrupoController extends Controller
         $grupos = Grupo::with(['materia', 'docente'])
             ->where('ciclo_id', $id)
             ->get();
-        
+
         return response()->json($grupos, 200);
     }
 
-  
+
     public function getGroupsByProfessor($id)
     {
         $grupos = Grupo::with(['materia', 'ciclo'])
             ->where('docente_id', $id)
             ->get();
-        
+
         return response()->json($grupos, 200);
     }
 
-    
+
     public function getGroupsByStatus($estado)
     {
         $grupos = Grupo::with(['materia', 'ciclo', 'docente'])
             ->where('estado', $estado)
             ->get();
-        
+
         return response()->json($grupos, 200);
     }
 
-   
+
     public function getAvailableGroups()
     {
         $grupos = Grupo::with(['materia', 'ciclo', 'docente'])
             ->whereColumn('estudiantes_inscritos', '<', 'capacidad_maxima')
             ->where('estado', 'activo')
             ->get();
-        
+
         return response()->json($grupos, 200);
     }
 
-  
+
     public function getGroupsByNumber(Request $request, $numero_grupo)
     {
         $query = Grupo::with(['materia', 'ciclo', 'docente'])
@@ -154,7 +154,7 @@ class GrupoController extends Controller
         }
 
         $grupos = $query->get();
-        
+
         return response()->json($grupos, 200);
     }
 }

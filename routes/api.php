@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 // routes/api.php
 
+Route::get('/login', [AuthController::class, "checkAuth"])->name('login.get');
 Route::post('/login', [AuthController::class, "login"])->name('login');
 
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
@@ -36,7 +37,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/users/get/department-managers/all', [UserController::class, 'getDepartmentManagersOnly'])->name('users.getDepManagers');
     Route::get('/users/get/career-managers/all', [UserController::class, 'getCareerManagersOnly'])->name('users.getCareerManagers');
     Route::get('/users/get/professors/all', [UserController::class, 'getProfessorsOnly'])->name('users.getProfessors');
-    Route::get('/users/get/profile', [UserController::class, 'getMyProfile'])->name('users.getMyProfile');
+    Route::get('/users/get/profile/me', [UserController::class, 'getMyProfile'])->name('users.getMyProfile');
 
     //************************************ MANAGE DEPARTMENTS ************************************//
     Route::get('/departaments/get/all', [DepartamentosController::class, 'index'])->name('departamentos.index');

@@ -615,7 +615,8 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user = (new User())->myProfile()->where('id', Auth::id())->first();
+        Log::info(Auth::user()->id);
+        $user = (new User())->myProfile(Auth::user()->id)->first();
 
         if (!$user) {
             return response()->json([
