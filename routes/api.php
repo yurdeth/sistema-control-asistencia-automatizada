@@ -3,6 +3,7 @@
 use App\Http\Controllers\AulaRecursosController;
 use App\Http\Controllers\AulasController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CiclosAcademicosController;
 use App\Http\Controllers\DepartamentosController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\HorariosController;
@@ -120,4 +121,13 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/classroom-resources/get/search/all', [AulaRecursosController::class, 'searchClassroomsByResources'])->name('aulaRecursos.search');
     Route::patch('/classroom-resources/change-status/{id}', [AulaRecursosController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
     Route::get('/classroom-resources/get/inventory/all', [AulaRecursosController::class, 'getInventory'])->name('aulaRecursos.getInventory');
+
+    //************************************ MANAGE ACADEMIC TERM ************************************//
+    Route::get('/academic-terms/get/all', [CiclosAcademicosController::class, 'index'])->name('academicTerms.index');
+    Route::get('/academic-terms/get/{id}', [CiclosAcademicosController::class, 'show'])->name('academicTerms.show');
+    Route::post('/academic-terms/new', [CiclosAcademicosController::class, 'store'])->name('academicTerms.store');
+    Route::delete('/academic-terms/delete/{id}', [CiclosAcademicosController::class, 'destroy'])->name('academicTerms.delete');
+    Route::patch('/academic-terms/edit/{id}', [CiclosAcademicosController::class, 'edit'])->name('academicTerms.edit');
+    Route::get('/academic-terms/get/status/{estado}', [CiclosAcademicosController::class, 'getByStatus'])->name('academicTerms.getByStatus');
+    Route::get('/academic-terms/get/current', [CiclosAcademicosController::class, 'getCurrentTerm'])->name('academicTerms.getCurrent');
 });
