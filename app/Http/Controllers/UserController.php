@@ -62,9 +62,14 @@ class UserController extends Controller {
         }
 
         $request->merge([
-            'nombre_completo' => $this->sanitizeInput($request->input('nombre_completo', '')),
-            'email' => $this->sanitizeInput($request->input('email', '')),
-            'telefono' => $this->sanitizeInput($request->input('telefono', '')),
+            'nombre_completo' => $this->sanitizeInput($request->input('nombre_completo')),
+            'email' => $this->sanitizeInput($request->input('email')),
+            'telefono' => $this->sanitizeInput($request->input('telefono')),
+            'password' => $this->sanitizeInput($request->input('password')),
+            'password_confirmation' => $this->sanitizeInput($request->input('password_confirmation')),
+            'departamento_id' => $this->sanitizeInput($request->input('departamento_id')),
+            'rol_id' => $this->sanitizeInput($request->input('rol_id')),
+            'estado' => $this->sanitizeInput($request->input('estado')),
         ]);
 
         $rules = [
@@ -208,6 +213,26 @@ class UserController extends Controller {
 
         if ($request->has('telefono')) {
             $dataToMerge['telefono'] = $this->sanitizeInput($request->input('telefono', ''));
+        }
+
+        if ($request->has('password')) {
+            $dataToMerge['password'] = $this->sanitizeInput($request->input('password', ''));
+        }
+
+        if ($request->has('password_confirmation')) {
+            $dataToMerge['password_confirmation'] = $this->sanitizeInput($request->input('password_confirmation', ''));
+        }
+
+        if ($request->has('departamento_id')) {
+            $dataToMerge['departamento_id'] = $this->sanitizeInput($request->input('departamento_id', ''));
+        }
+
+        if ($request->has('rol_id')) {
+            $dataToMerge['rol_id'] = $this->sanitizeInput($request->input('rol_id', ''));
+        }
+
+        if ($request->has('estado')) {
+            $dataToMerge['estado'] = $this->sanitizeInput($request->input('estado', ''));
         }
 
         $request->merge($dataToMerge);

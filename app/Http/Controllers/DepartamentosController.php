@@ -59,7 +59,7 @@ class DepartamentosController extends Controller {
         ]);
 
         $rules = [
-            'nombre' => 'required|string|max:255|unique:departamentos,nombre',
+            'nombre' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/', 'unique:departamentos,nombre'],
             'descripcion' => 'required|string|max:500',
             'estado' => 'in:activo,inactivo',
         ];
@@ -166,7 +166,7 @@ class DepartamentosController extends Controller {
         $request->merge($dataToMerge);
 
         $rules = [
-            'nombre' => 'sometimes|required|string|max:255|unique:departamentos,nombre,' . $departament_id,
+            'nombre' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/', 'unique:departamentos,nombre' . ($departament_id ? ",$departament_id" : '')],
             'descripcion' => 'sometimes|required|string|max:500',
             'estado' => 'sometimes|in:activo,inactivo',
         ];

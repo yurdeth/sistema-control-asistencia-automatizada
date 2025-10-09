@@ -59,8 +59,8 @@ class RolesController extends Controller {
         ]);
 
         $rules = [
-            'nombre' => 'required|string|max:255|unique:roles,nombre',
-            'descripcion' => 'required|string|max:500',
+            'nombre' => ['required', 'string', 'max:255', 'unique:roles,nombre', 'regex:/^[a-zA-Z\s]+$/'],
+            'descripcion' => ['required', 'string', 'max:500', 'regex:/^[a-zA-Z\s]+$/'],
         ];
 
         $messages = [
@@ -166,8 +166,8 @@ class RolesController extends Controller {
         $request->merge($dataToMerge);
 
         $rules = [
-            'nombre' => 'sometimes|required|string|max:255|unique:roles,nombre,' . $rol_id,
-            'descripcion' => 'sometimes|required|string|max:500',
+            'nombre' => ['sometimes', 'required', 'string', 'max:255', 'unique:roles,nombre', 'regex:/^[a-zA-Z\s]+$/'],
+            'descripcion' => ['sometimes', 'required', 'string', 'max:500', 'regex:/^[a-zA-Z\s]+$/'],
         ];
 
         $messages = [
