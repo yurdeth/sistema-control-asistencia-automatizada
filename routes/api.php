@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AulaRecursosController;
 use App\Http\Controllers\AulasController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepartamentosController;
@@ -107,16 +108,16 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/schedules/get/range/all', [HorariosController::class, 'getSchedulesByRange'])->name('horarios.getByRange');
 
     //************************************ MANAGE CLASSROOM RESOURCES ************************************//
-    Route::get('/classroom-resources/get/all', [AulaRecursoController::class, 'index'])->name('aulaRecursos.index');
-    Route::get('/classroom-resources/get/{id}', [AulaRecursoController::class, 'show'])->name('aulaRecursos.show');
-    Route::post('/classroom-resources/new', [AulaRecursoController::class, 'store'])->name('aulaRecursos.store');
-    Route::patch('/classroom-resources/edit/{id}', [AulaRecursoController::class, 'edit'])->name('aulaRecursos.edit');
-    Route::delete('/classroom-resources/delete/{id}', [AulaRecursoController::class, 'destroy'])->name('aulaRecursos.delete');
-    Route::get('/classroom-resources/get/classroom/{id}', [AulaRecursoController::class, 'getResourcesByClassroom'])->name('aulaRecursos.getByClassroom');
-    Route::get('/classroom-resources/get/resource/{id}', [AulaRecursoController::class, 'getClassroomsByResource'])->name('aulaRecursos.getByResource');
-    Route::get('/classroom-resources/get/status/{estado}', [AulaRecursoController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
-    Route::get('/classroom-resources/get/classroom/{id}/available', [AulaRecursoController::class, 'getAvailableResourcesByClassroom'])->name('aulaRecursos.getAvailableByClassroom');
-    Route::get('/classroom-resources/get/search/all', [AulaRecursoController::class, 'searchClassroomsByResources'])->name('aulaRecursos.search');
-    Route::patch('/classroom-resources/change-status/{id}', [AulaRecursoController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
-    Route::get('/classroom-resources/get/inventory/all', [AulaRecursoController::class, 'getInventory'])->name('aulaRecursos.getInventory');
+    Route::get('/classroom-resources/get/all', [AulaRecursosController::class, 'index'])->name('aulaRecursos.index');
+    Route::get('/classroom-resources/get/{id}', [AulaRecursosController::class, 'show'])->name('aulaRecursos.show');
+    Route::post('/classroom-resources/new', [AulaRecursosController::class, 'store'])->name('aulaRecursos.store');
+    Route::patch('/classroom-resources/edit/{id}', [AulaRecursosController::class, 'edit'])->name('aulaRecursos.edit');
+    Route::delete('/classroom-resources/delete/{id}', [AulaRecursosController::class, 'destroy'])->name('aulaRecursos.delete');
+    Route::get('/classroom-resources/get/classroom/{id}', [AulaRecursosController::class, 'getResourcesByClassroom'])->name('aulaRecursos.getByClassroom');
+    Route::get('/classroom-resources/get/resource/{id}', [AulaRecursosController::class, 'getClassroomsByResource'])->name('aulaRecursos.getByResource');
+    Route::get('/classroom-resources/get/status/{estado}', [AulaRecursosController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
+    Route::get('/classroom-resources/get/classroom/{id}/available', [AulaRecursosController::class, 'getAvailableResourcesByClassroom'])->name('aulaRecursos.getAvailableByClassroom');
+    Route::get('/classroom-resources/get/search/all', [AulaRecursosController::class, 'searchClassroomsByResources'])->name('aulaRecursos.search');
+    Route::patch('/classroom-resources/change-status/{id}', [AulaRecursosController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
+    Route::get('/classroom-resources/get/inventory/all', [AulaRecursosController::class, 'getInventory'])->name('aulaRecursos.getInventory');
 });
