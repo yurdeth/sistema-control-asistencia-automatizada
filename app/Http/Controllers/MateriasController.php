@@ -115,17 +115,6 @@ class MateriasController extends Controller {
         }
     }
 
-    private function getUserRole() {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
-    }
-
-    private function sanitizeInput($input): string {
-        return htmlspecialchars(strip_tags(trim($input)));
-    }
-
     /**
      * Display the specified resource.
      */
@@ -421,5 +410,16 @@ class MateriasController extends Controller {
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function getUserRole() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 }

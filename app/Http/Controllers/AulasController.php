@@ -2,191 +2,622 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreaulasRequest;
-use App\Http\Requests\UpdateaulasRequest;
 use App\Models\aulas;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
-class AulaController extends Controller
-{
-  
-    public function index()
-    {
-        $aulas = Aula::with(['recursos'])->get();
-        return response()->json($aulas, 200);
-    }
+class AulasController extends Controller {
 
-    
-    public function show($id)
-    {
-        $aula = Aula::with(['recursos.recursoTipo'])->find($id);
-        
-        if (!$aula) {
-            return response()->json(['message' => 'Aula no encontrada'], 404);
+    public function index(): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
         }
-        
-        return response()->json($aula, 200);
+
+        $aulas = aulas::with(['recursos'])->get();
+
+        if ($aulas->isEmpty()) {
+            return response()->json([
+                'message' => 'No hay aulas disponibles',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Aulas obtenidas exitosamente',
+            'success' => true,
+            'data' => $aulas
+        ], 200);
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
+
+    public function show($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $aula = aulas::with(['recursos.recursoTipo'])->find($id);
+
+        if (!$aula) {
+            return response()->json([
+                'message' => 'Aula no encontrada',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Aula obtenida exitosamente',
+            'success' => true,
+            'data' => $aula
+        ], 200);
+    }
+
+    public function store(Request $request): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $request->merge([
+            'codigo' => $this->sanitizeInput($request->codigo),
+            'nombre' => $this->sanitizeInput($request->nombre),
+            'capacidad_pupitres' => (int)$request->capacidad_pupitres,
+            'ubicacion' => $this->sanitizeInput($request->ubicacion),
+            'qr_code' => $this->sanitizeInput($request->qr_code),
+            'estado' => $this->sanitizeInput($request->estado)
+        ]);
+
+        $rules = [
             'codigo' => 'required|string|max:50|unique:aulas,codigo',
             'nombre' => 'required|string|max:100',
             'capacidad_pupitres' => 'required|integer|min:1',
             'ubicacion' => 'required|string|max:255',
-            'qr_code' => 'required|string|max:255|unique:aulas,qr_code',
+            'qr_code' => 'nullable|string|max:255|unique:aulas,qr_code',
             'estado' => 'required|in:disponible,ocupada,mantenimiento,inactiva'
+        ];
+
+        $messages = [
+            'codigo.required' => 'El campo código es obligatorio.',
+            'codigo.string' => 'El campo código debe ser una cadena de texto.',
+            'codigo.max' => 'El campo código no debe exceder los 50 caracteres.',
+            'codigo.unique' => 'El código ya está en uso.',
+            'nombre.required' => 'El campo nombre es obligatorio.',
+            'nombre.string' => 'El campo nombre debe ser una cadena de texto.',
+            'nombre.max' => 'El campo nombre no debe exceder los 100 caracteres.',
+            'capacidad_pupitres.required' => 'El campo capacidad de pupitres es obligatorio.',
+            'capacidad_pupitres.integer' => 'El campo capacidad de pupitres debe ser un número entero.',
+            'capacidad_pupitres.min' => 'El campo capacidad de pupitres debe ser al menos 1.',
+            'ubicacion.required' => 'El campo ubicación es obligatorio.',
+            'ubicacion.string' => 'El campo ubicación debe ser una cadena de texto.',
+            'ubicacion.max' => 'El campo ubicación no debe exceder los 255 caracteres.',
+            'qr_code.string' => 'El campo QR code debe ser una cadena de texto.',
+            'qr_code.max' => 'El campo QR code no debe exceder los 255 caracteres.',
+            'qr_code.unique' => 'El QR code ya está en uso.',
+            'estado.required' => 'El campo estado es obligatorio.',
+            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: disponible, ocupada, mantenimiento, inactiva.'
+        ];
+
+        try {
+            $validation = $request->validate($rules, $messages);
+
+            DB::beginTransaction();
+
+            $aula = aulas::create($validation);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Aula creada exitosamente',
+                'success' => true,
+                'data' => $aula
+            ], 201);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al crear el aula',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function edit(Request $request, $id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $request->merge([
+            'codigo' => $this->sanitizeInput($request->codigo),
+            'nombre' => $this->sanitizeInput($request->nombre),
+            'capacidad_pupitres' => (int)$request->capacidad_pupitres,
+            'ubicacion' => $this->sanitizeInput($request->ubicacion),
+            'qr_code' => $this->sanitizeInput($request->qr_code),
+            'estado' => $this->sanitizeInput($request->estado)
         ]);
 
-        $aula = Aula::create($request->all());
-
-        return response()->json($aula, 201);
-    }
-
-    public function edit(Request $request, $id)
-    {
-        $aula = Aula::find($id);
-        
-        if (!$aula) {
-            return response()->json(['message' => 'Aula no encontrada'], 404);
-        }
-
-        $request->validate([
-            'codigo' => 'sometimes|string|max:50|unique:aulas,codigo,' . $id,
-            'nombre' => 'sometimes|string|max:100',
-            'capacidad_pupitres' => 'sometimes|integer|min:1',
-            'ubicacion' => 'sometimes|string|max:255',
-            'estado' => 'sometimes|in:disponible,ocupada,mantenimiento,inactiva'
-        ]);
-
-        $aula->update($request->all());
-        
-        return response()->json($aula, 200);
-    }
-
-
-    public function destroy($id)
-    {
-        $aula = Aula::find($id);
-        
-        if (!$aula) {
-            return response()->json(['message' => 'Aula no encontrada'], 404);
-        }
-
-        $aula->delete();
-        
-        return response()->json(['message' => 'Aula eliminada exitosamente'], 204);
-    }
-
-    public function getClassroomByCode($codigo)
-    {
-        $aula = Aula::with(['recursos'])->where('codigo', $codigo)->first();
-        
-        if (!$aula) {
-            return response()->json(['message' => 'Aula no encontrada'], 404);
-        }
-        
-        return response()->json($aula, 200);
-    }
-
-
-    public function getClassroomsByStatus($estado)
-    {
-        $aulas = Aula::where('estado', $estado)->get();
-        return response()->json($aulas, 200);
-    }
-
-  
-    public function getClassroomsByMinCapacity($capacidad)
-    {
-        $aulas = Aula::where('capacidad_pupitres', '>=', $capacidad)->get();
-        return response()->json($aulas, 200);
-    }
-
-    public function getAvailableClassrooms()
-    {
-        $aulas = Aula::where('estado', 'disponible')->get();
-        return response()->json($aulas, 200);
-    }
-
-    public function getClassroomsByLocation($ubicacion)
-    {
-        $aulas = Aula::where('ubicacion', 'LIKE', "%{$ubicacion}%")->get();
-        return response()->json($aulas, 200);
-    }
-
-    public function getClassroomByQrCode($qr_code)
-    {
-        $aula = Aula::where('qr_code', $qr_code)->first();
-        
-        if (!$aula) {
-            return response()->json(['message' => 'Aula no encontrada'], 404);
-        }
-        
-        return response()->json($aula, 200);
-    }
-
-    public function changeClassroomStatus(Request $request, $id)
-    {
-        $aula = Aula::find($id);
-        
-        if (!$aula) {
-            return response()->json(['message' => 'Aula no encontrada'], 404);
-        }
-
-        $request->validate([
+        $rules = [
+            'codigo' => 'required|string|max:50|unique:aulas,codigo,' . $id,
+            'nombre' => 'required|string|max:100',
+            'capacidad_pupitres' => 'required|integer|min:1',
+            'ubicacion' => 'required|string|max:255',
+            'qr_code' => 'nullable|string|max:255|unique:aulas,qr_code,' . $id,
             'estado' => 'required|in:disponible,ocupada,mantenimiento,inactiva'
-        ]);
+        ];
 
-        $aula->estado = $request->estado;
-        $aula->save();
-        
-        return response()->json($aula, 200);
+        $messages = [
+            'codigo.required' => 'El campo código es obligatorio.',
+            'codigo.string' => 'El campo código debe ser una cadena de texto.',
+            'codigo.max' => 'El campo código no debe exceder los 50 caracteres.',
+            'codigo.unique' => 'El código ya está en uso.',
+            'nombre.required' => 'El campo nombre es obligatorio.',
+            'nombre.string' => 'El campo nombre debe ser una cadena de texto.',
+            'nombre.max' => 'El campo nombre no debe exceder los 100 caracteres.',
+            'capacidad_pupitres.required' => 'El campo capacidad de pupitres es obligatorio.',
+            'capacidad_pupitres.integer' => 'El campo capacidad de pupitres debe ser un número entero.',
+            'capacidad_pupitres.min' => 'El campo capacidad de pupitres debe ser al menos 1.',
+            'ubicacion.required' => 'El campo ubicación es obligatorio.',
+            'ubicacion.string' => 'El campo ubicación debe ser una cadena de texto.',
+            'ubicacion.max' => 'El campo ubicación no debe exceder los 255 caracteres.',
+            'qr_code.string' => 'El campo QR code debe ser una cadena de texto.',
+            'qr_code.max' => 'El campo QR code no debe exceder los 255 caracteres.',
+            'qr_code.unique' => 'El QR code ya está en uso.',
+            'estado.required' => 'El campo estado es obligatorio.',
+            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: disponible, ocupada, mantenimiento, inactiva.'
+        ];
+
+        try {
+            $validation = $request->validate($rules, $messages);
+
+            $aula = aulas::find($id);
+
+            if (!$aula) {
+                return response()->json([
+                    'message' => 'Aula no encontrada',
+                    'success' => false
+                ], 404);
+            }
+
+            DB::beginTransaction();
+
+            $aula->update($validation);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Aula actualizada exitosamente',
+                'success' => true,
+                'data' => $aula
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el aula',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
     }
 
-    public function getClassroomStatistics(Request $request, $id)
-    {
-        $aula = Aula::find($id);
-        
+
+    public function destroy($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            $aula = aulas::where('id', $id)->lockForUpdate()->first();
+
+            if (!$aula) {
+                return response()->json([
+                    'message' => 'Aula no encontrada',
+                    'success' => false
+                ], 404);
+            }
+
+            DB::beginTransaction();
+
+            $aula->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Aula eliminada exitosamente',
+                'success' => true
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar el aula',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClassroomByCode($codigo): JsonResponse {
+        $aula = aulas::with(['recursos'])->where('codigo', $codigo)->first();
+
         if (!$aula) {
-            return response()->json(['message' => 'Aula no encontrada'], 404);
+            return response()->json([
+                'message' => 'Aula no encontrada',
+                'success' => false
+                ], 404);
         }
 
-        $query = DB::table('estadisticas_aulas_diarias')
-            ->where('aula_id', $id);
-
-        if ($request->has('fecha_inicio')) {
-            $query->where('fecha', '>=', $request->fecha_inicio);
-        }
-
-        if ($request->has('fecha_fin')) {
-            $query->where('fecha', '<=', $request->fecha_fin);
-        }
-
-        $estadisticas = $query->get();
-        
         return response()->json([
-            'aula' => $aula,
-            'estadisticas' => $estadisticas
+            'message' => 'Aula obtenida exitosamente',
+            'success' => true,
+            'data' => $aula
         ], 200);
     }
 
-    public function getClassroomSuggestions(Request $request)
-    {
-        $request->validate([
-            'capacidad_minima' => 'required|integer',
-            'dia_semana' => 'required|in:lunes,martes,miercoles,jueves,viernes,sabado,domingo',
-            'hora_inicio' => 'required|date_format:H:i:s',
-            'hora_fin' => 'required|date_format:H:i:s'
+
+    public function getClassroomsByStatus($estado): JsonResponse {
+        try {
+            $valid_states = ['disponible', 'ocupada', 'mantenimiento', 'inactiva'];
+
+            if (!in_array($estado, $valid_states)) {
+                return response()->json([
+                    'message' => 'Estado inválido. Los estados válidos son: disponible, ocupada, mantenimiento, inactiva.',
+                    'success' => false
+                ], 400);
+            }
+
+            $estado = $this->sanitizeInput($estado);
+
+            $aulas = aulas::where('estado', $estado)->get();
+
+            if ($aulas->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay aulas con el estado especificado',
+                    'success' => false
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Aulas obtenidas exitosamente',
+                'success' => true,
+                'data' => $aulas
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las aulas',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function getClassroomsByMinCapacity($capacidad): JsonResponse {
+        try {
+            $capacidad = (int)$capacidad;
+
+            if ($capacidad < 1) {
+                return response()->json([
+                    'message' => 'La capacidad mínima debe ser un número entero positivo.',
+                    'success' => false
+                ], 400);
+            }
+
+            $aulas = aulas::where('capacidad_pupitres', '>=', $capacidad)->get();
+
+            if ($aulas->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay aulas con la capacidad mínima especificada',
+                    'success' => false
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Aulas obtenidas exitosamente',
+                'success' => true,
+                'data' => $aulas
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las aulas',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getAvailableClassrooms(): JsonResponse {
+        try {
+            $aulas = aulas::where('estado', 'disponible')->get();
+
+            if ($aulas->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay aulas disponibles',
+                    'success' => false
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Aulas disponibles obtenidas exitosamente',
+                'success' => true,
+                'data' => $aulas
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las aulas disponibles',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClassroomsByLocation($ubicacion): JsonResponse {
+        try {
+            $ubicacion = $this->sanitizeInput($ubicacion);
+
+            $aulas = aulas::where('ubicacion', 'LIKE', DB::raw('CONCAT("%", ?, "%")'), [$ubicacion])->get();
+
+            if ($aulas->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay aulas en la ubicación especificada',
+                    'success' => false
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Aulas obtenidas exitosamente',
+                'success' => true,
+                'data' => $aulas
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las aulas',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClassroomByQrCode($qr_code): JsonResponse {
+        try {
+            $qr_code = $this->sanitizeInput($qr_code);
+
+            $aula = aulas::where('qr_code', $qr_code)->first();
+
+            if (!$aula) {
+                return response()->json([
+                    'message' => 'Aula no encontrada con el QR code especificado',
+                    'success' => false
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Aula obtenida exitosamente',
+                'success' => true,
+                'data' => $aula
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener el aula',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function changeClassroomStatus(Request $request, $id): JsonResponse {
+        try {
+            $user_rol = $this->getUserRole();
+
+            if (!Auth::check() || $user_rol == 6) {
+                return response()->json([
+                    'message' => 'Acceso no autorizado',
+                    'success' => false
+                ], 401);
+            }
+
+            $request->merge([
+                'estado' => $this->sanitizeInput($request->estado)
+            ]);
+
+            $rules = [
+                'estado' => 'required|in:disponible,ocupada,mantenimiento,inactiva'
+            ];
+
+            $messages = [
+                'estado.required' => 'El campo estado es obligatorio.',
+                'estado.in' => 'El campo estado debe ser uno de los siguientes valores: disponible, ocupada, mantenimiento, inactiva.'
+            ];
+
+            $validation = $request->validate($rules, $messages);
+
+            $aula = aulas::find($id);
+
+            if (!$aula) {
+                return response()->json([
+                    'message' => 'Aula no encontrada',
+                    'success' => false
+                ], 404);
+            }
+
+            DB::beginTransaction();
+
+            $aula->estado = $validation['estado'];
+            $aula->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Estado del aula actualizado exitosamente',
+                'success' => true,
+                'data' => $aula
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el estado del aula',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClassroomStatistics(Request $request, $id): JsonResponse {
+        try {
+            $user_rol = $this->getUserRole();
+
+            if (!Auth::check()) {
+                return response()->json([
+                    'message' => 'Acceso no autorizado',
+                    'success' => false
+                ], 401);
+            }
+
+            $aula = aulas::find($id);
+
+            if (!$aula) {
+                return response()->json([
+                    'message' => 'Aula no encontrada',
+                    'success' => false
+                ], 404);
+            }
+
+            $request->merge([
+                'fecha_inicio' => $this->sanitizeInput($request->fecha_inicio),
+                'fecha_fin' => $this->sanitizeInput($request->fecha_fin)
+            ]);
+
+            $rules = [
+                'fecha_inicio' => 'required|date|before_or_equal:fecha_fin',
+                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio'
+            ];
+
+            $messages = [
+                'fecha_inicio.required' => 'El campo fecha de inicio es obligatorio.',
+                'fecha_inicio.date' => 'El campo fecha de inicio debe ser una fecha válida.',
+                'fecha_inicio.before_or_equal' => 'La fecha de inicio debe ser anterior o igual a la fecha de fin.',
+                'fecha_fin.required' => 'El campo fecha de fin es obligatorio.',
+                'fecha_fin.date' => 'El campo fecha de fin debe ser una fecha válida.',
+                'fecha_fin.after_or_equal' => 'La fecha de fin debe ser posterior o igual a la fecha de inicio.'
+            ];
+
+            $validation = $request->validate($rules, $messages);
+
+            $estadisticas = DB::select('CALL sp_estadisticas_aula(?, ?, ?)', [
+                $id,
+                $validation['fecha_inicio'],
+                $validation['fecha_fin']
+            ]);
+
+            return response()->json([
+                'message' => 'Estadísticas del aula obtenidas exitosamente',
+                'success' => true,
+                'data' => $estadisticas
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las estadísticas del aula',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClassroomSuggestions(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $request->merge([
+            'capacidad_minima' => (int)$request->capacidad_minima,
+            'dia_semana' => $this->sanitizeInput($request->dia_semana),
+            'hora_inicio' => $this->sanitizeInput($request->hora_inicio),
+            'hora_fin' => $this->sanitizeInput($request->hora_fin)
         ]);
 
-        $sugerencias = DB::select('CALL sp_sugerir_aula(?, ?, ?, ?)', [
-            $request->capacidad_minima,
-            $request->dia_semana,
-            $request->hora_inicio,
-            $request->hora_fin
-        ]);
+        $rules = [
+            'capacidad_minima' => 'required|integer|min:1',
+            'dia_semana' => 'required|in:Lunes,Martes,Miércoles,Jueves,Viernes,Sábado,Domingo',
+            'hora_inicio' => 'required|date_format:H:i',
+            'hora_fin' => 'required|date_format:H:i|after:hora_inicio'
+        ];
 
-        return response()->json($sugerencias, 200);
+        $messages = [
+            'capacidad_minima.required' => 'El campo capacidad mínima es obligatorio.',
+            'capacidad_minima.integer' => 'El campo capacidad mínima debe ser un número entero.',
+            'capacidad_minima.min' => 'El campo capacidad mínima debe ser al menos 1.',
+            'dia_semana.required' => 'El campo día de la semana es obligatorio.',
+            'dia_semana.in' => 'El campo día de la semana debe ser uno de los siguientes valores: Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo.',
+            'hora_inicio.required' => 'El campo hora de inicio es obligatorio.',
+            'hora_inicio.date_format' => 'El campo hora de inicio debe tener el formato HH:MM (24 horas).',
+            'hora_fin.required' => 'El campo hora de fin es obligatorio.',
+            'hora_fin.date_format' => 'El campo hora de fin debe tener el formato HH:MM (24 horas).',
+            'hora_fin.after' => 'El campo hora de fin debe ser una hora posterior a la hora de inicio.'
+        ];
+
+        try {
+            $validation = $request->validate($rules, $messages);
+
+            $sugerencias = DB::select('CALL sp_sugerencias_aulas(?, ?, ?, ?)', [
+                $validation['capacidad_minima'],
+                $validation['dia_semana'],
+                $validation['hora_inicio'],
+                $validation['hora_fin']
+            ]);
+
+            if (empty($sugerencias)) {
+                return response()->json([
+                    'message' => 'No hay aulas disponibles que cumplan con los criterios especificados',
+                    'success' => false
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Sugerencias de aulas obtenidas exitosamente',
+                'success' => true,
+                'data' => $sugerencias
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las sugerencias de aulas',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function getUserRole() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 }

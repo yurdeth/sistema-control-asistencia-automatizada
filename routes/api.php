@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AulasController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepartamentosController;
 use App\Http\Controllers\GruposController;
@@ -76,20 +77,20 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/groups/get/number/{numero_grupo}', [GruposController::class, 'getGroupsByNumber'])->name('grupos.getByNumber');
 
     //************************************ MANAGE CLASSROOMS ************************************//
-    Route::get('/classrooms/get/all', [AulaController::class, 'index'])->name('aulas.index');
-    Route::get('/classrooms/get/{id}', [AulaController::class, 'show'])->name('aulas.show');
-    Route::post('/classrooms/new', [AulaController::class, 'store'])->name('aulas.store');
-    Route::patch('/classrooms/edit/{id}', [AulaController::class, 'edit'])->name('aulas.edit');
-    Route::delete('/classrooms/delete/{id}', [AulaController::class, 'destroy'])->name('aulas.delete');
-    Route::get('/classrooms/get/code/{codigo}', [AulaController::class, 'getClassroomByCode'])->name('aulas.getByCode');
-    Route::get('/classrooms/get/status/{estado}', [AulaController::class, 'getClassroomsByStatus'])->name('aulas.getByStatus');
-    Route::get('/classrooms/get/capacity/min/{capacidad}', [AulaController::class, 'getClassroomsByMinCapacity'])->name('aulas.getByMinCapacity');
-    Route::get('/classrooms/get/available/all', [AulaController::class, 'getAvailableClassrooms'])->name('aulas.getAvailable');
-    Route::get('/classrooms/get/location/{ubicacion}', [AulaController::class, 'getClassroomsByLocation'])->name('aulas.getByLocation');
-    Route::get('/classrooms/get/qr/{qr_code}', [AulaController::class, 'getClassroomByQrCode'])->name('aulas.getByQrCode');
-    Route::patch('/classrooms/change-status/{id}', [AulaController::class, 'changeClassroomStatus'])->name('aulas.changeStatus');
-    Route::get('/classrooms/get/statistics/{id}', [AulaController::class, 'getClassroomStatistics'])->name('aulas.getStatistics');
-    Route::get('/classrooms/get/suggestions/all', [AulaController::class, 'getClassroomSuggestions'])->name('aulas.getSuggestions');
+    Route::get('/classrooms/get/all', [AulasController::class, 'index'])->name('aulas.index');
+    Route::get('/classrooms/get/{id}', [AulasController::class, 'show'])->name('aulas.show');
+    Route::post('/classrooms/new', [AulasController::class, 'store'])->name('aulas.store');
+    Route::patch('/classrooms/edit/{id}', [AulasController::class, 'edit'])->name('aulas.edit');
+    Route::delete('/classrooms/delete/{id}', [AulasController::class, 'destroy'])->name('aulas.delete');
+    Route::get('/classrooms/get/code/{codigo}', [AulasController::class, 'getClassroomByCode'])->name('aulas.getByCode');
+    Route::get('/classrooms/get/status/{estado}', [AulasController::class, 'getClassroomsByStatus'])->name('aulas.getByStatus');
+    Route::get('/classrooms/get/capacity/min/{capacidad}', [AulasController::class, 'getClassroomsByMinCapacity'])->name('aulas.getByMinCapacity');
+    Route::get('/classrooms/get/available/all', [AulasController::class, 'getAvailableClassrooms'])->name('aulas.getAvailable');
+    Route::get('/classrooms/get/location/{ubicacion}', [AulasController::class, 'getClassroomsByLocation'])->name('aulas.getByLocation');
+    Route::get('/classrooms/get/qr/{qr_code}', [AulasController::class, 'getClassroomByQrCode'])->name('aulas.getByQrCode');
+    Route::patch('/classrooms/change-status/{id}', [AulasController::class, 'changeClassroomStatus'])->name('aulas.changeStatus');
+    Route::get('/classrooms/get/statistics/{id}', [AulasController::class, 'getClassroomStatistics'])->name('aulas.getStatistics');
+    Route::get('/classrooms/get/suggestions/all', [AulasController::class, 'getClassroomSuggestions'])->name('aulas.getSuggestions');
 
     //************************************ MANAGE SCHEDULES ************************************//
     Route::get('/schedules/get/all', [HorarioController::class, 'index'])->name('horarios.index');
