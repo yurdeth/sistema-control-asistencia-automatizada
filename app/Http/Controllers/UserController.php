@@ -168,7 +168,7 @@ class UserController extends Controller {
     public function show(string $id): JsonResponse {
         $user_rol = $this->getUserRole();
 
-        if (!Auth::check() || $user_rol == 6) {
+        if ($user_rol != 1 || Auth::user()->id != $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
