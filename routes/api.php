@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepartamentosController;
+use App\Http\Controllers\GruposController;
 use App\Http\Controllers\MateriasController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UserController;
@@ -61,20 +62,18 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
 //    Route::get('/subjects/get/user/{id}', [MateriasController::class, 'getMateriasByUserId'])->name('materias.getByUserId');
 //    Route::get('/subjects/my-subjects/get', [MateriasController::class, 'getMySubjects'])->name('materias.getMySubjects');
 
-
-
  //************************************ MANAGE GROUPS ************************************//
-    Route::get('/groups/get/all', [GrupoController::class, 'index'])->name('grupos.index');
-    Route::get('/groups/get/{id}', [GrupoController::class, 'show'])->name('grupos.show');
-    Route::post('/groups/new', [GrupoController::class, 'store'])->name('grupos.store');
-    Route::patch('/groups/edit/{id}', [GrupoController::class, 'edit'])->name('grupos.edit');
-    Route::delete('/groups/delete/{id}', [GrupoController::class, 'destroy'])->name('grupos.delete');
-    Route::get('/groups/get/subject/{id}', [GrupoController::class, 'getGroupsBySubject'])->name('grupos.getBySubject');
-    Route::get('/groups/get/cycle/{id}', [GrupoController::class, 'getGroupsByCycle'])->name('grupos.getByCycle');
-    Route::get('/groups/get/professor/{id}', [GrupoController::class, 'getGroupsByProfessor'])->name('grupos.getByProfessor');
-    Route::get('/groups/get/status/{estado}', [GrupoController::class, 'getGroupsByStatus'])->name('grupos.getByStatus');
-    Route::get('/groups/get/available/all', [GrupoController::class, 'getAvailableGroups'])->name('grupos.getAvailable');
-    Route::get('/groups/get/number/{numero_grupo}', [GrupoController::class, 'getGroupsByNumber'])->name('grupos.getByNumber');
+    Route::get('/groups/get/all', [GruposController::class, 'index'])->name('grupos.index');
+    Route::get('/groups/get/{id}', [GruposController::class, 'show'])->name('grupos.show');
+    Route::post('/groups/new', [GruposController::class, 'store'])->name('grupos.store');
+    Route::patch('/groups/edit/{id}', [GruposController::class, 'edit'])->name('grupos.edit');
+    Route::delete('/groups/delete/{id}', [GruposController::class, 'destroy'])->name('grupos.delete');
+    Route::get('/groups/get/subject/{id}', [GruposController::class, 'getGroupsBySubject'])->name('grupos.getBySubject');
+    Route::get('/groups/get/cycle/{id}', [GruposController::class, 'getGroupsByCycle'])->name('grupos.getByCycle');
+    Route::get('/groups/get/professor/{id}', [GruposController::class, 'getGroupsByProfessor'])->name('grupos.getByProfessor');
+    Route::get('/groups/get/status/{estado}', [GruposController::class, 'getGroupsByStatus'])->name('grupos.getByStatus');
+    Route::get('/groups/get/available/all', [GruposController::class, 'getAvailableGroups'])->name('grupos.getAvailable');
+    Route::get('/groups/get/number/{numero_grupo}', [GruposController::class, 'getGroupsByNumber'])->name('grupos.getByNumber');
 
     //************************************ MANAGE CLASSROOMS ************************************//
     Route::get('/classrooms/get/all', [AulaController::class, 'index'])->name('aulas.index');

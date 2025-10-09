@@ -2,136 +2,308 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoregruposRequest;
-use App\Http\Requests\UpdategruposRequest;
 use App\Models\grupos;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
-class GrupoController extends Controller
-{
+class GruposController extends Controller {
 
-    public function index()
-    {
-        $grupos = Grupo::with(['materia', 'ciclo', 'docente'])->get();
-        return response()->json($grupos, 200);
-    }
+    public function index(): JsonResponse {
+        $user_rol = $this->getUserRole();
 
-
-    public function show($id)
-    {
-        $grupo = Grupo::with(['materia', 'ciclo', 'docente', 'horarios'])->find($id);
-
-        if (!$grupo) {
-            return response()->json(['message' => 'Grupo no encontrado'], 404);
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
         }
 
-        return response()->json($grupo, 200);
+        $grupos = grupos::with(['materia', 'ciclo', 'docente'])->get();
+        if ($grupos->isEmpty()) {
+            return response()->json([
+                'message' => 'No hay grupos disponibles',
+                'success' => true
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Grupos obtenidos exitosamente',
+            'success' => true,
+            'data' => $grupos
+        ], 200);
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
+    public function show($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $grupo = grupos::with(['materia', 'ciclo', 'docente', 'horarios'])->find($id);
+
+        if (!$grupo) {
+            return response()->json([
+                'message' => 'Grupo no encontrado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Grupo obtenido exitosamente',
+            'success' => true,
+            'data' => $grupo
+        ], 200);
+    }
+
+    public function store(Request $request): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $request->merge([
+            'materia_id' => $this->sanitizeInput($request->materia_id),
+            'ciclo_id' => $this->sanitizeInput($request->ciclo_id),
+            'docente_id' => $this->sanitizeInput($request->docente_id),
+            'numero_grupo' => $this->sanitizeInput($request->numero_grupo),
+            'capacidad_maxima' => $this->sanitizeInput($request->capacidad_maxima),
+            'estado' => $this->sanitizeInput($request->estado)
+        ]);
+
+        $rules = [
             'materia_id' => 'required|exists:materias,id',
             'ciclo_id' => 'required|exists:ciclos_academicos,id',
             'docente_id' => 'required|exists:usuarios,id',
             'numero_grupo' => 'required|string|max:10',
             'capacidad_maxima' => 'required|integer|min:1',
             'estado' => 'required|in:activo,finalizado,cancelado'
-        ]);
+        ];
 
-        $grupo = Grupo::create([
-            'materia_id' => $request->materia_id,
-            'ciclo_id' => $request->ciclo_id,
-            'docente_id' => $request->docente_id,
-            'numero_grupo' => $request->numero_grupo,
-            'capacidad_maxima' => $request->capacidad_maxima,
-            'estudiantes_inscritos' => 0,
-            'estado' => $request->estado
-        ]);
+        $messages = [
+            'materia_id.required' => 'El campo materia_id es obligatorio.',
+            'materia_id.exists' => 'La materia especificada no existe.',
+            'ciclo_id.required' => 'El campo ciclo_id es obligatorio.',
+            'ciclo_id.exists' => 'El ciclo académico especificado no existe.',
+            'docente_id.required' => 'El campo docente_id es obligatorio.',
+            'docente_id.exists' => 'El docente especificado no existe.',
+            'numero_grupo.required' => 'El campo numero_grupo es obligatorio.',
+            'numero_grupo.string' => 'El campo numero_grupo debe ser una cadena de texto.',
+            'numero_grupo.max' => 'El campo numero_grupo no debe exceder los 10 caracteres.',
+            'capacidad_maxima.required' => 'El campo capacidad_maxima es obligatorio.',
+            'capacidad_maxima.integer' => 'El campo capacidad_maxima debe ser un número entero.',
+            'capacidad_maxima.min' => 'El campo capacidad_maxima debe ser al menos 1.',
+            'estado.required' => 'El campo estado es obligatorio.',
+            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: activo, finalizado, cancelado.'
+        ];
 
-        return response()->json($grupo, 201);
+        try {
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors(),
+                    'success' => false
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            $validatedData = $validator->validated();
+
+            $grupo = grupos::create($validatedData);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Grupo creado exitosamente',
+                'success' => true,
+                'data' => $grupo
+            ], 201);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al crear el grupo',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
+    public function edit(Request $request, $id): JsonResponse {
+        $user_rol = $this->getUserRole();
 
-    public function edit(Request $request, $id)
-    {
-        $grupo = Grupo::find($id);
-
-        if (!$grupo) {
-            return response()->json(['message' => 'Grupo no encontrado'], 404);
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
         }
 
-        $request->validate([
-            'materia_id' => 'sometimes|exists:materias,id',
-            'ciclo_id' => 'sometimes|exists:ciclos_academicos,id',
-            'docente_id' => 'sometimes|exists:usuarios,id',
-            'numero_grupo' => 'sometimes|string|max:10',
-            'capacidad_maxima' => 'sometimes|integer|min:1',
-            'estado' => 'sometimes|in:activo,finalizado,cancelado'
-        ]);
-
-        $grupo->update($request->all());
-
-        return response()->json($grupo, 200);
-    }
-
-
-    public function destroy($id)
-    {
-        $grupo = Grupo::find($id);
+        $grupo = grupos::find($id);
 
         if (!$grupo) {
-            return response()->json(['message' => 'Grupo no encontrado'], 404);
+            return response()->json([
+                'message' => 'Grupo no encontrado',
+                'success' => false
+            ], 404);
         }
 
-        $grupo->delete();
+        $request->merge([
+            'materia_id' => $this->sanitizeInput($request->materia_id),
+            'ciclo_id' => $this->sanitizeInput($request->ciclo_id),
+            'docente_id' => $this->sanitizeInput($request->docente_id),
+            'numero_grupo' => $this->sanitizeInput($request->numero_grupo),
+            'capacidad_maxima' => $this->sanitizeInput($request->capacidad_maxima),
+            'estado' => $this->sanitizeInput($request->estado)
+        ]);
 
-        return response()->json(['message' => 'Grupo eliminado exitosamente'], 204);
+        $rules = [
+            'materia_id' => 'required|exists:materias,id',
+            'ciclo_id' => 'required|exists:ciclos_academicos,id',
+            'docente_id' => 'required|exists:usuarios,id',
+            'numero_grupo' => 'required|string|max:10',
+            'capacidad_maxima' => 'required|integer|min:1',
+            'estado' => 'required|in:activo,finalizado,cancelado'
+        ];
+
+        $messages = [
+            'materia_id.required' => 'El campo materia_id es obligatorio.',
+            'materia_id.exists' => 'La materia especificada no existe.',
+            'ciclo_id.required' => 'El campo ciclo_id es obligatorio.',
+            'ciclo_id.exists' => 'El ciclo académico especificado no existe.',
+            'docente_id.required' => 'El campo docente_id es obligatorio.',
+            'docente_id.exists' => 'El docente especificado no existe.',
+            'numero_grupo.required' => 'El campo numero_grupo es obligatorio.',
+            'numero_grupo.string' => 'El campo numero_grupo debe ser una cadena de texto.',
+            'numero_grupo.max' => 'El campo numero_grupo no debe exceder los 10 caracteres.',
+            'capacidad_maxima.required' => 'El campo capacidad_maxima es obligatorio.',
+            'capacidad_maxima.integer' => 'El campo capacidad_maxima debe ser un número entero.',
+            'capacidad_maxima.min' => 'El campo capacidad_maxima debe ser al menos 1.',
+            'estado.required' => 'El campo estado es obligatorio.',
+            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: activo, finalizado, cancelado.'
+        ];
+
+        try {
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors(),
+                    'success' => false
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            $validatedData = $validator->validated();
+
+            $grupo->update($validatedData);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Grupo actualizado exitosamente',
+                'success' => true,
+                'data' => $grupo
+            ], 200);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al actualizar el grupo',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
+    public function destroy($id): JsonResponse {
+        $user_rol = $this->getUserRole();
 
-    public function getGroupsBySubject($id)
-    {
-        $grupos = Grupo::with(['ciclo', 'docente'])
+        if (!Auth::check() || $user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            $grupo = grupos::where('id', $id)->lockForUpdate()->first();
+
+            if (!$grupo) {
+                return response()->json([
+                    'message' => 'Grupo no encontrado',
+                    'success' => false
+                ], 404);
+            }
+
+            $grupo->delete();
+
+            return response()->json([
+                'message' => 'Grupo eliminado exitosamente',
+                'success' => true
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar el grupo',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    public function getGroupsBySubject($id): JsonResponse {
+        $grupos = grupos::with(['ciclo', 'docente'])
             ->where('materia_id', $id)
             ->get();
 
-        return response()->json($grupos, 200);
+        return response()->json([
+            'message' => 'Grupos obtenidos exitosamente',
+            'success' => true,
+            'data' => $grupos
+        ], 200);
     }
 
-
-    public function getGroupsByCycle($id)
-    {
-        $grupos = Grupo::with(['materia', 'docente'])
+    public function getGroupsByCycle($id): JsonResponse {
+        $grupos = grupos::with(['materia', 'docente'])
             ->where('ciclo_id', $id)
             ->get();
 
         return response()->json($grupos, 200);
     }
 
-
-    public function getGroupsByProfessor($id)
-    {
-        $grupos = Grupo::with(['materia', 'ciclo'])
+    public function getGroupsByProfessor($id): JsonResponse {
+        $grupos = grupos::with(['materia', 'ciclo'])
             ->where('docente_id', $id)
             ->get();
 
         return response()->json($grupos, 200);
     }
 
-
-    public function getGroupsByStatus($estado)
-    {
-        $grupos = Grupo::with(['materia', 'ciclo', 'docente'])
+    public function getGroupsByStatus($estado): JsonResponse {
+        $grupos = grupos::with(['materia', 'ciclo', 'docente'])
             ->where('estado', $estado)
             ->get();
 
         return response()->json($grupos, 200);
     }
 
-
-    public function getAvailableGroups()
-    {
-        $grupos = Grupo::with(['materia', 'ciclo', 'docente'])
+    public function getAvailableGroups(): JsonResponse {
+        $grupos = grupos::with(['materia', 'ciclo', 'docente'])
             ->whereColumn('estudiantes_inscritos', '<', 'capacidad_maxima')
             ->where('estado', 'activo')
             ->get();
@@ -139,10 +311,8 @@ class GrupoController extends Controller
         return response()->json($grupos, 200);
     }
 
-
-    public function getGroupsByNumber(Request $request, $numero_grupo)
-    {
-        $query = Grupo::with(['materia', 'ciclo', 'docente'])
+    public function getGroupsByNumber(Request $request, $numero_grupo): JsonResponse {
+        $query = grupos::with(['materia', 'ciclo', 'docente'])
             ->where('numero_grupo', $numero_grupo);
 
         if ($request->has('materia_id')) {
@@ -156,5 +326,16 @@ class GrupoController extends Controller
         $grupos = $query->get();
 
         return response()->json($grupos, 200);
+    }
+
+    private function getUserRole() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 }
