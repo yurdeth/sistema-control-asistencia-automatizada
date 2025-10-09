@@ -8,7 +8,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class AulasController extends Controller {
 
@@ -38,6 +37,12 @@ class AulasController extends Controller {
         ], 200);
     }
 
+    private function getUserRole() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
 
     public function show($id): JsonResponse {
         $user_rol = $this->getUserRole();
@@ -132,9 +137,14 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al crear el aula',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 
     public function edit(Request $request, $id): JsonResponse {
@@ -213,12 +223,12 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al actualizar el aula',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
 
     }
-
 
     public function destroy($id): JsonResponse {
         $user_rol = $this->getUserRole();
@@ -254,6 +264,7 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al eliminar el aula',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -266,7 +277,7 @@ class AulasController extends Controller {
             return response()->json([
                 'message' => 'Aula no encontrada',
                 'success' => false
-                ], 404);
+            ], 404);
         }
 
         return response()->json([
@@ -275,7 +286,6 @@ class AulasController extends Controller {
             'data' => $aula
         ], 200);
     }
-
 
     public function getClassroomsByStatus($estado): JsonResponse {
         try {
@@ -308,11 +318,11 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener las aulas',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
     }
-
 
     public function getClassroomsByMinCapacity($capacidad): JsonResponse {
         try {
@@ -343,6 +353,7 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener las aulas',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -368,6 +379,7 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener las aulas disponibles',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -395,6 +407,7 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener las aulas',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -422,6 +435,7 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener el aula',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -478,6 +492,7 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al actualizar el estado del aula',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -539,6 +554,7 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener las estadísticas del aula',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -605,19 +621,9 @@ class AulasController extends Controller {
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener las sugerencias de aulas',
+                'success' => false,
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    private function getUserRole() {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
-    }
-
-    private function sanitizeInput($input): string {
-        return htmlspecialchars(strip_tags(trim($input)));
     }
 }

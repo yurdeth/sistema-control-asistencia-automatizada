@@ -4,6 +4,7 @@ use App\Http\Controllers\AulasController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepartamentosController;
 use App\Http\Controllers\GruposController;
+use App\Http\Controllers\HorariosController;
 use App\Http\Controllers\MateriasController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UserController;
@@ -93,17 +94,17 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/classrooms/get/suggestions/all', [AulasController::class, 'getClassroomSuggestions'])->name('aulas.getSuggestions');
 
     //************************************ MANAGE SCHEDULES ************************************//
-    Route::get('/schedules/get/all', [HorarioController::class, 'index'])->name('horarios.index');
-    Route::get('/schedules/get/{id}', [HorarioController::class, 'show'])->name('horarios.show');
-    Route::post('/schedules/new', [HorarioController::class, 'store'])->name('horarios.store');
-    Route::patch('/schedules/edit/{id}', [HorarioController::class, 'edit'])->name('horarios.edit');
-    Route::delete('/schedules/delete/{id}', [HorarioController::class, 'destroy'])->name('horarios.delete');
-    Route::get('/schedules/get/group/{id}', [HorarioController::class, 'getSchedulesByGroup'])->name('horarios.getByGroup');
-    Route::get('/schedules/get/classroom/{id}', [HorarioController::class, 'getSchedulesByClassroom'])->name('horarios.getByClassroom');
-    Route::get('/schedules/get/day/{dia_semana}', [HorarioController::class, 'getSchedulesByDay'])->name('horarios.getByDay');
-    Route::get('/schedules/get/conflicts/{id}', [HorarioController::class, 'getScheduleConflicts'])->name('horarios.getConflicts');
-    Route::get('/schedules/get/availability/classroom/{id}', [HorarioController::class, 'getClassroomAvailability'])->name('horarios.getClassroomAvailability');
-    Route::get('/schedules/get/range/all', [HorarioController::class, 'getSchedulesByRange'])->name('horarios.getByRange');
+    Route::get('/schedules/get/all', [HorariosController::class, 'index'])->name('horarios.index');
+    Route::get('/schedules/get/{id}', [HorariosController::class, 'show'])->name('horarios.show');
+    Route::post('/schedules/new', [HorariosController::class, 'store'])->name('horarios.store');
+    Route::patch('/schedules/edit/{id}', [HorariosController::class, 'edit'])->name('horarios.edit');
+    Route::delete('/schedules/delete/{id}', [HorariosController::class, 'destroy'])->name('horarios.delete');
+    Route::get('/schedules/get/group/{id}', [HorariosController::class, 'getSchedulesByGroup'])->name('horarios.getByGroup');
+    Route::get('/schedules/get/classroom/{id}', [HorariosController::class, 'getSchedulesByClassroom'])->name('horarios.getByClassroom');
+    Route::get('/schedules/get/day/{dia_semana}', [HorariosController::class, 'getSchedulesByDay'])->name('horarios.getByDay');
+    Route::get('/schedules/get/conflicts/{id}', [HorariosController::class, 'getScheduleConflicts'])->name('horarios.getConflicts');
+    Route::get('/schedules/get/availability/classroom/{id}', [HorariosController::class, 'getClassroomAvailability'])->name('horarios.getClassroomAvailability');
+    Route::get('/schedules/get/range/all', [HorariosController::class, 'getSchedulesByRange'])->name('horarios.getByRange');
 
     //************************************ MANAGE CLASSROOM RESOURCES ************************************//
     Route::get('/classroom-resources/get/all', [AulaRecursoController::class, 'index'])->name('aulaRecursos.index');

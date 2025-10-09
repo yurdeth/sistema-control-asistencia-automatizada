@@ -68,7 +68,7 @@ class UserController extends Controller {
         ]);
 
         $rules = [
-            'nombre_completo' => 'required|string|max:255',
+            'nombre_completo' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', new FormatEmailRule()],
             'telefono' => ['nullable', 'string', 'max:20', new PhoneRule()],
             'password' => ['required', 'string', 'min:8', new PasswordFormatRule()],
@@ -82,6 +82,7 @@ class UserController extends Controller {
             'nombre_completo.required' => 'El nombre completo es obligatorio.',
             'nombre_completo.string' => 'El nombre completo debe ser una cadena de texto.',
             'nombre_completo.max' => 'El nombre completo no debe exceder los 255 caracteres.',
+            'nombre_completo.regex' => 'El nombre completo no debe contener números ni caracteres especiales.',
             'email.required' => 'El correo electrónico es obligatorio.',
             'email.string' => 'El correo electrónico debe ser una cadena de texto.',
             'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
@@ -212,7 +213,7 @@ class UserController extends Controller {
         $request->merge($dataToMerge);
 
         $rules = [
-            'nombre_completo' => 'sometimes|required|string|max:255',
+            'nombre_completo' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/'],
             'email' => [
                 'sometimes', 'required', 'string', 'email', 'max:255',
                 'unique:users,email,' . $id, new FormatEmailRule()
@@ -232,6 +233,7 @@ class UserController extends Controller {
             'nombre_completo.required' => 'El nombre completo es obligatorio.',
             'nombre_completo.string' => 'El nombre completo debe ser una cadena de texto.',
             'nombre_completo.max' => 'El nombre completo no debe exceder los 255 caracteres.',
+            'nombre_completo.regex' => 'El nombre completo no debe contener números ni caracteres especiales.',
             'email.required' => 'El correo electrónico es obligatorio.',
             'email.string' => 'El correo electrónico debe ser una cadena de texto.',
             'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
