@@ -5,7 +5,11 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router} from '@inertiajs/vue3';
+
+//Imports para el funcionamiento del login
+import { ref, onMounted } from 'vue'
+import { authService } from '@/Services/authService';
 
 defineProps({
     canResetPassword: {
@@ -16,17 +20,59 @@ defineProps({
     },
 });
 
-const form = useForm({
+// =================| Estados |=================
+// Formulario como objeto reactivo simple
+const form = ref({
     email: '',
     password: '',
-    remember: false,
+})
+
+// Estados de procesamiento y errores
+const processing = ref(false)
+const errors = ref({})
+const errorMessage = ref(null)
+
+//recupera el token del localStorage y lo configura en authService si existe
+onMounted(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+        authService.setAxiosToken(token)
+    }
 });
 
-const submit = () => {
-    form.post(route('login'), {
-        onFinish: () => form.reset('password'),
-    });
-};
+// Función de inicio de sesión usando authService
+const submit = async () => {
+    try {
+        await authService.login(form.value.email, form.value.password)
+
+        // verificando que el token se guardó
+        const tokenGuardado = authService.getToken()
+        console.log('Token guardado después del login:', tokenGuardado)
+
+        if (tokenGuardado) {
+            console.log("Inicio de sesión exitoso, redirigiendo...")
+            window.location.href = '/dashboard'
+        } else {
+            console.error('ERROR: El token NO se guardó')
+            errorMessage.value = 'Error al guardar la sesión'
+        }
+
+    } catch (error) {
+        console.log('Error en login:', error)
+
+        if (error.response?.status === 401) {
+            errorMessage.value = 'Credenciales incorrectas'
+        } else if (error.response?.status === 422) {
+            errors.value = error.response.data.errors || {}
+            errorMessage.value = 'Por favor verifica los datos ingresados'
+        } else {
+            errorMessage.value = 'Error inesperado, inténtalo más tarde'
+        }
+    } finally {
+        processing.value = false
+    }
+}
+
 </script>
 
 <template>
@@ -59,7 +105,7 @@ const submit = () => {
                                 placeholder="example@gmail.com"
                             />
 
-                            <InputError class="mt-2" :message="form.errors.email" />
+                            <InputError class="mt-2" :message="errors.email?.[0]" />
                                 </div>
 
                                 <div class="mt-4">
@@ -75,7 +121,7 @@ const submit = () => {
                                         placeholder="********"
                             />
 
-                            <InputError class="mt-2" :message="form.errors.password" />
+                            <InputError class="mt-2" :message="errors.password?.[0]" />
                                 </div>
 
                                 <!-- <div class="mt-4 block">
@@ -89,14 +135,14 @@ const submit = () => {
 
                                 <!-- Button de inicio -->
                                 <div class="btn_inicio">
-                                    <Link
-                                        href="#"
+                                    <button
+                                        type="submit"
                                         class="btn-ini"
+                                        :disabled="processing"
                                     >
-                                        Editar
-                                    </Link>
+                                        {{ processing ? 'Ingresando...' : 'Ingresar' }}
+                                    </button>
                                 </div>
-
 
                                 <div class="mt-4 flex items-center justify-end">
                                     <Link
@@ -171,6 +217,4 @@ const submit = () => {
     .btn-ini{
         color: white;
     }
-
-
 </style>

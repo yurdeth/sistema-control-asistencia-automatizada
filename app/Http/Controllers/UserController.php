@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller {
@@ -21,9 +20,15 @@ class UserController extends Controller {
      * Display a listing of the resource.
      */
     public function index(): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -52,9 +57,15 @@ class UserController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -62,13 +73,18 @@ class UserController extends Controller {
         }
 
         $request->merge([
-            'nombre_completo' => $this->sanitizeInput($request->input('nombre_completo', '')),
-            'email' => $this->sanitizeInput($request->input('email', '')),
-            'telefono' => $this->sanitizeInput($request->input('telefono', '')),
+            'nombre_completo' => $this->sanitizeInput($request->input('nombre_completo')),
+            'email' => $this->sanitizeInput($request->input('email')),
+            'telefono' => $this->sanitizeInput($request->input('telefono')),
+            'password' => $this->sanitizeInput($request->input('password')),
+            'password_confirmation' => $this->sanitizeInput($request->input('password_confirmation')),
+            'departamento_id' => $this->sanitizeInput($request->input('departamento_id')),
+            'rol_id' => $this->sanitizeInput($request->input('rol_id')),
+            'estado' => $this->sanitizeInput($request->input('estado')),
         ]);
 
         $rules = [
-            'nombre_completo' => 'required|string|max:255',
+            'nombre_completo' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', new FormatEmailRule()],
             'telefono' => ['nullable', 'string', 'max:20', new PhoneRule()],
             'password' => ['required', 'string', 'min:8', new PasswordFormatRule()],
@@ -82,6 +98,7 @@ class UserController extends Controller {
             'nombre_completo.required' => 'El nombre completo es obligatorio.',
             'nombre_completo.string' => 'El nombre completo debe ser una cadena de texto.',
             'nombre_completo.max' => 'El nombre completo no debe exceder los 255 caracteres.',
+            'nombre_completo.regex' => 'El nombre completo no debe contener números ni caracteres especiales.',
             'email.required' => 'El correo electrónico es obligatorio.',
             'email.string' => 'El correo electrónico debe ser una cadena de texto.',
             'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
@@ -160,9 +177,16 @@ class UserController extends Controller {
      * Display the specified resource.
      */
     public function show(string $id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $user_rol = $this->getUserRole();
 
-        if (!Auth::check() || $user_rol == 6) {
+        if ($user_rol != 1 || Auth::user()->id != $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -186,9 +210,14 @@ class UserController extends Controller {
     }
 
     public function edit(Request $request, int $id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        if (Auth::user()->id != $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -209,10 +238,30 @@ class UserController extends Controller {
             $dataToMerge['telefono'] = $this->sanitizeInput($request->input('telefono', ''));
         }
 
+        if ($request->has('password')) {
+            $dataToMerge['password'] = $this->sanitizeInput($request->input('password', ''));
+        }
+
+        if ($request->has('password_confirmation')) {
+            $dataToMerge['password_confirmation'] = $this->sanitizeInput($request->input('password_confirmation', ''));
+        }
+
+        if ($request->has('departamento_id')) {
+            $dataToMerge['departamento_id'] = $this->sanitizeInput($request->input('departamento_id', ''));
+        }
+
+        if ($request->has('rol_id')) {
+            $dataToMerge['rol_id'] = $this->sanitizeInput($request->input('rol_id', ''));
+        }
+
+        if ($request->has('estado')) {
+            $dataToMerge['estado'] = $this->sanitizeInput($request->input('estado', ''));
+        }
+
         $request->merge($dataToMerge);
 
         $rules = [
-            'nombre_completo' => 'sometimes|required|string|max:255',
+            'nombre_completo' => ['required', 'string', 'max:255', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/'],
             'email' => [
                 'sometimes', 'required', 'string', 'email', 'max:255',
                 'unique:users,email,' . $id, new FormatEmailRule()
@@ -232,6 +281,7 @@ class UserController extends Controller {
             'nombre_completo.required' => 'El nombre completo es obligatorio.',
             'nombre_completo.string' => 'El nombre completo debe ser una cadena de texto.',
             'nombre_completo.max' => 'El nombre completo no debe exceder los 255 caracteres.',
+            'nombre_completo.regex' => 'El nombre completo no debe contener números ni caracteres especiales.',
             'email.required' => 'El correo electrónico es obligatorio.',
             'email.string' => 'El correo electrónico debe ser una cadena de texto.',
             'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
@@ -331,9 +381,15 @@ class UserController extends Controller {
      * Remove the specified resource from storage.
      */
     public function destroy(string $id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol != 1) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol != 1 || Auth::user()->id == $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -376,9 +432,15 @@ class UserController extends Controller {
     }
 
     public function getByRole(int $role_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -404,9 +466,15 @@ class UserController extends Controller {
     }
 
     public function getByDepartment(int $department_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -432,9 +500,15 @@ class UserController extends Controller {
     }
 
     public function getByStatus(string $estado): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -468,9 +542,15 @@ class UserController extends Controller {
     }
 
     public function getBySubject(int $subject_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -496,9 +576,15 @@ class UserController extends Controller {
     }
 
     public function getAdministradoresAcademicosOnly(): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -524,9 +610,15 @@ class UserController extends Controller {
     }
 
     public function getDepartmentManagersOnly(): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -552,9 +644,15 @@ class UserController extends Controller {
     }
 
     public function getCareerManagersOnly(): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -580,9 +678,15 @@ class UserController extends Controller {
     }
 
     public function getProfessorsOnly(): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -615,7 +719,7 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user = (new User())->myProfile()->where('id', Auth::id())->first();
+        $user = (new User())->myProfile(Auth::user()->id)->first();
 
         if (!$user) {
             return response()->json([

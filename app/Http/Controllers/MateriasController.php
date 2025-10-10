@@ -52,8 +52,15 @@ class MateriasController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $user_rol = $this->getUserRole();
-        if (!Auth::check() || $user_rol > 3) {
+        if ($user_rol > 3) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -115,17 +122,6 @@ class MateriasController extends Controller {
         }
     }
 
-    private function getUserRole() {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
-    }
-
-    private function sanitizeInput($input): string {
-        return htmlspecialchars(strip_tags(trim($input)));
-    }
-
     /**
      * Display the specified resource.
      */
@@ -165,8 +161,15 @@ class MateriasController extends Controller {
      * Show the form for editing the specified resource.
      */
     public function edit(Request $request, int $materia_id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $user_rol = $this->getUserRole();
-        if (!Auth::check() || $user_rol > 3) {
+        if ($user_rol > 3) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -258,9 +261,15 @@ class MateriasController extends Controller {
      * Remove the specified resource from storage.
      */
     public function destroy(int $materia_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol > 3) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol > 3) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -421,5 +430,16 @@ class MateriasController extends Controller {
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function getUserRole() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 }
