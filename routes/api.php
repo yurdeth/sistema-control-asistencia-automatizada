@@ -15,8 +15,14 @@ use Illuminate\Support\Facades\Route;
 
 // routes/api.php
 
-Route::get('/login', [AuthController::class, "checkAuth"])->name('login.get');
-Route::post('/login', [AuthController::class, "login"])->name('login');
+Route::get('/login', function (){
+    return response()->json([
+        'message' => 'Sesión expirada o inválida. Por favor, inicie sesión de nuevo.',
+        'success' => false
+    ], 405);
+})->name('login.get');
+
+Route::post('/login', [AuthController::class, "login"])->name('login.post');
 
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');

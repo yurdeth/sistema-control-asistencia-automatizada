@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Validator;
 class GruposController extends Controller {
 
     public function index(): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -38,8 +36,6 @@ class GruposController extends Controller {
     }
 
     public function show($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -64,9 +60,15 @@ class GruposController extends Controller {
     }
 
     public function store(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -143,9 +145,15 @@ class GruposController extends Controller {
     }
 
     public function edit(Request $request, $id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -231,9 +239,15 @@ class GruposController extends Controller {
     }
 
     public function destroy($id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false

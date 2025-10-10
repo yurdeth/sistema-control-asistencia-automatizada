@@ -76,9 +76,15 @@ class AulaRecursosController extends Controller {
     }
 
     public function store(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -150,9 +156,15 @@ class AulaRecursosController extends Controller {
     }
 
     public function edit(Request $request, $id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -234,9 +246,15 @@ class AulaRecursosController extends Controller {
     }
 
     public function destroy($id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -529,8 +547,16 @@ class AulaRecursosController extends Controller {
     }
 
 
-    public function getInventory(Request $request) {
+    public function getInventory(Request $request): JsonResponse {
         if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false

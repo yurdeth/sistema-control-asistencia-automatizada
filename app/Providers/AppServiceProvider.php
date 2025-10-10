@@ -21,8 +21,8 @@ class AppServiceProvider extends ServiceProvider {
     public function boot(): void {
         Vite::prefetch(concurrency: 3);
 
-        Passport::tokensExpireIn(CarbonInterval::days(15));
+        Passport::tokensExpireIn(CarbonInterval::days(30));
         Passport::refreshTokensExpireIn(CarbonInterval::days(30));
-        Passport::personalAccessTokensExpireIn(CarbonInterval::months(6));
+        Passport::personalAccessTokensExpireIn(CarbonInterval::days(30));
     }
 }

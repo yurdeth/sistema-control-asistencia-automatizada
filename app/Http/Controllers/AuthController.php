@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -56,7 +57,14 @@ class AuthController extends Controller {
             }
 
             $user->ultimo_acceso = Carbon::now();
+
             $user->save();
+
+            $role_id = DB::table('usuario_roles')
+                ->where('usuario_id', $user->id)
+                ->value('rol_id');
+
+            $user->role_id = $role_id;
 
             Auth::login($user);
 
@@ -90,9 +98,16 @@ class AuthController extends Controller {
 
     public function logout(Request $request): JsonResponse {
         try {
-            if (!$request->user()) {
+            if(!Auth::check()){
                 return response()->json([
                     'message' => 'No autenticado',
+                    'success' => false
+                ], 401);
+            }
+
+            if (!$request->header('Authorization')) {
+                return response()->json([
+                    'message' => 'Token de autenticación no proporcionado',
                     'success' => false
                 ], 401);
             }

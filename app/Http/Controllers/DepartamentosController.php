@@ -16,6 +16,13 @@ class DepartamentosController extends Controller {
      * Display a listing of the resource.
      */
     public function index(): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $departamentos = Cache::remember('departamentos_all', 60, function () {
                 return departamentos::all();
@@ -44,9 +51,15 @@ class DepartamentosController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 5 || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -118,6 +131,13 @@ class DepartamentosController extends Controller {
      * Display the specified resource.
      */
     public function show(int $departamento_id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $departamento = departamentos::find($departamento_id);
 
@@ -144,9 +164,15 @@ class DepartamentosController extends Controller {
      * Show the form for editing the specified resource.
      */
     public function edit(Request $request, int $departament_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 5 || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -242,9 +268,15 @@ class DepartamentosController extends Controller {
      * Remove the specified resource from storage.
      */
     public function destroy(int $departament_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 5 || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -280,6 +312,13 @@ class DepartamentosController extends Controller {
     }
 
     public function getByDepartmentName(string $nombre): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $departamento = departamentos::where('nombre', 'LIKE', '%' . $this->sanitizeInput($nombre) . '%')->first();
 
@@ -303,6 +342,21 @@ class DepartamentosController extends Controller {
     }
 
     public function getByStatus(string $estado): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $estado = $this->sanitizeInput($estado);
             if (!in_array($estado, ['activo', 'inactivo'])) {
@@ -333,6 +387,21 @@ class DepartamentosController extends Controller {
     }
 
     public function getManagers(): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $managers = DB::table('users')
                 ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
@@ -361,6 +430,21 @@ class DepartamentosController extends Controller {
     }
 
     public function getByManager(int $manager_id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $departamentos = DB::table('departamentos')
                 ->join('users', 'departamentos.id', '=', 'users.departamento_id')

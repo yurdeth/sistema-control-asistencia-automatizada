@@ -106,9 +106,15 @@ class HorariosController extends Controller {
     }
 
     public function store(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -189,11 +195,16 @@ class HorariosController extends Controller {
         }
     }
 
-
     public function edit(Request $request, $id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -283,11 +294,16 @@ class HorariosController extends Controller {
         }
     }
 
-
     public function destroy($id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -322,7 +338,6 @@ class HorariosController extends Controller {
             ], 500);
         }
     }
-
 
     public function getSchedulesByGroup($grupo_id): JsonResponse {
         if (!Auth::check()) {
@@ -360,9 +375,15 @@ class HorariosController extends Controller {
     }
 
     public function getSchedulesByClassroom($aula_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -433,9 +454,15 @@ class HorariosController extends Controller {
     }
 
     public function getScheduleConflicts(int $grupo_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol == 6) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -489,7 +516,6 @@ class HorariosController extends Controller {
         }
     }
 
-
     public function getClassroomAvailability(Request $request, $aula_id): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -536,7 +562,6 @@ class HorariosController extends Controller {
             ], 500);
         }
     }
-
 
     public function getSchedulesByRange(Request $request): JsonResponse {
         if (!Auth::check()) {

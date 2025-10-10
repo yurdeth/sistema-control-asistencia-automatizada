@@ -16,9 +16,15 @@ class RolesController extends Controller {
      * Display a listing of the resource.
      */
     public function index(): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol != 1) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol != 1) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -45,8 +51,15 @@ class RolesController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $user_rol = $this->getUserRole();
-        if (!Auth::check() || $user_rol != 1) {
+        if ($user_rol != 1) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -115,9 +128,15 @@ class RolesController extends Controller {
      * Display the specified resource.
      */
     public function show(int $rol_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol != 1) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol != 1) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -144,9 +163,15 @@ class RolesController extends Controller {
      * Show the form for editing the specified resource.
      */
     public function edit(Request $request, int $rol_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol != 1) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol != 1) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -221,9 +246,15 @@ class RolesController extends Controller {
      * Remove the specified resource from storage.
      */
     public function destroy(int $rol_id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-        if (!Auth::check() || $user_rol != 1) {
+        $user_rol = $this->getUserRole();
+        if ($user_rol != 1) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
