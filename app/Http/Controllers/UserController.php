@@ -431,6 +431,43 @@ class UserController extends Controller {
         }
     }
 
+    public function getByName(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol == 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $name = $this->sanitizeInput($request->nombre);
+        $users = Cache::remember('all_users', 60, function () use ($name) {
+            return (new User())->getAllUsers()->filter(function ($user) use ($name) {
+                return stripos($user->nombre_completo, $name) !== false;
+            });
+        });
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios con el nombre especificado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
     public function getByRole(int $role_id): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -499,7 +536,7 @@ class UserController extends Controller {
         ]);
     }
 
-    public function getByStatus(string $estado): JsonResponse {
+    public function getByStatus(Request $request): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -515,8 +552,8 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $status = $this->sanitizeInput($estado);
-        if (!in_array($estado, ['activo', 'inactivo', 'suspendido'])) {
+        $status = $this->sanitizeInput($request->estado);
+        if (!in_array($status, ['activo', 'inactivo', 'suspendido'])) {
             return response()->json([
                 'message' => 'Estado inválido',
                 'success' => false

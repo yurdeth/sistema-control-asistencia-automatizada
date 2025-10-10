@@ -17,6 +17,7 @@ class RolesSeeder extends Seeder {
      * coordinador de carreras
      * docentes
      * estudiante
+     * invitado
      * */
 
     public function run(): void {
@@ -53,6 +54,12 @@ class RolesSeeder extends Seeder {
             [
                 'nombre' => 'estudiante',
                 'descripcion' => 'Estudiante con permisos para inscribirse en cursos y ver sus calificaciones',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'nombre' => 'invitado',
+                'descripcion' => 'Usuario invitado con permisos limitados para explorar el sistema',
                 'created_at' => now(),
                 'updated_at' => now()
             ],

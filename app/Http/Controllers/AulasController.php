@@ -7,19 +7,22 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class AulasController extends Controller {
 
     public function index(): JsonResponse {
-        if (!Auth::check()) {
+        /*if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }
+        }*/
 
-        $aulas = aulas::with(['recursos'])->get();
+        $aulas = Cache::remember('aulas_all', 60, function () {
+            return aulas::with(['recursos'])->limit(25)->get();
+        });
 
         if ($aulas->isEmpty()) {
             return response()->json([
@@ -36,12 +39,12 @@ class AulasController extends Controller {
     }
 
     public function show($id): JsonResponse {
-        if (!Auth::check()) {
+        /*if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }
+        }*/
 
         $aula = aulas::with(['recursos.recursoTipo'])->find($id);
 
@@ -568,12 +571,12 @@ class AulasController extends Controller {
     }
 
     public function getClassroomSuggestions(Request $request): JsonResponse {
-        if (!Auth::check()) {
+        /*if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }
+        }*/
 
         $request->merge([
             'capacidad_minima' => (int)$request->capacidad_minima,
