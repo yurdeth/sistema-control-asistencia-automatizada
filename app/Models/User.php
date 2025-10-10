@@ -68,6 +68,7 @@ class User extends Authenticatable {
                 'roles.nombre as rol_nombre',
                 'departamentos.nombre as departamento_nombre'
             )
+            ->limit(50)
             ->get();
     }
 
@@ -139,5 +140,11 @@ class User extends Authenticatable {
 
     public function myProfile($user_id): Collection {
         return $this->getAllUsers()->where('id', '=', $user_id);
+    }
+
+    public function getByName(string $name): Collection {
+        return DB::table('users')
+            ->where('nombre_completo', 'like', '%' . $name . '%')
+            ->get();
     }
 }
