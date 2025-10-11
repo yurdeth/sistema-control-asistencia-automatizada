@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -28,7 +29,10 @@ class GruposController extends Controller {
             ], 401);
         }
 
-        $grupos = grupos::with(['materia', 'ciclo', 'docente'])->get();
+        $grupos = Cache::remember('grupos_all', 60, function () {
+            return grupos::limit(50)->get();
+        });
+
         if ($grupos->isEmpty()) {
             return response()->json([
                 'message' => 'No hay grupos disponibles',
@@ -59,7 +63,7 @@ class GruposController extends Controller {
             ], 401);
         }
 
-        $grupo = grupos::with(['materia', 'ciclo', 'docente', 'horarios'])->find($id);
+        $grupo = grupos::find($id);
 
         if (!$grupo) {
             return response()->json([
@@ -90,6 +94,18 @@ class GruposController extends Controller {
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
+        }
+
+        $docente_id_existe = DB::table('usuario_roles')
+            ->where('usuario_id', $request->docente_id)
+            ->where('rol_id', 5)
+            ->value('usuario_id');
+
+        if (!$docente_id_existe) {
+            return response()->json([
+                'message' => 'Error: este docente no existe o no tiene el rol adecuado.',
+                'success' => false
+            ], 422);
         }
 
         $request->merge([
@@ -144,6 +160,7 @@ class GruposController extends Controller {
             $grupo = grupos::create($validatedData);
 
             DB::commit();
+            Cache::forget('grupos_all');
 
             return response()->json([
                 'message' => 'Grupo creado exitosamente',
@@ -185,6 +202,18 @@ class GruposController extends Controller {
                 'message' => 'Grupo no encontrado',
                 'success' => false
             ], 404);
+        }
+
+        $docente_id_existe = DB::table('usuario_roles')
+            ->where('usuario_id', $request->docente_id)
+            ->where('rol_id', 5)
+            ->value('usuario_id');
+
+        if (!$docente_id_existe) {
+            return response()->json([
+                'message' => 'Error: este docente no existe o no tiene el rol adecuado.',
+                'success' => false
+            ], 422);
         }
 
         $request->merge([
@@ -239,6 +268,7 @@ class GruposController extends Controller {
             $grupo->update($validatedData);
 
             DB::commit();
+            Cache::forget('grupos_all');
 
             return response()->json([
                 'message' => 'Grupo actualizado exitosamente',
@@ -284,6 +314,7 @@ class GruposController extends Controller {
             }
 
             $grupo->delete();
+            Cache::forget('grupos_all');
 
             return response()->json([
                 'message' => 'Grupo eliminado exitosamente',

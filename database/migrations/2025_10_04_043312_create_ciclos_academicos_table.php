@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->integer('numero_ciclo');
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
-            $table->enum('estado', ['activo', 'inactivo'])->default('activo');
+            $table->enum('estado', ['planificado', 'activo', 'finalizado'])->default('activo');
             $table->timestamps();
         });
     }
