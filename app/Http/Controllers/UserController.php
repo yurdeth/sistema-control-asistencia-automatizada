@@ -450,13 +450,9 @@ class UserController extends Controller {
             ], 401);
         }
 
-        Log::info($request);
-        Log::info($request->id);
-
         try {
             DB::beginTransaction();
             $user = User::where('id', $request->id)->lockForUpdate()->first();
-            Log::info($user);
 
             if (!$user) {
                 return response()->json([
