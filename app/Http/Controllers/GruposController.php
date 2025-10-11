@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -28,7 +29,9 @@ class GruposController extends Controller {
             ], 401);
         }
 
-        $grupos = grupos::with(['materia', 'ciclo', 'docente'])->get();
+        $grupos = Cache::remember('grupos_all', 60, function () {
+            return grupos::all();
+        });
         if ($grupos->isEmpty()) {
             return response()->json([
                 'message' => 'No hay grupos disponibles',
@@ -59,7 +62,7 @@ class GruposController extends Controller {
             ], 401);
         }
 
-        $grupo = grupos::with(['materia', 'ciclo', 'docente', 'horarios'])->find($id);
+        $grupo = grupos::find($id);
 
         if (!$grupo) {
             return response()->json([
