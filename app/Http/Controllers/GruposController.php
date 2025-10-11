@@ -148,6 +148,7 @@ class GruposController extends Controller {
             $grupo = grupos::create($validatedData);
 
             DB::commit();
+            Cache::forget('grupos_all');
 
             return response()->json([
                 'message' => 'Grupo creado exitosamente',
@@ -243,6 +244,7 @@ class GruposController extends Controller {
             $grupo->update($validatedData);
 
             DB::commit();
+            Cache::forget('grupos_all');
 
             return response()->json([
                 'message' => 'Grupo actualizado exitosamente',
@@ -288,6 +290,7 @@ class GruposController extends Controller {
             }
 
             $grupo->delete();
+            Cache::forget('grupos_all');
 
             return response()->json([
                 'message' => 'Grupo eliminado exitosamente',
