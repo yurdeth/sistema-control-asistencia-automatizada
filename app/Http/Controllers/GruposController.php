@@ -96,6 +96,18 @@ class GruposController extends Controller {
             ], 401);
         }
 
+        $docente_id_existe = DB::table('usuario_roles')
+            ->where('usuario_id', $request->docente_id)
+            ->where('rol_id', 5)
+            ->value('usuario_id');
+
+        if (!$docente_id_existe) {
+            return response()->json([
+                'message' => 'Error: este docente no existe o no tiene el rol adecuado.',
+                'success' => false
+            ], 422);
+        }
+
         $request->merge([
             'materia_id' => $this->sanitizeInput($request->materia_id),
             'ciclo_id' => $this->sanitizeInput($request->ciclo_id),
@@ -190,6 +202,18 @@ class GruposController extends Controller {
                 'message' => 'Grupo no encontrado',
                 'success' => false
             ], 404);
+        }
+
+        $docente_id_existe = DB::table('usuario_roles')
+            ->where('usuario_id', $request->docente_id)
+            ->where('rol_id', 5)
+            ->value('usuario_id');
+
+        if (!$docente_id_existe) {
+            return response()->json([
+                'message' => 'Error: este docente no existe o no tiene el rol adecuado.',
+                'success' => false
+            ], 422);
         }
 
         $request->merge([
