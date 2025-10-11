@@ -1,78 +1,90 @@
 <script setup>
-import Checkbox from '@/Components/Checkbox.vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm, router} from '@inertiajs/vue3';
+    import InputError from '@/Components/InputError.vue';
+    import InputLabel from '@/Components/InputLabel.vue';
+    import TextInput from '@/Components/TextInput.vue';
+    import { Head, Link, useForm, router} from '@inertiajs/vue3';
 
-//Imports para el funcionamiento del login
-import { ref, onMounted } from 'vue'
-import { authService } from '@/Services/authService';
+    //Imports para el funcionamiento del login
+    import { ref, onMounted } from 'vue'
+    import { authService } from '@/Services/authService';
 
-defineProps({
-    canResetPassword: {
-        type: Boolean,
-    },
-    status: {
-        type: String,
-    },
-});
+    defineProps({
+        canResetPassword: {
+            type: Boolean,
+        },
+        status: {
+            type: String,
+        },
+    });
 
-// =================| Estados |=================
-// Formulario como objeto reactivo simple
-const form = ref({
-    email: '',
-    password: '',
-})
+    // =================| Estados |=================
+    // Formulario como objeto reactivo simple
+    const form = ref({
+        email: '',
+        password: '',
+    })
 
-// Estados de procesamiento y errores
-const processing = ref(false)
-const errors = ref({})
-const errorMessage = ref(null)
+    // Estados de procesamiento y errores
+    const processing = ref(false)
+    const errors = ref({})
+    const errorMessage = ref(null)
+    const showPassword = ref(false)
 
-//recupera el token del localStorage y lo configura en authService si existe
-onMounted(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-        authService.setAxiosToken(token)
-    }
-});
-
-// Función de inicio de sesión usando authService
-const submit = async () => {
-    try {
-        await authService.login(form.value.email, form.value.password)
-
-        // verificando que el token se guardó
-        const tokenGuardado = authService.getToken()
-        console.log('Token guardado después del login:', tokenGuardado)
-
-        if (tokenGuardado) {
-            console.log("Inicio de sesión exitoso, redirigiendo...")
-            window.location.href = '/dashboard'
-        } else {
-            console.error('ERROR: El token NO se guardó')
-            errorMessage.value = 'Error al guardar la sesión'
+    //recupera el token del localStorage y lo configura en authService si existe
+    onMounted(() => {
+        const token = localStorage.getItem('token')
+        if (token) {
+            authService.setAxiosToken(token)
         }
+    });
 
-    } catch (error) {
-        console.log('Error en login:', error)
-
-        if (error.response?.status === 401) {
-            errorMessage.value = 'Credenciales incorrectas'
-        } else if (error.response?.status === 422) {
-            errors.value = error.response.data.errors || {}
-            errorMessage.value = 'Por favor verifica los datos ingresados'
-        } else {
-            errorMessage.value = 'Error inesperado, inténtalo más tarde'
-        }
-    } finally {
-        processing.value = false
+    // Función para alternar visibilidad de contraseña
+    const togglePasswordVisibility = () => {
+        showPassword.value = !showPassword.value
     }
-}
 
+    // Función de inicio de sesión usando authService
+    const submit = async () => {
+        processing.value = true
+        errorMessage.value = null
+        errors.value = {}
+
+        try {
+            const user = await authService.login(form.value.email, form.value.password)
+
+            // verificando que el token se guardó
+            const tokenGuardado = authService.getToken()
+
+            if (tokenGuardado) {
+                //Almacenamos el rol del usuario
+                const roleId = user.role_id
+
+                //Verificando el rol del usuario para la redirección
+                if (roleId === 1) {
+                    router.visit('/dashboard');
+                } else if (roleId === 2){
+                    router.visit('#');
+                }
+            } else {
+                console.error('ERROR: El token NO se guardó')
+                errorMessage.value = 'Error al guardar la sesión'
+            }
+
+        } catch (error) {
+            console.log('Error en login:', error)
+
+            if (error.response?.status === 401) {
+                errorMessage.value = 'Credenciales incorrectas'
+            } else if (error.response?.status === 422) {
+                errors.value = error.response.data.errors || {}
+                errorMessage.value = 'Por favor verifica los datos ingresados'
+            } else {
+                errorMessage.value = 'Error inesperado, inténtalo más tarde'
+            }
+        } finally {
+            processing.value = false
+        }
+    }
 </script>
 
 <template>
@@ -88,50 +100,65 @@ const submit = async () => {
 
                 <div class="right_panel">
                     <h2 class="mensaje">Iniciar sesión</h2>
+                    <p class="submensaje">Ingresa tus credenciales para continuar</p>
                     <br>
 
+                    <!-- Mensaje de error global -->
+                    <div v-if="errorMessage" class="alert-error">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>{{ errorMessage }}</span>
+                    </div>
+
                     <form @submit.prevent="submit">
-                        <div>
+                        <div class="input-group">
                             <InputLabel for="email" value="Email" />
+                            <div class="input-form">
+                                <TextInput
+                                    id="email"
+                                    type="email"
+                                    class="mt-1 block w-full input-field"
+                                    :class="{ 'input-error': errors.email }"
+                                    v-model="form.email"
+                                    required
+                                    autofocus
+                                    autocomplete="username"
+                                    placeholder="example@gmail.com"
+                                />
 
-                            <TextInput
-                                id="email"
-                                type="email"
-                                class="mt-1 block w-full"
-                                v-model="form.email"
-                                required
-                                autofocus
-                                autocomplete="username"
-                                placeholder="example@gmail.com"
-                            />
+                                <InputError class="mt-2" :message="errors.email?.[0]" />
+                            </div>
+                        </div>
 
-                            <InputError class="mt-2" :message="errors.email?.[0]" />
-                                </div>
+                        <div class="input-group mt-4">
+                            <InputLabel for="password" value="Password" />
+                            <div class="input-form password-form">
+                                <TextInput
+                                    id="password"
+                                    :type="showPassword ? 'text' : 'password'"
+                                    class="mt-1 block w-full input-field pr-10"
+                                    :class="{ 'input-error': errors.password }"
+                                    v-model="form.password"
+                                    required
+                                    autocomplete="current-password"
+                                    placeholder="••••••••"
+                                />
 
-                                <div class="mt-4">
-                                    <InputLabel for="password" value="Password" />
+                                <button
+                                    type="button"
+                                    @click="togglePasswordVisibility"
+                                    class="password-toggle"
+                                    tabindex="-1"
+                                >
+                                    <!-- Icono de ojo abierto -->
+                                    <i v-if="!showPassword" class="fa-solid fa-eye"></i>
+                                    <!-- Icono de no ver -->
+                                    <i v-else class="fa-solid fa-eye-slash"></i>
+                                </button>
+                                <InputError class="mt-2" :message="errors.password?.[0]" />
+                            </div>
 
-                                    <TextInput
-                                        id="password"
-                                        type="password"
-                                        class="mt-1 block w-full"
-                                        v-model="form.password"
-                                        required
-                                        autocomplete="current-password"
-                                        placeholder="********"
-                            />
 
-                            <InputError class="mt-2" :message="errors.password?.[0]" />
-                                </div>
-
-                                <!-- <div class="mt-4 block">
-                                    <label class="flex items-center">
-                                        <Checkbox name="remember" v-model:checked="form.remember" />
-                                        <span class="ms-2 text-sm text-gray-600"
-                                            >Remember me</span
-                                        >
-                                    </label>
-                                </div> -->
+                            </div>
 
                                 <!-- Button de inicio -->
                                 <div class="btn_inicio">
@@ -144,66 +171,153 @@ const submit = async () => {
                                     </button>
                                 </div>
 
-                                <div class="mt-4 flex items-center justify-end">
+                                <!-- Link de recuperación de contraseña -->
+                                <div class="mt-3 flex items-center justify-end">
                                     <Link
                                         v-if="canResetPassword"
                                         :href="route('password.request')"
-                                        class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                        class="forgot-password-link"
                                     >
-                                        ¿Has olvidado tu contraseña?
+                                        ¿Olvidaste tu contraseña?
                                     </Link>
-
-                        </div>
+                                </div>
                     </form>
-
                 </div>
-
             </div>
         </div>
-
 </template>
 
 <!--Estilos del login-->
 <style scoped>
     .log-container{
         width: 600px;
-        border-radius: 10px;
+        border-radius: 12px;
         overflow: hidden;
         display: flex;
         flex-direction: row;
-        border: 1px solid #5B0B0B;
+        box-shadow: 0 10px 40px rgba(91, 11, 11, 0.15);
+        border: 1px solid rgba(91, 11, 11, 0.1);
+        background: white;
     }
-
 
     .left_panel {
         flex: 1.2;
-        background: #5B0B0B;
+        background: linear-gradient(135deg, #5B0B0B 0%, #7a1010 100%);
         display: flex;
         justify-content: center;
         align-items: center;
         flex-direction: column;
+        padding: 40px 20px;
+        position: relative;
     }
-
 
     .right_panel {
         flex: 1.4;
         background: #F4F4F4;
-        padding: 60px 50px;
+        padding: 50px 45px;
+        display: flex;
         flex-direction: column;
     }
 
     .title {
         color: white;
-        font-size: 4rem;
-        font-weight: 600;
+        font-size: 3.5rem;
+        font-weight: 700;
         text-align: center;
-        padding: 14px 14px;
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 1;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo-container {
+        position: relative;
+        z-index: 1;
+        margin-bottom: 20px;
     }
 
     .mensaje{
         font-size: 19px;
         font-weight: 500;
         text-align: center;
+    }
+
+    .submensaje {
+        font-size: 0.9rem;
+        color: #718096;
+        text-align: center;
+        font-weight: 400;
+    }
+
+    /* Parte donde se trabajan los input */
+    .input-group {
+        margin-bottom: 20px;
+    }
+
+    .input-form {
+        position: relative;
+    }
+
+    .input-field {
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .input-field:focus {
+        border-color: #5B0B0B;
+        box-shadow: 0 0 0 3px rgba(91, 11, 11, 0.1);
+        outline: none;
+    }
+
+    .input-error {
+        border-color: #e53e3e !important;
+    }
+
+    .input-error:focus {
+        box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1) !important;
+    }
+
+    .password-form {
+        position: relative;
+    }
+
+    .forgot-password-link {
+        font-size: 0.875rem;
+        color: #5B0B0B;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .forgot-password-link:hover {
+        color: #7a1010;
+        text-decoration: underline;
+    }
+
+    /* Parte donde se trabajan los buttons */
+        .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #718096;
+        transition: color 0.2s ease;
+    }
+
+    .password-toggle:hover {
+        color: #5B0B0B;
     }
 
     .btn_inicio{
@@ -216,5 +330,76 @@ const submit = async () => {
 
     .btn-ini{
         color: white;
+    }
+
+    /* Parte donde se trabajan las alertas en caso de error */
+    .alert-error {
+        background: #fff5f5;
+        border: 1px solid #fc8181;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #c53030;
+        font-size: 0.9rem;
+        animation: slideDown 0.3s ease;
+    }
+
+    .btn_inicio{
+        background: linear-gradient(135deg, #5B0B0B 0%, #7a1010 100%);
+        padding: 0;
+        text-align: center;
+        border-radius: 8px;
+        margin-top: 24px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(91, 11, 11, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn_inicio:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(91, 11, 11, 0.4);
+    }
+
+    .btn_inicio:active {
+        transform: translateY(0);
+    }
+
+    .btn-ini{
+        color: white;
+        width: 100%;
+        padding: 14px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-ini:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .log-container {
+            flex-direction: column;
+            width: 90%;
+            max-width: 400px;
+        }
+        .left_panel {
+            padding: 30px 20px;
+        }
+        .title {
+            font-size: 2.5rem;
+        }
+        .right_panel {
+            padding: 40px 30px;
+        }
     }
 </style>
