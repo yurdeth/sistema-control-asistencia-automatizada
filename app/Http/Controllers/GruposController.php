@@ -30,8 +30,9 @@ class GruposController extends Controller {
         }
 
         $grupos = Cache::remember('grupos_all', 60, function () {
-            return grupos::all();
+            return grupos::limit(50)->get();
         });
+
         if ($grupos->isEmpty()) {
             return response()->json([
                 'message' => 'No hay grupos disponibles',
