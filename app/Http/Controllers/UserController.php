@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller {
@@ -185,8 +186,9 @@ class UserController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
+        Log::info($user_rol);
 
-        if ($user_rol != 1 || Auth::user()->id != $id) {
+        if ($user_rol != 1 && Auth::user()->id != $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -218,7 +220,7 @@ class UserController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol != 1 || Auth::user()->id != $id) {
+        if ($user_rol != 1 && Auth::user()->id != $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -390,7 +392,7 @@ class UserController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol != 1 || Auth::user()->id == $id) {
+        if ($user_rol != 1 && Auth::user()->id == $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
