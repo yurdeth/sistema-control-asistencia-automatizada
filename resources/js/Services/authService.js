@@ -66,6 +66,12 @@ export const authService ={
         return user ? JSON.parse(user) : null;
     },
 
+    //Obtenemos el rol
+    getUserRole() {
+        const user = this.getUser();
+        return user ? user.role_id : null;
+    },
+
     //verificando autenticación
     isAuthenticated() {
         return !!this.getToken();
