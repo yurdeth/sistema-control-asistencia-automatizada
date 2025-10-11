@@ -104,7 +104,7 @@ class GruposController extends Controller {
         $rules = [
             'materia_id' => 'required|exists:materias,id',
             'ciclo_id' => 'required|exists:ciclos_academicos,id',
-            'docente_id' => 'required|exists:usuarios,id',
+            'docente_id' => 'required|exists:users,id',
             'numero_grupo' => 'required|string|max:10',
             'capacidad_maxima' => 'required|integer|min:1',
             'estado' => 'required|in:activo,finalizado,cancelado'
@@ -199,7 +199,7 @@ class GruposController extends Controller {
         $rules = [
             'materia_id' => 'required|exists:materias,id',
             'ciclo_id' => 'required|exists:ciclos_academicos,id',
-            'docente_id' => 'required|exists:usuarios,id',
+            'docente_id' => 'required|exists:users,id',
             'numero_grupo' => 'required|string|max:10',
             'capacidad_maxima' => 'required|integer|min:1',
             'estado' => 'required|in:activo,finalizado,cancelado'

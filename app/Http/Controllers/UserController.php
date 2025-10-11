@@ -66,11 +66,12 @@ class UserController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $rolesPermitidos = [1, 2, 3, 5]; // root, Académico, Jefe de Departamento, Docente
+        if (!in_array($user_rol, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
@@ -159,6 +160,17 @@ class UserController extends Controller {
 
             DB::commit();
 
+            // Borrar el caché relacionado con los usuarios
+            Cache::forget('all_users');
+            Cache::forget('users_by_name');
+            Cache::forget('users_by_role');
+            Cache::forget('users_by_department');
+            Cache::forget('users_by_status');
+            Cache::forget('users_by_subject');
+            Cache::forget('administradores_academicos');
+            Cache::forget('coordinadores');
+            Cache::forget('professors_only');
+
             return response()->json([
                 'message' => 'Usuario creado exitosamente',
                 'success' => true,
@@ -220,11 +232,13 @@ class UserController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol != 1 && Auth::user()->id != $id) {
+
+        $rolesPermitidos = [1, 2, 3, 5]; // root, Académico, Jefe de Departamento, Docente
+        if (!in_array($user_rol, $rolesPermitidos) && Auth::user()->id != $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $dataToMerge = [];
@@ -365,6 +379,17 @@ class UserController extends Controller {
 
             DB::commit();
 
+            // Borrar el caché relacionado con los usuarios
+            Cache::forget('all_users');
+            Cache::forget('users_by_name');
+            Cache::forget('users_by_role');
+            Cache::forget('users_by_department');
+            Cache::forget('users_by_status');
+            Cache::forget('users_by_subject');
+            Cache::forget('administradores_academicos');
+            Cache::forget('coordinadores');
+            Cache::forget('professors_only');
+
             return response()->json([
                 'message' => 'Usuario actualizado exitosamente',
                 'success' => true,
@@ -419,6 +444,17 @@ class UserController extends Controller {
 
             $user->delete();
             DB::commit();
+
+            // Borrar el caché relacionado con los usuarios
+            Cache::forget('all_users');
+            Cache::forget('users_by_name');
+            Cache::forget('users_by_role');
+            Cache::forget('users_by_department');
+            Cache::forget('users_by_status');
+            Cache::forget('users_by_subject');
+            Cache::forget('administradores_academicos');
+            Cache::forget('coordinadores');
+            Cache::forget('professors_only');
 
             return response()->json([
                 'message' => 'Usuario eliminado exitosamente',
@@ -569,7 +605,7 @@ class UserController extends Controller {
         }
 
         $name = $this->sanitizeInput($request->nombre);
-        $users = Cache::remember('all_users', 60, function () use ($name) {
+        $users = Cache::remember('users_by_name', 60, function () use ($name) {
             return (new User())->getAllUsers()->filter(function ($user) use ($name) {
                 return stripos($user->nombre_completo, $name) !== false;
             });
@@ -605,7 +641,7 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = Cache::remember('all_users', 60, function () use ($role_id) {
+        $users = Cache::remember('users_by_role', 60, function () use ($role_id) {
             return (new User())->getUsersByRole($role_id);
         });
 
@@ -639,7 +675,7 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = Cache::remember('all_users', 60, function () use ($department_id) {
+        $users = Cache::remember('users_by_department', 60, function () use ($department_id) {
             return (new User())->getUsersByDepartment($department_id);
         });
 
@@ -681,7 +717,7 @@ class UserController extends Controller {
             ], 422);
         }
 
-        $users = Cache::remember('all_users', 60, function () use ($status) {
+        $users = Cache::remember('users_by_status', 60, function () use ($status) {
             return (new User())->getUsersByStatus($status);
         });
 
@@ -715,7 +751,7 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = Cache::remember('all_users', 60, function () use ($subject_id) {
+        $users = Cache::remember('users_by_subject', 60, function () use ($subject_id) {
             return (new User())->getUsersBySubject($subject_id);
         });
 
@@ -817,7 +853,7 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = Cache::remember('docentes', 60, function () {
+        $users = Cache::remember('career_managers_only', 60, function () {
             return (new User())->getCareerManagersOnly();
         });
 
@@ -851,7 +887,7 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $users = Cache::remember('docentes', 60, function () {
+        $users = Cache::remember('professors_only', 60, function () {
             return (new User())->getProfessorsOnly();
         });
 
