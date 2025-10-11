@@ -392,7 +392,7 @@ class UserController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol != 1 || Auth::user()->id == $id) {
+        if ($user_rol != 1 && Auth::user()->id == $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
