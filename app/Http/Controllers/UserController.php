@@ -403,18 +403,18 @@ class UserController extends Controller {
             DB::beginTransaction();
             $user = User::where('id', $id)->lockForUpdate()->first();
 
-            if ($user->id == 1) {
-                return response()->json([
-                    'message' => 'No se puede eliminar el usuario administrador principal',
-                    'success' => false
-                ], 403);
-            }
-
             if (!$user) {
                 return response()->json([
                     'message' => 'No se encontró el usuario',
                     'success' => false
                 ], 404);
+            }
+
+            if ($user->id == 1) {
+                return response()->json([
+                    'message' => 'No se puede eliminar el usuario administrador principal',
+                    'success' => false
+                ], 403);
             }
 
             $user->delete();
