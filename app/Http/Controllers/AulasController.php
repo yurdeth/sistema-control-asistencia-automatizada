@@ -21,7 +21,7 @@ class AulasController extends Controller {
         }*/
 
         $aulas = Cache::remember('aulas_all', 60, function () {
-            return aulas::with(['recursos'])->limit(25)->get();
+            return aulas::all();
         });
 
         if ($aulas->isEmpty()) {
@@ -71,7 +71,8 @@ class AulasController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        // Solo permitir para Administrador académico
+        if ($user_rol != 2) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -150,7 +151,8 @@ class AulasController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        // Solo permitir para Administrador académico
+        if ($user_rol != 2) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -229,7 +231,6 @@ class AulasController extends Controller {
         }
 
     }
-
     public function destroy($id): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -239,7 +240,8 @@ class AulasController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        // Solo permitir para Administrador académico
+        if ($user_rol != 2) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -457,7 +459,8 @@ class AulasController extends Controller {
             }
 
             $user_rol = $this->getUserRole();
-            if ($user_rol == 6) {
+            // Solo permitir para Administrador académico
+            if ($user_rol != 2) {
                 return response()->json([
                     'message' => 'Acceso no autorizado',
                     'success' => false
@@ -513,6 +516,15 @@ class AulasController extends Controller {
     public function getClassroomStatistics(Request $request, $id): JsonResponse {
         try {
             if (!Auth::check()) {
+                return response()->json([
+                    'message' => 'Acceso no autorizado',
+                    'success' => false
+                ], 401);
+            }
+
+            $user_rol = $this->getUserRole();
+            // Permitir para Administrador académico
+            if ($user_rol != 2) {
                 return response()->json([
                     'message' => 'Acceso no autorizado',
                     'success' => false

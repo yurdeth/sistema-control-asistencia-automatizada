@@ -80,8 +80,15 @@ class DepartamentosSeeder extends Seeder {
                 'updated_at' => now(),
             ],
             [
-                'nombre' => 'Administrativos Académicos',
-                'descripcion' => 'Administradores académicos.',
+                'nombre' => 'FMO-UES',
+                'descripcion' => 'Departamento global para administradores/académicos.',
+                'estado' => 'activo',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Guest',
+                'descripcion' => 'Guest.',
                 'estado' => 'activo',
                 'created_at' => now(),
                 'updated_at' => now(),

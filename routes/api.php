@@ -8,6 +8,7 @@ use App\Http\Controllers\DepartamentosController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\HorariosController;
 use App\Http\Controllers\MateriasController;
+use App\Http\Controllers\RecursosTipoController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 // routes/api.php
 
-Route::get('/login', function (){
+Route::get('/login', function () {
     return response()->json([
         'message' => 'Sesión expirada o inválida. Por favor, inicie sesión de nuevo.',
         'success' => false
@@ -23,6 +24,7 @@ Route::get('/login', function (){
 })->name('login.get');
 
 Route::post('/login', [AuthController::class, "login"])->name('login.post');
+Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
 
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
@@ -70,10 +72,8 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::delete('/subjects/delete/{id}', [MateriasController::class, 'destroy'])->name('materias.delete');
     Route::get('/subjects/get/department/{id}', [MateriasController::class, 'getMateriasByDepartment'])->name('materias.getByDepartment');
     Route::get('/subjects/get/status/{estado}', [MateriasController::class, 'getMateriasByStatus'])->name('materias.getByStatus');
-//    Route::get('/subjects/get/user/{id}', [MateriasController::class, 'getMateriasByUserId'])->name('materias.getByUserId');
-//    Route::get('/subjects/my-subjects/get', [MateriasController::class, 'getMySubjects'])->name('materias.getMySubjects');
 
- //************************************ MANAGE GROUPS ************************************//
+    //************************************ MANAGE GROUPS ************************************//
     Route::get('/groups/get/all', [GruposController::class, 'index'])->name('grupos.index');
     Route::get('/groups/get/{id}', [GruposController::class, 'show'])->name('grupos.show');
     Route::post('/groups/new', [GruposController::class, 'store'])->name('grupos.store');
@@ -137,4 +137,11 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/academic-terms/edit/{id}', [CiclosAcademicosController::class, 'edit'])->name('academicTerms.edit');
     Route::get('/academic-terms/get/status/{estado}', [CiclosAcademicosController::class, 'getByStatus'])->name('academicTerms.getByStatus');
     Route::get('/academic-terms/get/current', [CiclosAcademicosController::class, 'getCurrentTerm'])->name('academicTerms.getCurrent');
+
+    //************************************ MANAGE RESOURCE TYPES ************************************//
+    Route::get('/resource-types/get/all', [RecursosTipoController::class, 'index'])->name('resourceTypes.index');
+    Route::get('/resource-types/get/{id}', [RecursosTipoController::class, 'show'])->name('resourceTypes.show');
+    Route::post('/resource-types/new', [RecursosTipoController::class, 'store'])->name('resourceTypes.store');
+    Route::patch('/resource-types/edit/{id}', [RecursosTipoController::class, 'edit'])->name('resourceTypes.edit');
+    Route::delete('/resource-types/delete/{id}', [RecursosTipoController::class, 'destroy'])->name('resourceTypes.delete');
 });

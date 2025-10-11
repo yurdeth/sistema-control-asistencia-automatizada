@@ -20,7 +20,6 @@ return new class extends Migration {
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->boolean('email_verificado')->default(false);
-            $table->string('token_verificacion')->nullable();
             $table->enum('estado', ['activo', 'inactivo', 'suspendido'])->default('activo');
             $table->timestamp('ultimo_acceso')->nullable();
             $table->rememberToken();

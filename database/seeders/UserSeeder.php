@@ -19,9 +19,8 @@ class UserSeeder extends Seeder {
             'email' => env('ADMIN_EMAIL'),
             'telefono' => '+503 0000-0000',
             'password' => Hash::make(env('ADMIN_PASSWORD')),
-            'departamento_id' => 1,
+            'departamento_id' => 9,
             'email_verificado' => true,
-            'token_verificacion' => null,
             'estado' => 'activo',
             'ultimo_acceso' => now(),
             'created_at' => now(),
@@ -31,6 +30,28 @@ class UserSeeder extends Seeder {
         DB::table('usuario_roles')->insert([
             'usuario_id' => 1,
             'rol_id' => 1,
+            'asignado_por_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Usuario invitado
+        DB::table('users')->insert([
+            'nombre_completo' => 'invitado',
+            'email' => env('GUEST_EMAIL'),
+            'telefono' => '+503 ---------',
+            'password' => Hash::make(env('GUEST_PASSWORD')),
+            'departamento_id' => 10,
+            'email_verificado' => true,
+            'estado' => 'activo',
+            'ultimo_acceso' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('usuario_roles')->insert([
+            'usuario_id' => 2,
+            'rol_id' => 7,
             'asignado_por_id' => 1,
             'created_at' => now(),
             'updated_at' => now(),

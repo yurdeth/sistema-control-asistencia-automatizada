@@ -60,6 +60,7 @@ class MateriasController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
+        // Solo permitir a administradores, académicos y jefes de departamento
         if ($user_rol > 3) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -312,6 +313,15 @@ class MateriasController extends Controller {
             ], 401);
         }
 
+        $user_rol = $this->getUserRole();
+        // Solo permitir a administradores, académicos, jefes de departamento y coordinadores de carrera
+        if ($user_rol > 4) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $materias = (new materias())->getSubjectsByDepartment($department_id);
 
@@ -344,76 +354,21 @@ class MateriasController extends Controller {
             ], 401);
         }
 
+        $user_rol = $this->getUserRole();
+        // Solo permitir a administradores, académicos, jefes de departamento y coordinadores de carrera
+        if ($user_rol > 4) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $materias = (new materias())->getSubjectsByStatus($this->sanitizeInput($estado));
 
             if ($materias->isEmpty()) {
                 return response()->json([
                     'message' => 'No se encontraron materias con el estado especificado',
-                    'success' => false
-                ], 404);
-            }
-
-            return response()->json([
-                'message' => 'Materias encontradas',
-                'success' => true,
-                'data' => $materias
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Error al obtener las materias',
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function getMateriasByUserId(int $user_id): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        try {
-            $materias = (new materias())->getSubjectsByUserId($user_id);
-
-            if ($materias->isEmpty()) {
-                return response()->json([
-                    'message' => 'No se encontraron materias para el usuario especificado',
-                    'success' => false
-                ], 404);
-            }
-
-            return response()->json([
-                'message' => 'Materias encontradas',
-                'success' => true,
-                'data' => $materias
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Error al obtener las materias',
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function getMySubjects(): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        try {
-            $materias = (new materias())->getMySubjects();
-
-            if ($materias->isEmpty()) {
-                return response()->json([
-                    'message' => 'No se encontraron materias para el usuario autenticado',
                     'success' => false
                 ], 404);
             }
