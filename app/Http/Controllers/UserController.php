@@ -392,7 +392,7 @@ class UserController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol != 1 && Auth::user()->id == $id) {
+        if ($user_rol != 1) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -403,18 +403,18 @@ class UserController extends Controller {
             DB::beginTransaction();
             $user = User::where('id', $id)->lockForUpdate()->first();
 
-            if ($user->id == 1) {
-                return response()->json([
-                    'message' => 'No se puede eliminar el usuario administrador principal',
-                    'success' => false
-                ], 403);
-            }
-
             if (!$user) {
                 return response()->json([
                     'message' => 'No se encontró el usuario',
                     'success' => false
                 ], 404);
+            }
+
+            if ($user->id == 1) {
+                return response()->json([
+                    'message' => 'No se puede eliminar el usuario administrador principal',
+                    'success' => false
+                ], 403);
             }
 
             $user->delete();
@@ -428,6 +428,124 @@ class UserController extends Controller {
             DB::rollBack();
             return response()->json([
                 'message' => 'Error al eliminar el usuario',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    public function disableAccount(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol != 1) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            DB::beginTransaction();
+            $user = User::where('id', $request->id)->lockForUpdate()->first();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'No se encontró el usuario',
+                    'success' => false
+                ], 404);
+            }
+
+            if ($user->id == 1) {
+                return response()->json([
+                    'message' => 'No se puede desactivar el usuario administrador principal',
+                    'success' => false
+                ], 403);
+            }
+
+            if($user->estado == 'inactivo') {
+                return response()->json([
+                    'message' => 'El usuario ya está inactivo',
+                    'success' => false
+                ], 400);
+            }
+
+            $user->estado = 'inactivo';
+            $user->save();
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Usuario desactivado exitosamente',
+                'success' => true
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al desactivar el usuario',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    public function enableAccount(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol != 1) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            DB::beginTransaction();
+            $user = User::where('id', $request->id)->lockForUpdate()->first();
+
+            if ($user->id == 1) {
+                return response()->json([
+                    'message' => 'No se puede desactivar el usuario administrador principal',
+                    'success' => false
+                ], 403);
+            }
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'No se encontró el usuario',
+                    'success' => false
+                ], 404);
+            }
+
+            if($user->estado == 'activo') {
+                return response()->json([
+                    'message' => 'El usuario ya está activo',
+                    'success' => false
+                ], 400);
+            }
+
+            $user->estado = 'activo';
+            $user->save();
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Usuario activado exitosamente',
+                'success' => true
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al desactivar el usuario',
                 'error' => $e->getMessage(),
                 'success' => false
             ], 500);

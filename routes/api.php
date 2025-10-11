@@ -41,6 +41,8 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/users/get/{id}', [UserController::class, 'show'])->name('users.show');
     Route::post('/users/new', [UserController::class, 'store'])->name('users.store');
     Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
+    Route::post('/users/deactivate/{id}', [UserController::class, 'disableAccount'])->name('users.disableAccount');
+    Route::post('/users/activate/{id}', [UserController::class, 'enableAccount'])->name('users.enableAccount');
     Route::patch('/users/edit/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::get('/users/get/role/{id}', [UserController::class, 'getByRole'])->name('users.getByRole');
     Route::get('/users/get/department/{id}', [UserController::class, 'getByDepartment'])->name('users.getByDepartment');
