@@ -96,9 +96,69 @@ class AuthController extends Controller {
         }
     }
 
+    public function loginAsGuest(): JsonResponse {
+        if (Auth::check()) {
+            return response()->json([
+                'message' => 'Ya autenticado',
+                'success' => false
+            ], 400);
+        }
+
+        $email = env('GUEST_EMAIL');
+        $password = env('GUEST_PASSWORD');
+
+        try {
+            $user = User::where('email', $email)->first();
+
+            if ($user->estado !== 'activo') {
+                return response()->json([
+                    'message' => 'El usuario no está activo',
+                    'success' => false
+                ], 403);
+            }
+
+            $user->ultimo_acceso = Carbon::now();
+            $user->save();
+
+            $role_id = DB::table('usuario_roles')
+                ->where('usuario_id', $user->id)
+                ->value('rol_id');
+
+            $user->role_id = $role_id;
+
+            Auth::login($user);
+
+            $tokenResult = $user->createToken('Personal Access Token');
+            $token = $tokenResult->token;
+            $token->expires_at = Carbon::now()->addDays(30);
+            $token->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Inicio de sesión exitoso',
+                'user' => $user,
+                'token' => $tokenResult->accessToken,
+                'token_type' => 'Bearer',
+                'expires_at' => Carbon::parse($token->expires_at)->toDateTimeString(),
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error en login', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Error en el servidor',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
     public function logout(Request $request): JsonResponse {
         try {
-            if(!Auth::check()){
+            if (!Auth::check()) {
                 return response()->json([
                     'message' => 'No autenticado',
                     'success' => false

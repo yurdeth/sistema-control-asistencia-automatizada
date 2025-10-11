@@ -20,6 +20,14 @@ class GruposController extends Controller {
             ], 401);
         }
 
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $grupos = grupos::with(['materia', 'ciclo', 'docente'])->get();
         if ($grupos->isEmpty()) {
             return response()->json([
@@ -37,6 +45,14 @@ class GruposController extends Controller {
 
     public function show($id): JsonResponse {
         if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -68,7 +84,8 @@ class GruposController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        // Solo permitir a administradores (1), administradores académicos (2), jefes de departamento (3) y docentes (4)
+        if ($user_rol > 4) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -153,7 +170,8 @@ class GruposController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        // Solo permitir a administradores (1), administradores académicos (2), jefes de departamento (3) y docentes (4)
+        if ($user_rol > 4) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -247,7 +265,8 @@ class GruposController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        // Solo permitir a administradores (1), administradores académicos (2), jefes de departamento (3)
+        if ($user_rol > 3) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -281,6 +300,21 @@ class GruposController extends Controller {
     }
 
     public function getGroupsBySubject($id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $grupos = grupos::with(['ciclo', 'docente'])
             ->where('materia_id', $id)
             ->get();
@@ -289,10 +323,25 @@ class GruposController extends Controller {
             'message' => 'Grupos obtenidos exitosamente',
             'success' => true,
             'data' => $grupos
-        ], 200);
+        ]);
     }
 
     public function getGroupsByCycle($id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $grupos = grupos::with(['materia', 'docente'])
             ->where('ciclo_id', $id)
             ->get();
@@ -301,6 +350,21 @@ class GruposController extends Controller {
     }
 
     public function getGroupsByProfessor($id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $grupos = grupos::with(['materia', 'ciclo'])
             ->where('docente_id', $id)
             ->get();
@@ -309,6 +373,21 @@ class GruposController extends Controller {
     }
 
     public function getGroupsByStatus($estado): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $grupos = grupos::with(['materia', 'ciclo', 'docente'])
             ->where('estado', $estado)
             ->get();
@@ -317,6 +396,21 @@ class GruposController extends Controller {
     }
 
     public function getAvailableGroups(): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $grupos = grupos::with(['materia', 'ciclo', 'docente'])
             ->whereColumn('estudiantes_inscritos', '<', 'capacidad_maxima')
             ->where('estado', 'activo')
@@ -326,6 +420,21 @@ class GruposController extends Controller {
     }
 
     public function getGroupsByNumber(Request $request, $numero_grupo): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         $query = grupos::with(['materia', 'ciclo', 'docente'])
             ->where('numero_grupo', $numero_grupo);
 

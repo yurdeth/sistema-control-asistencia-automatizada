@@ -31,7 +31,6 @@ class User extends Authenticatable {
         'password',
         'departamento_id',
         'email_verificado',
-        'token_verificacion',
         'estado',
         'ultimo_acceso',
     ];

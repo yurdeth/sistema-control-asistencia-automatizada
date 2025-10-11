@@ -59,7 +59,7 @@ class DepartamentosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol >= 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -172,7 +172,7 @@ class DepartamentosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol >= 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -276,7 +276,7 @@ class DepartamentosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol >= 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -350,7 +350,7 @@ class DepartamentosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol >= 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -395,7 +395,7 @@ class DepartamentosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol >= 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -438,7 +438,7 @@ class DepartamentosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol >= 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false

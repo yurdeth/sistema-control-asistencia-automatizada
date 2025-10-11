@@ -23,8 +23,8 @@ class RecursosTipoController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        // Disponible solamente para: Jefe Supremo (1), Administrador académico (2) y Jefe de departamentos (3)
-        if ($user_rol == 6) {
+        // Disponible solamente para: Administradores (1), Administrador académico (2), Jefe de departamentos (3) y Docentes (4)
+        if ($user_rol > 4) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -62,6 +62,7 @@ class RecursosTipoController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
+        // Disponible solamente para: Administradores (1), Administrador académico (2) y Jefe de departamentos (3)
         if ($user_rol > 3) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -133,8 +134,8 @@ class RecursosTipoController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        // Disponible solamente para: Jefe Supremo (1), Administrador académico (2) y Jefe de departamentos (3)
-        if ($user_rol == 6) {
+        // Disponible solamente para: Administradores (1), Administrador académico (2) y Jefe de departamentos (3)
+        if ($user_rol > 3) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -176,6 +177,7 @@ class RecursosTipoController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
+        // Disponible solamente para: Administradores (1), Administrador académico (2) y Jefe de departamentos (3)
         if ($user_rol > 3) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -263,6 +265,7 @@ class RecursosTipoController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
+        // Disponible solamente para: Administradores (1), Administrador académico (2) y Jefe de departamentos (3)
         if ($user_rol > 3) {
             return response()->json([
                 'message' => 'Acceso no autorizado',

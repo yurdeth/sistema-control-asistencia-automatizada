@@ -35,7 +35,7 @@ class RolesSeeder extends Seeder {
                 'updated_at' => now()
             ],
             [
-                'nombre' => 'gestor_departamentos',
+                'nombre' => 'jefe_departamento',
                 'descripcion' => 'Gestor de departamentos con permisos para administrar departamentos y asignar coordinadores',
                 'created_at' => now(),
                 'updated_at' => now()

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Updateciclos_academicosRequest;
 use App\Models\ciclos_academicos;
+use App\Models\roles;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,14 @@ class CiclosAcademicosController extends Controller {
      */
     public function index(): JsonResponse {
         if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -50,11 +59,11 @@ class CiclosAcademicosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol != 2) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
@@ -133,7 +142,7 @@ class CiclosAcademicosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol >= 6) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -176,11 +185,11 @@ class CiclosAcademicosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol != 2) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
@@ -267,7 +276,7 @@ class CiclosAcademicosController extends Controller {
         }
 
         $user_rol = $this->getUserRole();
-        if ($user_rol == 6) {
+        if ($user_rol != 2) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false

@@ -24,6 +24,7 @@ Route::get('/login', function () {
 })->name('login.get');
 
 Route::post('/login', [AuthController::class, "login"])->name('login.post');
+Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
 
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
@@ -71,8 +72,6 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::delete('/subjects/delete/{id}', [MateriasController::class, 'destroy'])->name('materias.delete');
     Route::get('/subjects/get/department/{id}', [MateriasController::class, 'getMateriasByDepartment'])->name('materias.getByDepartment');
     Route::get('/subjects/get/status/{estado}', [MateriasController::class, 'getMateriasByStatus'])->name('materias.getByStatus');
-//    Route::get('/subjects/get/user/{id}', [MateriasController::class, 'getMateriasByUserId'])->name('materias.getByUserId');
-//    Route::get('/subjects/my-subjects/get', [MateriasController::class, 'getMySubjects'])->name('materias.getMySubjects');
 
     //************************************ MANAGE GROUPS ************************************//
     Route::get('/groups/get/all', [GruposController::class, 'index'])->name('grupos.index');
