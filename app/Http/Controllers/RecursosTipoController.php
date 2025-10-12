@@ -22,14 +22,14 @@ class RecursosTipoController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        /*$user_rol = $this->getUserRole();
         // Disponible solamente para: Administradores (1), Administrador académico (2), Jefe de departamentos (3) y Docentes (4)
         if ($user_rol > 4) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }
+        }*/
 
         try {
             $recursos_tipos = Cache::remember('recursos_tipos', 60, function () {
