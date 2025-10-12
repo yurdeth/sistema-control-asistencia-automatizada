@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\DB;
 class AulasController extends Controller {
 
     public function index(): JsonResponse {
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
 
         $aulas = Cache::remember('aulas_all', 60, function () {
             return aulas::all();
@@ -39,14 +39,14 @@ class AulasController extends Controller {
     }
 
     public function show($id): JsonResponse {
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
 
-        $aula = aulas::with(['recursos.recursoTipo'])->find($id);
+        $aula = aulas::find($id);
 
         if (!$aula) {
             return response()->json([
@@ -279,7 +279,16 @@ class AulasController extends Controller {
     }
 
     public function getClassroomByCode($codigo): JsonResponse {
-        $aula = aulas::with(['recursos'])->where('codigo', $codigo)->first();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $codigo = $this->sanitizeInput($codigo);
+
+        $aula = (new aulas())->getAulasByCode($codigo);
 
         if (!$aula) {
             return response()->json([
@@ -296,6 +305,13 @@ class AulasController extends Controller {
     }
 
     public function getClassroomsByStatus($estado): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $valid_states = ['disponible', 'ocupada', 'mantenimiento', 'inactiva'];
 
@@ -583,12 +599,12 @@ class AulasController extends Controller {
     }
 
     public function getClassroomSuggestions(Request $request): JsonResponse {
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
 
         $request->merge([
             'capacidad_minima' => (int)$request->capacidad_minima,
@@ -620,16 +636,16 @@ class AulasController extends Controller {
         try {
             $validation = $request->validate($rules, $messages);
 
-            $sugerencias = DB::select('CALL sp_sugerencias_aulas(?, ?, ?, ?)', [
+            $sugerencias = (new aulas())->getAulasSugeridas(
                 $validation['capacidad_minima'],
                 $validation['dia_semana'],
                 $validation['hora_inicio'],
                 $validation['hora_fin']
-            ]);
+            );
 
-            if (empty($sugerencias)) {
+            if ($sugerencias->isEmpty()) {
                 return response()->json([
-                    'message' => 'No hay aulas disponibles que cumplan con los criterios especificados',
+                    'message' => 'No hay aulas que cumplan con los criterios especificados',
                     'success' => false
                 ], 404);
             }

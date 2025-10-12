@@ -101,7 +101,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/classrooms/get/qr/{qr_code}', [AulasController::class, 'getClassroomByQrCode'])->name('aulas.getByQrCode');
     Route::patch('/classrooms/change-status/{id}', [AulasController::class, 'changeClassroomStatus'])->name('aulas.changeStatus');
     Route::get('/classrooms/get/statistics/{id}', [AulasController::class, 'getClassroomStatistics'])->name('aulas.getStatistics');
-    Route::get('/classrooms/get/suggestions/all', [AulasController::class, 'getClassroomSuggestions'])->name('aulas.getSuggestions');
+    Route::post('/classrooms/suggestions/all', [AulasController::class, 'getClassroomSuggestions'])->name('aulas.getSuggestions');
 
     //************************************ MANAGE SCHEDULES ************************************//
     Route::get('/schedules/get/all', [HorariosController::class, 'index'])->name('horarios.index');
