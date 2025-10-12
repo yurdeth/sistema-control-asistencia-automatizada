@@ -32,6 +32,7 @@ class aula_recursos extends Model {
             ->join('recursos_tipos', 'aula_recursos.recurso_tipo_id', '=', 'recursos_tipos.id')
             ->select(
                 'recursos_tipos.nombre as recurso_tipo_nombre',
+                'aulas.id as id_aula',
                 'aulas.nombre as nombre_aula',
                 'aula_recursos.cantidad as recurso_cantidad',
                 'aula_recursos.id as aula_recurso_id',
@@ -41,9 +42,14 @@ class aula_recursos extends Model {
             ->get();
     }
 
-    public function getAllAulaRecursoById(int $id): Collection {
+    public function getAllAulaRecursoById(int $resource_id): Collection {
         return $this->getAllAulaRecursos()
-            ->where('aula_recurso_id', $id);
+            ->where('aula_recurso_id', $resource_id);
+    }
+
+    public function getAllAulaRecursoByAulaId(int $aula_id): Collection {
+        return $this->getAllAulaRecursos()
+            ->where('id_aula', $aula_id);
     }
 
 }

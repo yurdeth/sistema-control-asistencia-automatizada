@@ -303,9 +303,7 @@ class AulaRecursosController extends Controller {
         }
 
         try {
-            $recursos = aula_recursos::with(['recursoTipo'])
-                ->where('aula_id', $aula_id)
-                ->get();
+            $recursos = (new aula_recursos())->getAllAulaRecursoByAulaId($aula_id);
 
             if ($recursos->isEmpty()) {
                 return response()->json([
