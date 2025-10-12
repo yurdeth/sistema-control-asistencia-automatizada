@@ -157,6 +157,18 @@ class GruposController extends Controller {
 
             $validatedData = $validator->validated();
 
+            $grupo_existente = grupos::where('materia_id', $validatedData['materia_id'])
+                ->where('ciclo_id', $validatedData['ciclo_id'])
+                ->where('numero_grupo', $validatedData['numero_grupo'])
+                ->first();
+
+            if ($grupo_existente) {
+                return response()->json([
+                    'message' => 'Error: ya existe un grupo con este número para la misma materia y ciclo.',
+                    'success' => false
+                ], 422);
+            }
+
             $grupo = grupos::create($validatedData);
 
             DB::commit();
