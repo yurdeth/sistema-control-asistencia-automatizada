@@ -290,7 +290,7 @@ class AulasController extends Controller {
 
         $aula = (new aulas())->getAulasByCode($codigo);
 
-        if (!$aula) {
+        if (!$aula || $aula->isEmpty()) {
             return response()->json([
                 'message' => 'Aula no encontrada',
                 'success' => false

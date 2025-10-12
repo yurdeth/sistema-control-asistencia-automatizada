@@ -27,7 +27,7 @@ class aulas extends Model {
         'estado'
     ];
 
-    public function getAulasByCode(string $code) {
+    public function getAulasByCode(string $code): Collection {
         return DB::table('aulas')
             ->where('codigo', 'like', '%' . $code . '%')
             ->get();
