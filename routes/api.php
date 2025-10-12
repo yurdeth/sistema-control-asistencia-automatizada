@@ -229,6 +229,6 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/qr-scans/get/result/{resultado}', [EscaneosQrController::class, 'getByResult'])->name('qrScans.getByResult');
     Route::get('/qr-scans/get/failed/recent', [EscaneosQrController::class, 'getRecentFailed'])->name('qrScans.getRecentFailed');
     Route::post('/qr-scans/get/range/all', [EscaneosQrController::class, 'getByDateRange'])->name('qrScans.getByDateRange');
-  
+
 
 });
