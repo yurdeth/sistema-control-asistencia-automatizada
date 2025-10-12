@@ -9,44 +9,44 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class HorariosController extends Controller {
 
     public function index(): JsonResponse {
         $user_rol = $this->getUserRole();
 
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
 
         try {
-            if ($user_rol == 1) {
-                $horarios = horarios::with(['grupo.materia', 'grupo.docente', 'aula'])
-                    ->orderBy('dia_semana')
-                    ->orderBy('hora_inicio')
-                    ->get();
-            } elseif ($user_rol == 2) {
-                $docente_id = DB::table('docentes')->where('usuario_id', Auth::id())->value('id');
-
-                $horarios = horarios::with(['grupo.materia', 'grupo.docente', 'aula'])
-                    ->whereHas('grupo', function ($query) use ($docente_id) {
-                        $query->where('docente_id', $docente_id);
-                    })
-                    ->orderBy('dia_semana')
-                    ->orderBy('hora_inicio')
-                    ->get();
+            if ($user_rol == 5) {
+                $horarios = Cache::remember('horarios_index', 60, function () {
+                    return (new horarios())->getHorariosByProfessor();
+                });
             } else {
-                return response()->json([
-                    'message' => 'Acceso no autorizado',
-                    'success' => false
-                ], 403);
+                $horarios = Cache::remember('horarios_index_all', 60, function () {
+                    return (new horarios())->getHorarios();
+                });
             }
 
-            return response()->json($horarios, 200);
+            if(!$horarios || $horarios->isEmpty()) {
+                return response()->json([
+                    'message' => 'No se encontraron horarios',
+                    'data' => []
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Horarios obtenidos exitosamente',
+                'data' => $horarios
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener los horarios',
@@ -56,39 +56,29 @@ class HorariosController extends Controller {
     }
 
     public function show($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6 && Auth::user()->id != $id) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
         try {
-            $horario = horarios::with(['grupo.materia', 'grupo.docente', 'aula'])->find($id);
+            $horario = (new horarios())->getHorariosById($id)->first();
 
             if (!$horario) {
                 return response()->json([
                     'message' => 'Horario no encontrado',
                     'success' => false
                 ], 404);
-            }
-
-            if ($user_rol == 2) {
-                $docente_id = DB::table('docentes')->where('usuario_id', Auth::id())->value('id');
-
-                if ($horario->grupo->docente_id != $docente_id) {
-                    return response()->json([
-                        'message' => 'Acceso no autorizado',
-                        'success' => false
-                    ], 403);
-                }
-            } elseif ($user_rol != 1) {
-                return response()->json([
-                    'message' => 'Acceso no autorizado',
-                    'success' => false
-                ], 403);
             }
 
             return response()->json([
@@ -365,11 +355,9 @@ class HorariosController extends Controller {
         }
 
         try {
-            $horarios = horarios::with(['aula'])
-                ->where('grupo_id', $grupo_id)
-                ->orderBy('dia_semana')
-                ->orderBy('hora_inicio')
-                ->get();
+            $horarios = Cache::remember('horarios_grupo_' . $grupo_id, 60, function () use ($grupo_id) {
+                return (new horarios())->getHorariosByGroup($grupo_id);
+            });
 
             if ($horarios->isEmpty()) {
                 return response()->json([
@@ -408,11 +396,9 @@ class HorariosController extends Controller {
         }
 
         try {
-            $horarios = horarios::with(['grupo.materia', 'grupo.docente'])
-                ->where('aula_id', $aula_id)
-                ->orderBy('dia_semana')
-                ->orderBy('hora_inicio')
-                ->get();
+            $horarios = Cache::remember('horarios_aula_' . $aula_id, 60, function () use ($aula_id) {
+                return (new horarios())->getHorariosByClassroom($aula_id);
+            });
 
             if ($horarios->isEmpty()) {
                 return response()->json([
@@ -452,10 +438,11 @@ class HorariosController extends Controller {
         }
 
         try {
-            $horarios = horarios::with(['grupo.materia', 'aula'])
-                ->where('dia_semana', $dia_semana)
-                ->orderBy('hora_inicio')
-                ->get();
+
+            $dia_semana = $this->sanitizeInput($dia_semana);
+            $horarios = Cache::remember('horarios_dia_' . $dia_semana, 60, function () use ($dia_semana) {
+                return (new horarios())->getHorariosByDay($dia_semana);
+            });
 
             if ($horarios->isEmpty()) {
                 return response()->json([
@@ -541,61 +528,6 @@ class HorariosController extends Controller {
         }
     }
 
-    public function getClassroomAvailability(Request $request, $aula_id): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        try {
-            $aula = aulas::find($aula_id);
-
-            if (!$aula) {
-                return response()->json([
-                    'message' => 'Aula no encontrada',
-                    'success' => false
-                ], 404);
-            }
-
-            $query = horarios::where('aula_id', $aula_id);
-
-            if ($request->has('dia_semana')) {
-                $query->where('dia_semana', $this->sanitizeInput($request->dia_semana));
-            }
-
-            $horarios = $query->orderBy('dia_semana')->orderBy('hora_inicio')->get();
-
-            if( $horarios->isEmpty()) {
-                return response()->json([
-                    'message' => 'El aula está disponible para el día especificado',
-                    'success' => true,
-                ], 200);
-            }
-
-            return response()->json([
-                'message' => 'Horarios obtenidos exitosamente',
-                'success' => true,
-                'data' => $horarios
-            ], 200);
-        } catch (Exception $e){
-            return response()->json([
-                'message' => 'Error al obtener la disponibilidad del aula',
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function getSchedulesByRange(Request $request): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -614,21 +546,13 @@ class HorariosController extends Controller {
 
         try {
             $request->validate([
-                'hora_inicio' => 'required|date_format:H:i:s',
-                'hora_fin' => 'required|date_format:H:i:s'
+                'hora_inicio' => 'required|date_format:H:i',
+                'hora_fin' => 'required|date_format:H:i'
             ]);
 
-            $query = horarios::with(['grupo.materia', 'aula'])
-                ->where(function ($q) use ($request) {
-                    $q->whereBetween('hora_inicio', [$request->hora_inicio, $request->hora_fin])
-                        ->orWhereBetween('hora_fin', [$request->hora_inicio, $request->hora_fin]);
-                });
-
-            if ($request->has('dia_semana')) {
-                $query->where('dia_semana', $request->dia_semana);
-            }
-
-            $horarios = $query->get();
+            $horarios = Cache::remember('horarios_rango_' . $request->hora_inicio . '_' . $request->hora_fin, 60, function () use ($request) {
+                return (new horarios())->getHorariosByRango($request->hora_inicio, $request->hora_fin);
+            });
 
             if(!$horarios || $horarios->isEmpty()) {
                 return response()->json([

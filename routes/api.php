@@ -11,6 +11,12 @@ use App\Http\Controllers\MateriasController;
 use App\Http\Controllers\RecursosTipoController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SolicitudesInscripcionController;
+use App\Http\Controllers\InscripcionesController;
+use App\Http\Controllers\SesionesClaseController;
+use App\Http\Controllers\AsistenciasEstudiantesController;
+use App\Http\Controllers\MantenimientosController;
+use App\Http\Controllers\EscaneosQrController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -113,8 +119,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/schedules/get/classroom/{id}', [HorariosController::class, 'getSchedulesByClassroom'])->name('horarios.getByClassroom');
     Route::get('/schedules/get/day/{dia_semana}', [HorariosController::class, 'getSchedulesByDay'])->name('horarios.getByDay');
     Route::get('/schedules/get/conflicts/{id}', [HorariosController::class, 'getScheduleConflicts'])->name('horarios.getConflicts');
-    Route::get('/schedules/get/availability/classroom/{id}', [HorariosController::class, 'getClassroomAvailability'])->name('horarios.getClassroomAvailability');
-    Route::get('/schedules/get/range/all', [HorariosController::class, 'getSchedulesByRange'])->name('horarios.getByRange');
+    Route::post('/schedules/get/range/all', [HorariosController::class, 'getSchedulesByRange'])->name('horarios.getByRange');
 
     //************************************ MANAGE CLASSROOM RESOURCES ************************************//
     Route::get('/classroom-resources/get/all', [AulaRecursosController::class, 'index'])->name('aulaRecursos.index');
@@ -145,4 +150,85 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/resource-types/new', [RecursosTipoController::class, 'store'])->name('resourceTypes.store');
     Route::patch('/resource-types/edit/{id}', [RecursosTipoController::class, 'edit'])->name('resourceTypes.edit');
     Route::delete('/resource-types/delete/{id}', [RecursosTipoController::class, 'destroy'])->name('resourceTypes.delete');
+
+  //************************************ MANAGE ENROLLMENT REQUESTS ************************************//
+    Route::get('/enrollment-requests/get/all', [SolicitudesInscripcionController::class, 'index'])->name('enrollmentRequests.index');
+    Route::get('/enrollment-requests/get/{id}', [SolicitudesInscripcionController::class, 'show'])->name('enrollmentRequests.show');
+    Route::post('/enrollment-requests/new', [SolicitudesInscripcionController::class, 'store'])->name('enrollmentRequests.store');
+    Route::patch('/enrollment-requests/edit/{id}', [SolicitudesInscripcionController::class, 'edit'])->name('enrollmentRequests.edit');
+    Route::delete('/enrollment-requests/delete/{id}', [SolicitudesInscripcionController::class, 'destroy'])->name('enrollmentRequests.delete');
+    Route::get('/enrollment-requests/get/student/{id}', [SolicitudesInscripcionController::class, 'getByStudent'])->name('enrollmentRequests.getByStudent');
+    Route::get('/enrollment-requests/get/group/{id}', [SolicitudesInscripcionController::class, 'getByGroup'])->name('enrollmentRequests.getByGroup');
+    Route::get('/enrollment-requests/get/status/{estado}', [SolicitudesInscripcionController::class, 'getByStatus'])->name('enrollmentRequests.getByStatus');
+    Route::get('/enrollment-requests/get/type/{tipo}', [SolicitudesInscripcionController::class, 'getByType'])->name('enrollmentRequests.getByType');
+    Route::post('/enrollment-requests/accept/{id}', [SolicitudesInscripcionController::class, 'acceptRequest'])->name('enrollmentRequests.accept');
+    Route::post('/enrollment-requests/reject/{id}', [SolicitudesInscripcionController::class, 'rejectRequest'])->name('enrollmentRequests.reject');
+    Route::get('/enrollment-requests/get/pending/professor/{id}', [SolicitudesInscripcionController::class, 'getPendingByProfessor'])->name('enrollmentRequests.getPendingByProfessor');
+
+    //************************************ MANAGE ENROLLMENTS ************************************//
+    Route::get('/enrollments/get/all', [InscripcionesController::class, 'index'])->name('enrollments.index');
+    Route::get('/enrollments/get/{id}', [InscripcionesController::class, 'show'])->name('enrollments.show');
+    Route::post('/enrollments/new', [InscripcionesController::class, 'store'])->name('enrollments.store');
+    Route::patch('/enrollments/edit/{id}', [InscripcionesController::class, 'edit'])->name('enrollments.edit');
+    Route::delete('/enrollments/delete/{id}', [InscripcionesController::class, 'destroy'])->name('enrollments.delete');
+    Route::get('/enrollments/get/student/{id}', [InscripcionesController::class, 'getByStudent'])->name('enrollments.getByStudent');
+    Route::get('/enrollments/get/group/{id}', [InscripcionesController::class, 'getByGroup'])->name('enrollments.getByGroup');
+    Route::get('/enrollments/get/status/{estado}', [InscripcionesController::class, 'getByStatus'])->name('enrollments.getByStatus');
+    Route::post('/enrollments/withdraw/{id}', [InscripcionesController::class, 'withdrawEnrollment'])->name('enrollments.withdraw');
+    Route::get('/enrollments/get/student/{student_id}/active/all', [InscripcionesController::class, 'getActiveByStudent'])->name('enrollments.getActiveByStudent');
+
+    //************************************ MANAGE CLASS SESSIONS ************************************//
+    Route::get('/class-sessions/get/all', [SesionesClaseController::class, 'index'])->name('classSessions.index');
+    Route::get('/class-sessions/get/{id}', [SesionesClaseController::class, 'show'])->name('classSessions.show');
+    Route::post('/class-sessions/new', [SesionesClaseController::class, 'store'])->name('classSessions.store');
+    Route::patch('/class-sessions/edit/{id}', [SesionesClaseController::class, 'edit'])->name('classSessions.edit');
+    Route::delete('/class-sessions/delete/{id}', [SesionesClaseController::class, 'destroy'])->name('classSessions.delete');
+    Route::get('/class-sessions/get/group/{id}', [SesionesClaseController::class, 'getByGroup'])->name('classSessions.getByGroup');
+    Route::get('/class-sessions/get/schedule/{id}', [SesionesClaseController::class, 'getBySchedule'])->name('classSessions.getBySchedule');
+    Route::get('/class-sessions/get/status/{estado}', [SesionesClaseController::class, 'getByStatus'])->name('classSessions.getByStatus');
+    Route::post('/class-sessions/start', [SesionesClaseController::class, 'startSession'])->name('classSessions.start');
+    Route::post('/class-sessions/finish/{id}', [SesionesClaseController::class, 'finishSession'])->name('classSessions.finish');
+    Route::get('/class-sessions/get/professor/{id}/today', [SesionesClaseController::class, 'getTodayByProfessor'])->name('classSessions.getTodayByProfessor');
+    Route::get('/class-sessions/get/date/{fecha}', [SesionesClaseController::class, 'getByDate'])->name('classSessions.getByDate');
+    Route::patch('/class-sessions/change-status/{id}', [SesionesClaseController::class, 'changeStatus'])->name('classSessions.changeStatus');
+
+    //************************************ MANAGE STUDENT ATTENDANCE ************************************//
+    Route::get('/student-attendance/get/all', [AsistenciasEstudiantesController::class, 'index'])->name('studentAttendance.index');
+    Route::get('/student-attendance/get/{id}', [AsistenciasEstudiantesController::class, 'show'])->name('studentAttendance.show');
+    Route::post('/student-attendance/new', [AsistenciasEstudiantesController::class, 'store'])->name('studentAttendance.store');
+    Route::patch('/student-attendance/edit/{id}', [AsistenciasEstudiantesController::class, 'edit'])->name('studentAttendance.edit');
+    Route::delete('/student-attendance/delete/{id}', [AsistenciasEstudiantesController::class, 'destroy'])->name('studentAttendance.delete');
+    Route::get('/student-attendance/get/session/{id}', [AsistenciasEstudiantesController::class, 'getBySession'])->name('studentAttendance.getBySession');
+    Route::get('/student-attendance/get/student/{id}', [AsistenciasEstudiantesController::class, 'getByStudent'])->name('studentAttendance.getByStudent');
+    Route::get('/student-attendance/get/status/{estado}', [AsistenciasEstudiantesController::class, 'getByStatus'])->name('studentAttendance.getByStatus');
+    Route::post('/student-attendance/register', [AsistenciasEstudiantesController::class, 'registerAttendance'])->name('studentAttendance.register');
+    Route::get('/student-attendance/get/student/{student_id}/group/{group_id}', [AsistenciasEstudiantesController::class, 'getAttendanceReport'])->name('studentAttendance.getReport');
+    Route::get('/student-attendance/get/student/{student_id}/statistics', [AsistenciasEstudiantesController::class, 'getStudentStatistics'])->name('studentAttendance.getStatistics');
+
+    //************************************ MANAGE MAINTENANCE ************************************//
+    Route::get('/maintenance/get/all', [MantenimientosController::class, 'index'])->name('maintenance.index');
+    Route::get('/maintenance/get/{id}', [MantenimientosController::class, 'show'])->name('maintenance.show');
+    Route::post('/maintenance/new', [MantenimientosController::class, 'store'])->name('maintenance.store');
+    Route::patch('/maintenance/edit/{id}', [MantenimientosController::class, 'edit'])->name('maintenance.edit');
+    Route::delete('/maintenance/delete/{id}', [MantenimientosController::class, 'destroy'])->name('maintenance.delete');
+    Route::get('/maintenance/get/classroom/{id}', [MantenimientosController::class, 'getByClassroom'])->name('maintenance.getByClassroom');
+    Route::get('/maintenance/get/status/{estado}', [MantenimientosController::class, 'getByStatus'])->name('maintenance.getByStatus');
+    Route::get('/maintenance/get/upcoming/all', [MantenimientosController::class, 'getUpcoming'])->name('maintenance.getUpcoming');
+    Route::post('/maintenance/finish/{id}', [MantenimientosController::class, 'finishMaintenance'])->name('maintenance.finish');
+    Route::patch('/maintenance/change-status/{id}', [MantenimientosController::class, 'changeStatus'])->name('maintenance.changeStatus');
+    Route::post('/maintenance/get/range/all', [MantenimientosController::class, 'getByDateRange'])->name('maintenance.getByDateRange');
+
+    //************************************ MANAGE QR SCANS ************************************//
+    Route::get('/qr-scans/get/all', [EscaneosQrController::class, 'index'])->name('qrScans.index');
+    Route::get('/qr-scans/get/{id}', [EscaneosQrController::class, 'show'])->name('qrScans.show');
+    Route::post('/qr-scans/scan', [EscaneosQrController::class, 'registerScan'])->name('qrScans.scan');
+    Route::get('/qr-scans/get/classroom/{id}', [EscaneosQrController::class, 'getByClassroom'])->name('qrScans.getByClassroom');
+    Route::get('/qr-scans/get/user/{id}', [EscaneosQrController::class, 'getByUser'])->name('qrScans.getByUser');
+    Route::get('/qr-scans/get/session/{id}', [EscaneosQrController::class, 'getBySession'])->name('qrScans.getBySession');
+    Route::get('/qr-scans/get/type/{tipo}', [EscaneosQrController::class, 'getByType'])->name('qrScans.getByType');
+    Route::get('/qr-scans/get/result/{resultado}', [EscaneosQrController::class, 'getByResult'])->name('qrScans.getByResult');
+    Route::get('/qr-scans/get/failed/recent', [EscaneosQrController::class, 'getRecentFailed'])->name('qrScans.getRecentFailed');
+    Route::post('/qr-scans/get/range/all', [EscaneosQrController::class, 'getByDateRange'])->name('qrScans.getByDateRange');
+
+
 });

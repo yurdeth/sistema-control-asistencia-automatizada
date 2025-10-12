@@ -17,7 +17,7 @@
                 style="padding-bottom: 5rem"
             >
                 <Link
-                href="#"
+                href="/dashboard"
                 class="sidebar-link p-2 rounded flex items-center gap-2"
                 :style="{ color: colorText }">
                     <i class="fa-solid fa-grip"></i>
@@ -163,7 +163,7 @@ onMounted(() => {
                 items: [
                     {
                         label: "Catalogo.",
-                        href: "#",
+                        href: "/catalogo",
                         icon: "fa-solid fa-list",
                     },
                     {
