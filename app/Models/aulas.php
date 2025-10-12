@@ -40,6 +40,7 @@ class aulas extends Model {
             ->where('horarios.dia_semana', '=', $dia_semana)
             ->where('horarios.hora_inicio', '>=', $hora_inicio)
             ->where('horarios.hora_fin', '<=', $hora_fin)
+            ->where('aulas.estado', '=', 'disponible')
             ->select('aulas.*', 'horarios.dia_semana', 'horarios.hora_inicio', 'horarios.hora_fin')
             ->get();
     }

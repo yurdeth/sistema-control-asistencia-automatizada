@@ -19,7 +19,7 @@ return new class extends Migration {
                 ->constrained('aulas')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            $table->enum('dia_semana', ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']);
+            $table->enum('dia_semana', ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']);
             $table->time('hora_inicio');
             $table->time('hora_fin');
             $table->timestamps();

@@ -615,7 +615,7 @@ class AulasController extends Controller {
 
         $rules = [
             'capacidad_minima' => 'required|integer|min:1',
-            'dia_semana' => 'required|in:Lunes,Martes,Miércoles,Jueves,Viernes,Sábado,Domingo',
+            'dia_semana' => 'required|in:Lunes,Martes,Miercoles,Jueves,Viernes,Sabado,Domingo',
             'hora_inicio' => 'required|date_format:H:i',
             'hora_fin' => 'required|date_format:H:i|after:hora_inicio'
         ];
@@ -625,7 +625,7 @@ class AulasController extends Controller {
             'capacidad_minima.integer' => 'El campo capacidad mínima debe ser un número entero.',
             'capacidad_minima.min' => 'El campo capacidad mínima debe ser al menos 1.',
             'dia_semana.required' => 'El campo día de la semana es obligatorio.',
-            'dia_semana.in' => 'El campo día de la semana debe ser uno de los siguientes valores: Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo.',
+            'dia_semana.in' => 'El campo día de la semana debe ser uno de los siguientes valores: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo.',
             'hora_inicio.required' => 'El campo hora de inicio es obligatorio.',
             'hora_inicio.date_format' => 'El campo hora de inicio debe tener el formato HH:MM (24 horas).',
             'hora_fin.required' => 'El campo hora de fin es obligatorio.',
