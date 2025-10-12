@@ -346,15 +346,28 @@ class GruposController extends Controller {
             ], 401);
         }
 
-        $grupos = grupos::with(['ciclo', 'docente'])
-            ->where('materia_id', $id)
-            ->get();
+        try {
+            $grupos = (new grupos())->getGruposByMateria($id);
 
-        return response()->json([
-            'message' => 'Grupos obtenidos exitosamente',
-            'success' => true,
-            'data' => $grupos
-        ]);
+            if ($grupos->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay grupos disponibles para esta materia',
+                    'success' => true
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Grupos obtenidos exitosamente',
+                'success' => true,
+                'data' => $grupos
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los grupos',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
     public function getGroupsByCycle($id): JsonResponse {
@@ -373,11 +386,28 @@ class GruposController extends Controller {
             ], 401);
         }
 
-        $grupos = grupos::with(['materia', 'docente'])
-            ->where('ciclo_id', $id)
-            ->get();
+        try {
+            $grupos = (new grupos())->getGruposByCiclo($id);
 
-        return response()->json($grupos, 200);
+            if ($grupos->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay grupos disponibles para este ciclo',
+                    'success' => true
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Grupos obtenidos exitosamente',
+                'success' => true,
+                'data' => $grupos
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los grupos',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
     public function getGroupsByProfessor($id): JsonResponse {
@@ -396,14 +426,31 @@ class GruposController extends Controller {
             ], 401);
         }
 
-        $grupos = grupos::with(['materia', 'ciclo'])
-            ->where('docente_id', $id)
-            ->get();
+        try {
+            $grupos = (new grupos())->getGruposByDocente($id);
 
-        return response()->json($grupos, 200);
+            if ($grupos->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay grupos disponibles para este ciclo',
+                    'success' => true
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Grupos obtenidos exitosamente',
+                'success' => true,
+                'data' => $grupos
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los grupos',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
-    public function getGroupsByStatus($estado): JsonResponse {
+    public function getGroupsByStatus(string $estado): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -419,11 +466,29 @@ class GruposController extends Controller {
             ], 401);
         }
 
-        $grupos = grupos::with(['materia', 'ciclo', 'docente'])
-            ->where('estado', $estado)
-            ->get();
+        try {
+            $estado = $this->sanitizeInput($estado);
+            $grupos = (new grupos())->getGruposByEstado($estado);
 
-        return response()->json($grupos, 200);
+            if ($grupos->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay grupos disponibles para este ciclo',
+                    'success' => true
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Grupos obtenidos exitosamente',
+                'success' => true,
+                'data' => $grupos
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los grupos',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
     public function getAvailableGroups(): JsonResponse {
@@ -442,44 +507,28 @@ class GruposController extends Controller {
             ], 401);
         }
 
-        $grupos = grupos::with(['materia', 'ciclo', 'docente'])
-            ->whereColumn('estudiantes_inscritos', '<', 'capacidad_maxima')
-            ->where('estado', 'activo')
-            ->get();
+        try {
+            $grupos = (new grupos())->getGruposDisponibles();
 
-        return response()->json($grupos, 200);
-    }
+            if ($grupos->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay grupos disponibles para este ciclo',
+                    'success' => true
+                ], 404);
+            }
 
-    public function getGroupsByNumber(Request $request, $numero_grupo): JsonResponse {
-        if (!Auth::check()) {
             return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+                'message' => 'Grupos obtenidos exitosamente',
+                'success' => true,
+                'data' => $grupos
+            ]);
+        } catch (Exception $e) {
             return response()->json([
-                'message' => 'Acceso no autorizado',
+                'message' => 'Error al obtener los grupos',
+                'error' => $e->getMessage(),
                 'success' => false
-            ], 401);
+            ], 500);
         }
-
-        $query = grupos::with(['materia', 'ciclo', 'docente'])
-            ->where('numero_grupo', $numero_grupo);
-
-        if ($request->has('materia_id')) {
-            $query->where('materia_id', $request->materia_id);
-        }
-
-        if ($request->has('ciclo_id')) {
-            $query->where('ciclo_id', $request->ciclo_id);
-        }
-
-        $grupos = $query->get();
-
-        return response()->json($grupos, 200);
     }
 
     private function getUserRole() {
