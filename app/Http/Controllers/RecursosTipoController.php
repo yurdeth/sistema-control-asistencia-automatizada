@@ -77,8 +77,8 @@ class RecursosTipoController extends Controller {
         ]);
 
         $rules = [
-            'nombre' => 'required|string|max:255|unique:recursos_tipos,nombre',
-            'descripcion' => 'required|string|max:1000',
+            'nombre' => ['required', 'string', 'max:255', 'unique:recursos_tipos,nombre', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/u'],
+            'descripcion' => ['required', 'string', 'max:1000', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/u'],
             'icono' => 'nullable|string|max:255'
         ];
 
@@ -87,9 +87,11 @@ class RecursosTipoController extends Controller {
             'nombre.string' => 'El campo nombre debe ser una cadena de texto.',
             'nombre.max' => 'El campo nombre no debe exceder los 255 caracteres.',
             'nombre.unique' => 'El nombre ya está en uso.',
+            'nombre.regex' => 'El campo nombre solo debe contener letras y espacios.',
             'descripcion.required' => 'El campo descripción es obligatorio.',
             'descripcion.string' => 'El campo descripción debe ser una cadena de texto.',
             'descripcion.max' => 'El campo descripción no debe exceder los 1000 caracteres.',
+            'descripcion.regex' => 'El campo descripción solo debe contener letras y espacios.',
             'icono.string' => 'El campo icono debe ser una cadena de texto.',
             'icono.max' => 'El campo icono no debe exceder los 255 caracteres.'
         ];
@@ -200,8 +202,8 @@ class RecursosTipoController extends Controller {
         ]);
 
         $rules = [
-            'nombre' => 'required|string|max:255|unique:recursos_tipos,nombre',
-            'descripcion' => 'required|string|max:1000',
+            'nombre' => ['required', 'string', 'max:255', 'unique:recursos_tipos,nombre', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/u'],
+            'descripcion' => ['required', 'string', 'max:1000', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/u'],
             'icono' => 'nullable|string|max:255'
         ];
 
@@ -210,9 +212,11 @@ class RecursosTipoController extends Controller {
             'nombre.string' => 'El campo nombre debe ser una cadena de texto.',
             'nombre.max' => 'El campo nombre no debe exceder los 255 caracteres.',
             'nombre.unique' => 'El nombre ya está en uso.',
+            'nombre.regex' => 'El campo nombre solo debe contener letras y espacios.',
             'descripcion.required' => 'El campo descripción es obligatorio.',
             'descripcion.string' => 'El campo descripción debe ser una cadena de texto.',
             'descripcion.max' => 'El campo descripción no debe exceder los 1000 caracteres.',
+            'descripcion.regex' => 'El campo descripción solo debe contener letras y espacios.',
             'icono.string' => 'El campo icono debe ser una cadena de texto.',
             'icono.max' => 'El campo icono no debe exceder los 255 caracteres.'
         ];
