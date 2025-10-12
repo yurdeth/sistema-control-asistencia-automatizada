@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\DB;
 class AulasController extends Controller {
 
     public function index(): JsonResponse {
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
 
         $aulas = Cache::remember('aulas_all', 60, function () {
             return aulas::all();
@@ -39,14 +39,14 @@ class AulasController extends Controller {
     }
 
     public function show($id): JsonResponse {
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
 
-        $aula = aulas::with(['recursos.recursoTipo'])->find($id);
+        $aula = aulas::find($id);
 
         if (!$aula) {
             return response()->json([
@@ -279,7 +279,16 @@ class AulasController extends Controller {
     }
 
     public function getClassroomByCode($codigo): JsonResponse {
-        $aula = aulas::with(['recursos'])->where('codigo', $codigo)->first();
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $codigo = $this->sanitizeInput($codigo);
+
+        $aula = (new aulas())->getAulasByCode($codigo);
 
         if (!$aula) {
             return response()->json([
@@ -296,6 +305,13 @@ class AulasController extends Controller {
     }
 
     public function getClassroomsByStatus($estado): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $valid_states = ['disponible', 'ocupada', 'mantenimiento', 'inactiva'];
 
@@ -583,12 +599,12 @@ class AulasController extends Controller {
     }
 
     public function getClassroomSuggestions(Request $request): JsonResponse {
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
 
         $request->merge([
             'capacidad_minima' => (int)$request->capacidad_minima,
@@ -599,7 +615,7 @@ class AulasController extends Controller {
 
         $rules = [
             'capacidad_minima' => 'required|integer|min:1',
-            'dia_semana' => 'required|in:Lunes,Martes,Miércoles,Jueves,Viernes,Sábado,Domingo',
+            'dia_semana' => 'required|in:Lunes,Martes,Miercoles,Jueves,Viernes,Sabado,Domingo',
             'hora_inicio' => 'required|date_format:H:i',
             'hora_fin' => 'required|date_format:H:i|after:hora_inicio'
         ];
@@ -609,7 +625,7 @@ class AulasController extends Controller {
             'capacidad_minima.integer' => 'El campo capacidad mínima debe ser un número entero.',
             'capacidad_minima.min' => 'El campo capacidad mínima debe ser al menos 1.',
             'dia_semana.required' => 'El campo día de la semana es obligatorio.',
-            'dia_semana.in' => 'El campo día de la semana debe ser uno de los siguientes valores: Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo.',
+            'dia_semana.in' => 'El campo día de la semana debe ser uno de los siguientes valores: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo.',
             'hora_inicio.required' => 'El campo hora de inicio es obligatorio.',
             'hora_inicio.date_format' => 'El campo hora de inicio debe tener el formato HH:MM (24 horas).',
             'hora_fin.required' => 'El campo hora de fin es obligatorio.',
@@ -620,16 +636,16 @@ class AulasController extends Controller {
         try {
             $validation = $request->validate($rules, $messages);
 
-            $sugerencias = DB::select('CALL sp_sugerencias_aulas(?, ?, ?, ?)', [
+            $sugerencias = (new aulas())->getAulasSugeridas(
                 $validation['capacidad_minima'],
                 $validation['dia_semana'],
                 $validation['hora_inicio'],
                 $validation['hora_fin']
-            ]);
+            );
 
-            if (empty($sugerencias)) {
+            if ($sugerencias->isEmpty()) {
                 return response()->json([
-                    'message' => 'No hay aulas disponibles que cumplan con los criterios especificados',
+                    'message' => 'No hay aulas que cumplan con los criterios especificados',
                     'success' => false
                 ], 404);
             }
