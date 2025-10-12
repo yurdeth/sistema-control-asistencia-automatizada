@@ -32,6 +32,12 @@ Route::get('/dashboard', function () {
     ]);
 })->name('dashboard');
 
+// Rutas de administración
+Route::get('/catalogo', function () {
+    return Inertia::render('Administration/classroomManagement/catalogo');
+});
+
+
 
 
 Route::middleware('auth')->group(function () {
