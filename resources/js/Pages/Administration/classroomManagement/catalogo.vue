@@ -59,7 +59,7 @@
 
             <!-- Resultados -->
             <div class="mb-4 text-gray-600 text-sm">
-                Mostrando {{ salonesFiltrados.length }} de {{ salones.length }} salones
+                Mostrando {{ aulasFiltradas.length }} de {{ aulas.length }} aulas
             </div>
 
             <!-- Loading -->
@@ -69,16 +69,17 @@
 
             <!-- parte donde se mostraran las aulas -->
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-
+                <Card
+                    v-for="aula in aulasFiltradas"
+                    :key="aula.id"
+                    :aula="aula"
+                    @ver-detalle="verDetalle"
+                    @editar-aula="editarAula"
+                    @gestionar-disponibilidad="gestionarDisponibilidad"
+                />
             </div>
-
-
-
-
         </div>
-
     </MainLayoutDashboard>
-
 </template>
 
 <script setup>
@@ -86,12 +87,14 @@
     import { Head, Link } from '@inertiajs/vue3';
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
     import axios from 'axios';
+    // componentes
+    import Card from '@/Components/AdministrationComponent/Card.vue';
 
     const colorText = ref('#2C2D2F');
     const colorButton = ref('#d93f3f');
 
     // ======| Parte donde se trabajan lo estados |======
-    const salones = ref([]);
+    const aulas = ref([]);
     const cargando = ref(false);
     const filtros = ref({
         busqueda: '',
@@ -101,13 +104,14 @@
 
     // ======| Parte donde se trabaja el Filtro dinámico de las aulas |======
 
-    // devuelve una lista de salones filtrados según los criterios de búsqueda, capacidad y estado
-    const salonesFiltrados = computed(() => {
-        return salones.value.filter(salon => {
+    // devuelve una lista de aulas filtradas según los criterios de búsqueda, capacidad y estado
+    const aulasFiltradas = computed(() => {
+        return aulas.value.filter(aula => {
 
             // Filtrado por nombre
-            const busquedaAula =aulas.nombre.toLowerCase().includes(filtros.value.busqueda.toLowerCase()) ||
-                aulas.ubicacion.toLowerCase().includes(filtros.value.busqueda.toLowerCase());
+            const busquedaAula = aula.nombre.toLowerCase().includes(filtros.value.busqueda.toLowerCase()) ||
+                    aula.ubicacion.toLowerCase().includes(filtros.value.busqueda.toLowerCase());
+
 
             //Filtra según la capacidad
             const capacidadAula = filtros.value.capacidad === 'all' ||
@@ -124,16 +128,78 @@
     });
 
     //Metodos
-    const cargarAulas = async () => {
+    // const cargarAulas = async () => {
+    //     cargando.value = true;
+    //     try {
+    //         const response = await axios.get('#');
+    //         aulas.value = response.data;
+    //     } catch (error) {
+    //         console.error('Error al cargar las aulas:', error);
+    //     } finally {
+    //         cargando.value = false;
+    //     }
+    // };
+
+    const editarAula = (aula) => {
+        console.log('Editar salón:', aula);
+    };
+
+    const gestionarDisponibilidad = (aula) => {
+        console.log('Gestionar disponibilidad:', aula);
+    };
+
+
+    //Datos de prueba
+    const cargarAulas = async () =>{
         cargando.value = true;
-        try {
-            const response = await axios.get('#');
-            aulas.value = response.data;
-        } catch (error) {
+        try{
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Simula delay
+            aulas.value = [
+                {
+                    id: 1,
+                    nombre: 'Aula prueba',
+                    capacidad: 100,
+                    estado: 'ocupado',
+                    ubicacion: 'Edificio en 1er Nivel',
+                    recurso: ['Pantalla', 'Aire acondicionado']
+                },
+                                {
+                    id: 1,
+                    nombre: 'Aula prueba 2',
+                    capacidad: 100,
+                    estado: 'disponible',
+                    ubicacion: 'Edificio en 1er Nivel',
+                    recurso: ['Pantalla', 'Aire acondicionado','proyector']
+                },
+                                {
+                    id: 1,
+                    nombre: 'Aula prueba 3',
+                    capacidad: 30,
+                    estado: 'disponible',
+                    ubicacion: 'Edificio en 1er Nivel',
+                    recurso: ['Pantalla', 'Aire acondicionado']
+                },
+                                {
+                    id: 1,
+                    nombre: 'Aula pruebas',
+                    capacidad: 30,
+                    estado: 'mantenimiento',
+                    ubicacion: 'Edificio en 1er Nivel',
+                    recurso: ['Pantalla', 'Aire acondicionado']
+                }
+
+            ];
+
+        }catch(error){
             console.error('Error al cargar las aulas:', error);
         } finally {
             cargando.value = false;
         }
+
     };
+
+    onMounted(() => {
+        cargarAulas();
+    });
 
 </script>
