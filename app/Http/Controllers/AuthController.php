@@ -80,6 +80,13 @@ class AuthController extends Controller {
             $token->expires_at = Carbon::now()->addDays(30);
             $token->save();
 
+            $departamento_nombre = DB::table('departamentos')
+                ->join('users', 'departamentos.id', '=', 'users.departamento_id')
+                ->where('users.id', $user->id)
+                ->value('departamentos.nombre');
+
+            $user->departamento_nombre = $departamento_nombre;
+
             return response()->json([
                 'success' => true,
                 'message' => 'Inicio de sesión exitoso',
