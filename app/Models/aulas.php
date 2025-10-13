@@ -60,7 +60,8 @@ class aulas extends Model {
                 'recursos_tipos.nombre as recurso_tipo_nombre',
                 'recursos_tipos.descripcion as recurso_tipo_descripcion',
                 'aula_recursos.cantidad as recurso_cantidad',
-                'aula_recursos.estado as estado_recurso'
+                'aula_recursos.estado as estado_recurso',
+                'aula_recursos.observaciones as observaciones_recurso'
             )
             ->get();
     }

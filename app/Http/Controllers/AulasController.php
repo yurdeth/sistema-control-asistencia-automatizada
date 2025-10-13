@@ -20,13 +20,40 @@ class AulasController extends Controller {
             ], 401);
         }
 
-        $aulas = Cache::remember('aulas_all', 60, function () {
-            return (new aulas())->getAll();
-        });
+        $aulas = (new aulas())->getAll();
 
-        if ($aulas->isEmpty()) {
+        // Crear array recursos, agrupando por aula_id
+        $aulas_array = [];
+        foreach ($aulas as $aula) {
+            $aula_id = $aula->aula_id;
+            if (!isset($aulas_array[$aula_id])) {
+                $aulas_array[$aula_id] = [
+                    'id' => $aula->aula_id,
+                    'codigo' => $aula->codigo_aula,
+                    'nombre' => $aula->nombre_aula,
+                    'capacidad_pupitres' => $aula->capacidad_pupitres,
+                    'ubicacion' => $aula->ubicacion_aula,
+                    'qr_code' => $aula->qr_code,
+                    'estado' => $aula->estado_aula,
+                    'recursos' => []
+                ];
+            }
+            if ($aula->recurso_tipo_nombre) {
+                $aulas_array[$aula_id]['recursos'][] = [
+                    'nombre' => $aula->recurso_tipo_nombre,
+                    'cantidad' => $aula->recurso_cantidad,
+                    'estado' => $aula->estado_recurso,
+                    'observaciones_recurso' => $aula->observaciones_recurso,
+                    'aula_recurso_id' => $aula->aula_id
+                ];
+            }
+        }
+
+        $aulas = array_values($aulas_array);
+
+        if (empty($aulas)) {
             return response()->json([
-                'message' => 'No hay aulas disponibles',
+                'message' => 'No hay aulas registradas',
                 'success' => false
             ], 404);
         }
