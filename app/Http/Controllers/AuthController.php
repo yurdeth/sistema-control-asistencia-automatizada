@@ -217,4 +217,21 @@ class AuthController extends Controller {
 
         Mail::to($user->email)->send(new ContactFormMail($details));
     }*/
+
+    public function validateToken(Request $request): JsonResponse {
+        $user = Auth::user();
+
+        if ($user) {
+            return response()->json([
+                'message' => 'Token válido',
+                'status' => true,
+                'data' => $user
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Token inválido',
+            'status' => false
+        ], 401);
+    }
 }

@@ -129,8 +129,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::delete('/classroom-resources/delete/{id}', [AulaRecursosController::class, 'destroy'])->name('aulaRecursos.delete');
     Route::get('/classroom-resources/get/classroom/{id}', [AulaRecursosController::class, 'getResourcesByClassroom'])->name('aulaRecursos.getByClassroom');
     Route::get('/classroom-resources/get/resource/{id}', [AulaRecursosController::class, 'getClassroomsByResource'])->name('aulaRecursos.getByResource');
-    Route::get('/classroom-resources/get/status/{estado}', [AulaRecursosController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
-    Route::get('/classroom-resources/get/search/all', [AulaRecursosController::class, 'searchClassroomsByResources'])->name('aulaRecursos.search');
+    Route::post('/classroom-resources/get/status/all', [AulaRecursosController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
     Route::patch('/classroom-resources/change-status/{id}', [AulaRecursosController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
 
     //************************************ MANAGE ACADEMIC TERM ************************************//

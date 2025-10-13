@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class AulaRecursosController extends Controller {
 
@@ -364,7 +365,7 @@ class AulaRecursosController extends Controller {
     }
 
 
-    public function getResourcesByStatus($estado): JsonResponse {
+    public function getResourcesByStatus(Request $request): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -372,10 +373,28 @@ class AulaRecursosController extends Controller {
             ], 401);
         }
 
-        $estado = $this->sanitizeInput($estado);
+        $estado = $this->sanitizeInput($request->estado);
+        $rules = [
+            'estado' => 'required|in:nuevo,bueno,regular,malo,mantenimiento'
+        ];
+
+        $messages = [
+            'estado.required' => 'El campo estado es obligatorio.',
+            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: nuevo, bueno, regular, malo, mantenimiento.'
+        ];
 
         try {
-            $recursos = aula_recursos::with(['aula', 'recursoTipo'])
+            $validator = Validator::make($request->all(), $rules, $messages);
+
+            if ($validator->fails()){
+                return response()->json([
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors(),
+                    'success' => false
+                ], 422);
+            }
+
+            $recursos = DB::table('aula_recursos')
                 ->where('estado', $estado)
                 ->get();
 
@@ -400,103 +419,6 @@ class AulaRecursosController extends Controller {
         }
     }
 
-    public function getAvailableResourcesByClassroom($aula_id): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        try {
-            $recursos = aula_recursos::with(['recursoTipo'])
-                ->where('aula_id', $aula_id)
-                ->where('estado', 'operativo')
-                ->get();
-
-            if ($recursos->isEmpty()) {
-                return response()->json([
-                    'message' => 'No se encontraron recursos operativos para el aula especificada',
-                    'success' => false
-                ], 404);
-            }
-
-            return response()->json([
-                'data' => $recursos,
-                'message' => 'Recursos operativos obtenidos exitosamente',
-                'success' => true
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Error al obtener los recursos',
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function searchClassroomsByResources(Request $request): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        $request->merge([
-            'recursos' => array_map([$this, 'sanitizeInput'], $request->recursos ?? []),
-            'cantidad_minima' => $this->sanitizeInput($request->cantidad_minima ?? '1')
-        ]);
-
-        $rules = [
-            'recursos' => 'required|array',
-            'recursos.*' => 'exists:recursos_tipo,id',
-            'cantidad_minima' => 'sometimes|integer|min:1'
-        ];
-
-        $messages = [
-            'recursos.required' => 'El campo recursos es obligatorio.',
-            'recursos.array' => 'El campo recursos debe ser un arreglo.',
-            'recursos.*.exists' => 'Uno o más tipos de recursos no existen.',
-            'cantidad_minima.integer' => 'El campo cantidad_minima debe ser un número entero.',
-            'cantidad_minima.min' => 'El campo cantidad_minima debe ser al menos 1.'
-        ];
-
-        try {
-            $validatedData = $request->validate($rules, $messages);
-
-            $aulas = DB::table('aulas')
-                ->join('aula_recursos', 'aulas.id', '=', 'aula_recursos.aula_id')
-                ->whereIn('aula_recursos.recurso_tipo_id', $validatedData['recursos'])
-                ->where('aula_recursos.estado', 'operativo')
-                ->groupBy('aulas.id', 'aulas.codigo', 'aulas.nombre', 'aulas.capacidad')
-                ->havingRaw('COUNT(DISTINCT aula_recursos.recurso_tipo_id) = ?', [count($validatedData['recursos'])])
-                ->havingRaw('SUM(aula_recursos.cantidad) >= ?', [$validatedData['cantidad_minima']])
-                ->select('aulas.*')
-                ->get();
-
-            if ($aulas->isEmpty()) {
-                return response()->json([
-                    'message' => 'No se encontraron aulas que cumplan con los criterios especificados',
-                    'success' => false
-                ], 404);
-            }
-
-            return response()->json([
-                'data' => $aulas,
-                'message' => 'Aulas obtenidas exitosamente',
-                'success' => true
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Error al buscar las aulas',
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-
     public function changeResourceStatus(Request $request, $id): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -505,21 +427,26 @@ class AulaRecursosController extends Controller {
             ], 401);
         }
 
+        $estado = $this->sanitizeInput($request->estado);
+        $rules = [
+            'estado' => 'required|in:nuevo,bueno,regular,malo,mantenimiento'
+        ];
+
+        $messages = [
+            'estado.required' => 'El campo estado es obligatorio.',
+            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: nuevo, bueno, regular, malo, mantenimiento.'
+        ];
+
         try {
-            $request->merge([
-                'estado' => $this->sanitizeInput($request->estado)
-            ]);
+            $validator = Validator::make($request->all(), $rules, $messages);
 
-            $rules = [
-                'estado' => 'required|in:operativo,en_reparacion,fuera_de_servicio'
-            ];
-
-            $messages = [
-                'estado.required' => 'El campo estado es obligatorio.',
-                'estado.in' => 'El campo estado debe ser uno de los siguientes valores: operativo, en_reparacion, fuera_de_servicio.'
-            ];
-
-            $validatedData = $request->validate($rules, $messages);
+            if ($validator->fails()){
+                return response()->json([
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors(),
+                    'success' => false
+                ], 422);
+            }
 
             $recurso = aula_recursos::find($id);
 
@@ -530,7 +457,7 @@ class AulaRecursosController extends Controller {
                 ], 404);
             }
 
-            $recurso->estado = $validatedData['estado'];
+            $recurso->estado = $estado;
             $recurso->save();
 
             return response()->json([
