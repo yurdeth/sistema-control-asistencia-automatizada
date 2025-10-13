@@ -130,10 +130,8 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/classroom-resources/get/classroom/{id}', [AulaRecursosController::class, 'getResourcesByClassroom'])->name('aulaRecursos.getByClassroom');
     Route::get('/classroom-resources/get/resource/{id}', [AulaRecursosController::class, 'getClassroomsByResource'])->name('aulaRecursos.getByResource');
     Route::get('/classroom-resources/get/status/{estado}', [AulaRecursosController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
-    Route::get('/classroom-resources/get/classroom/{id}/available', [AulaRecursosController::class, 'getAvailableResourcesByClassroom'])->name('aulaRecursos.getAvailableByClassroom');
     Route::get('/classroom-resources/get/search/all', [AulaRecursosController::class, 'searchClassroomsByResources'])->name('aulaRecursos.search');
     Route::patch('/classroom-resources/change-status/{id}', [AulaRecursosController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
-    Route::get('/classroom-resources/get/inventory/all', [AulaRecursosController::class, 'getInventory'])->name('aulaRecursos.getInventory');
 
     //************************************ MANAGE ACADEMIC TERM ************************************//
     Route::get('/academic-terms/get/all', [CiclosAcademicosController::class, 'index'])->name('academicTerms.index');

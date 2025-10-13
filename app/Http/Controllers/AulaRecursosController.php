@@ -184,9 +184,9 @@ class AulaRecursosController extends Controller {
 
         $rules = [
             'aula_id' => 'required|exists:aulas,id',
-            'recurso_tipo_id' => 'required|exists:recursos_tipo,id',
+            'recurso_tipo_id' => 'required|exists:recursos_tipos,id',
             'cantidad' => 'required|integer|min:1',
-            'estado' => 'required|in:operativo,en_reparacion,fuera_de_servicio',
+            'estado' => 'required|in:nuevo,bueno,regular,malo,mantenimiento',
             'observaciones' => 'nullable|string'
         ];
 
@@ -199,7 +199,7 @@ class AulaRecursosController extends Controller {
             'cantidad.integer' => 'El campo cantidad debe ser un número entero.',
             'cantidad.min' => 'El campo cantidad debe ser al menos 1.',
             'estado.required' => 'El campo estado es obligatorio.',
-            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: operativo, en_reparacion, fuera_de_servicio.',
+            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: nuevo, bueno, regular, malo, mantenimiento.',
             'observaciones.string' => 'El campo observaciones debe ser una cadena de texto.'
         ];
 
@@ -217,7 +217,7 @@ class AulaRecursosController extends Controller {
                 ], 404);
             }
 
-            $recursoExistente = aula_recursos::where('aula_id', $request->aula_id)
+            /*$recursoExistente = aula_recursos::where('aula_id', $request->aula_id)
                 ->where('recurso_tipo_id', $request->recurso_tipo_id)
                 ->where('id', '!=', $id)
                 ->first();
@@ -227,7 +227,7 @@ class AulaRecursosController extends Controller {
                     'message' => 'El recurso ya existe en el aula especificada.',
                     'success' => false
                 ], 409);
-            }
+            }*/
 
             $recurso->update($validatedData);
 

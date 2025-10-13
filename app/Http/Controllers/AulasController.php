@@ -21,7 +21,7 @@ class AulasController extends Controller {
         }
 
         $aulas = Cache::remember('aulas_all', 60, function () {
-            return aulas::all();
+            return (new aulas())->getAll();
         });
 
         if ($aulas->isEmpty()) {
@@ -46,7 +46,7 @@ class AulasController extends Controller {
             ], 401);
         }
 
-        $aula = aulas::find($id);
+        $aula = (new aulas())->getAllById($id);
 
         if (!$aula) {
             return response()->json([

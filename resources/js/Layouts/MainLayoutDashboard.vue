@@ -168,7 +168,7 @@ onMounted(() => {
                     },
                     {
                         label: "Disponibilidad",
-                        href: "#",
+                        href: "/disponibilidad",
                         icon: "fa-solid fa-calendar-days",
                     }
                 ]
