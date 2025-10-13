@@ -111,7 +111,7 @@
             </header>
 
             <!--Contenido de inicio-->
-            <main>
+            <main class="flex-1 overflow-y-auto bg-gray-100">
                 <!-- Mostrar mensaje de bienvenida si no hay contenido en el slot -->
                 <template v-if="$slots.default">
                     <slot />
