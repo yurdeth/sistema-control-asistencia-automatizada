@@ -28,3 +28,15 @@ Thumbs.db
 /storage/framework/
 
 /TestCSV
+db_scaa2
+database/migrations/0000_00_00_053353_create_oauth_clients_table.php
+database/migrations/0000_00_00_053353_create_oauth_clients_table.php
+.gitignore
+database/migrations/0000_00_00_053353_create_oauth_clients_table.php
+database/migrations/2025_10_12_180353_create_oauth_auth_codes_table.php
+database/migrations/2025_10_12_180354_create_oauth_access_tokens_table.php
+database/migrations/2025_10_12_180355_create_oauth_refresh_tokens_table.php
+database/migrations/2025_10_12_180356_create_oauth_clients_table.php
+database/migrations/2025_10_12_180357_create_oauth_device_codes_table.php
+app/Http/Controllers/AuthController.php
+database/migrations/0000_00_00_053353_create_oauth_clients_table.php
