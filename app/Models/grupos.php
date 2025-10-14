@@ -150,6 +150,6 @@ class grupos extends Model {
 
     public function ciclo()
     {
-        return $this->belongsTo(ciclos::class, 'ciclo_id');
+        return $this->belongsTo(ciclos_academicos::class, 'ciclo_id');
     }
 }

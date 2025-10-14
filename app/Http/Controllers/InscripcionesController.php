@@ -99,7 +99,7 @@ class InscripcionesController extends Controller
             $inscripcion = inscripciones::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                'estudiante_id' => 'sometimes|exists:usuarios,id',
+                'estudiante_id' => 'sometimes|exists:users,id',
                 'grupo_id' => 'sometimes|exists:grupos,id',
                 'estado' => 'sometimes|in:activo,retirado,finalizado'
             ]);
