@@ -166,64 +166,86 @@ class InscripcionesController extends Controller
     }
 
     public function getByStudent($id)
-    {
-        try {
-            $inscripciones = inscripciones::with(['grupo.materia', 'grupo.docente'])
-                ->where('estudiante_id', $id)
-                ->get();
+{
+    try {
+        $inscripciones = inscripciones::with(['grupo.materia', 'grupo.docente'])
+            ->where('estudiante_id', $id)
+            ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $inscripciones
-            ], 200);
-        } catch (\Exception $e) {
+        if ($inscripciones->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las inscripciones del estudiante',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'No se encontraron inscripciones para este estudiante'
+            ], 404);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $inscripciones
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las inscripciones del estudiante',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
-    public function getByGroup($id)
-    {
-        try {
-            $inscripciones = inscripciones::with(['estudiante'])
-                ->where('grupo_id', $id)
-                ->get();
+public function getByGroup($id)
+{
+    try {
+        $inscripciones = inscripciones::with(['estudiante'])
+            ->where('grupo_id', $id)
+            ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $inscripciones
-            ], 200);
-        } catch (\Exception $e) {
+        
+        if ($inscripciones->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las inscripciones del grupo',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'No se encontraron inscripciones para este grupo'
+            ], 404);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $inscripciones
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las inscripciones del grupo',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
-    public function getByStatus($estado)
-    {
-        try {
-            $inscripciones = inscripciones::with(['estudiante', 'grupo'])
-                ->where('estado', $estado)
-                ->get();
+public function getByStatus($estado)
+{
+    try {
+        $inscripciones = inscripciones::with(['estudiante', 'grupo'])
+            ->where('estado', $estado)
+            ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $inscripciones
-            ], 200);
-        } catch (\Exception $e) {
+        if ($inscripciones->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las inscripciones por estado',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'No se encontraron inscripciones con el estado: ' . $estado
+            ], 404);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $inscripciones
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las inscripciones por estado',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function withdrawEnrollment(Request $request, $id)
     {
@@ -249,23 +271,31 @@ class InscripcionesController extends Controller
     }
 
     public function getActiveByStudent($student_id)
-    {
-        try {
-            $inscripciones = inscripciones::with(['grupo.materia', 'grupo.docente', 'grupo.ciclo'])
-                ->where('estudiante_id', $student_id)
-                ->where('estado', 'activo')
-                ->get();
+{
+    try {
+        $inscripciones = inscripciones::with(['grupo.materia', 'grupo.docente', 'grupo.ciclo'])
+            ->where('estudiante_id', $student_id)
+            ->where('estado', 'activo')
+            ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $inscripciones
-            ], 200);
-        } catch (\Exception $e) {
+      
+        if ($inscripciones->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las inscripciones activas del estudiante',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'No se encontraron inscripciones activas para este estudiante'
+            ], 404);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $inscripciones
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las inscripciones activas del estudiante',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 }
