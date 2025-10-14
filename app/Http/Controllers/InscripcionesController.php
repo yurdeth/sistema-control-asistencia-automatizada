@@ -230,7 +230,6 @@ class InscripcionesController extends Controller
 
             if ($inscripciones->isEmpty()) {
                 return response()->json([
-                    'success' => false,
                     'message' => 'No se encontraron inscripciones para este grupo'
                 ], 404);
             }
@@ -257,7 +256,6 @@ class InscripcionesController extends Controller
 
             if ($inscripciones->isEmpty()) {
                 return response()->json([
-                    'success' => false,
                     'message' => "No se encontraron inscripciones con el estado: {$estado}"
                 ], 404);
             }
