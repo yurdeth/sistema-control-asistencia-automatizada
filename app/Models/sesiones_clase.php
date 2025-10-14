@@ -24,4 +24,43 @@ class sesiones_clase extends Model {
         'estado',
         'retraso_minutos',
     ];
+
+
+    
+    public function horario()
+    {
+        return $this->belongsTo(horarios::class, 'horario_id');
+    }
+
+   
+    public function asistencias()
+    {
+        return $this->hasMany(asistencias_estudiantes::class, 'sesion_clase_id');
+    }
+
+    
+    public function grupo()
+    {
+        return $this->hasOneThrough(
+            grupos::class,
+            horarios::class,
+            'id',           
+            'id',           
+            'horario_id',   
+            'grupo_id'      
+        );
+    }
+
+
+    public function aula()
+    {
+        return $this->hasOneThrough(
+            aulas::class,
+            horarios::class,
+            'id',           
+            'id',           
+            'horario_id',   
+            'aula_id'       
+        );
+    }
 }
