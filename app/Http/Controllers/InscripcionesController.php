@@ -94,39 +94,57 @@ class InscripcionesController extends Controller
     }
 
     public function edit(Request $request, $id)
-    {
-        try {
-            $inscripcion = inscripciones::findOrFail($id);
+{
+    try {
+        $inscripcion = inscripciones::findOrFail($id);
 
-            $validator = Validator::make($request->all(), [
-                'estudiante_id' => 'sometimes|exists:users,id',
-                'grupo_id' => 'sometimes|exists:grupos,id',
-                'estado' => 'sometimes|in:activo,retirado,finalizado'
-            ]);
+        $validator = Validator::make($request->all(), [
+            'estudiante_id' => 'sometimes|exists:users,id',
+            'grupo_id' => 'sometimes|exists:grupos,id',
+            'estado' => 'sometimes|in:activo,retirado,finalizado'
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Errores de validación',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $inscripcion->update($request->all());
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Inscripción actualizada exitosamente',
-                'data' => $inscripcion
-            ], 200);
-        } catch (\Exception $e) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar la inscripción',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Errores de validación',
+                'errors' => $validator->errors()
+            ], 422);
         }
+
+       
+        $estudiante_id = $request->estudiante_id ?? $inscripcion->estudiante_id;
+        $grupo_id = $request->grupo_id ?? $inscripcion->grupo_id;
+
+        $duplicado = inscripciones::where('estudiante_id', $estudiante_id)
+            ->where('grupo_id', $grupo_id)
+            ->where('estado', 'activo')
+            ->where('id', '!=', $id) 
+            ->first();
+
+        if ($duplicado) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya existe una inscripción activa para este estudiante en este grupo'
+            ], 409);
+        }
+        
+
+        $inscripcion->update($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Inscripción actualizada exitosamente',
+            'data' => $inscripcion
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al actualizar la inscripción',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function destroy($id)
     {
