@@ -37,6 +37,6 @@ class solicitudes_inscripcion extends Model {
 
     public function respondidoPor()
     {
-        return $this->belongsTo(User::class, 'respondido_por_id');
+        return $this->belongsTo(User::class, 'respondido_por');
     }
 }
