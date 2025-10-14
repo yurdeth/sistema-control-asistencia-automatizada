@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Storesesiones_claseRequest;
 use App\Http\Requests\Updatesesiones_claseRequest;
 use App\Models\sesiones_clase;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator; 
 
 class SesionesClaseController extends Controller
 {
