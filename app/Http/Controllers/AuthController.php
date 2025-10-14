@@ -86,6 +86,12 @@ class AuthController extends Controller {
                 ->value('departamentos.nombre');
 
             $user->departamento_nombre = $departamento_nombre;
+            
+            $role_nombre = DB::table('roles')
+                ->join('usuario_roles', 'roles.id', '=', 'usuario_roles.rol_id')
+                ->where('usuario_roles.usuario_id', $user->id)
+                ->value('roles.nombre');
+            $user->role_nombre = $role_nombre;
 
             return response()->json([
                 'success' => true,
@@ -146,6 +152,19 @@ class AuthController extends Controller {
             $token = $tokenResult->token;
             $token->expires_at = Carbon::now()->addDays(30);
             $token->save();
+
+            $departamento_nombre = DB::table('departamentos')
+                ->join('users', 'departamentos.id', '=', 'users.departamento_id')
+                ->where('users.id', $user->id)
+                ->value('departamentos.nombre');
+
+            $user->departamento_nombre = $departamento_nombre;
+            
+            $role_nombre = DB::table('roles')
+                ->join('usuario_roles', 'roles.id', '=', 'usuario_roles.rol_id')
+                ->where('usuario_roles.usuario_id', $user->id)
+                ->value('roles.nombre');
+            $user->role_nombre = $role_nombre;
 
             return response()->json([
                 'success' => true,
