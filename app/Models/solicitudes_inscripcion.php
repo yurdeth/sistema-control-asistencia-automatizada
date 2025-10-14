@@ -23,4 +23,20 @@ class solicitudes_inscripcion extends Model {
         'estado',
         'respondido_por'
     ];
+
+
+    public function estudiante()
+    {
+        return $this->belongsTo(User::class, 'estudiante_id');
+    }
+
+    public function grupo()
+    {
+        return $this->belongsTo(grupos::class, 'grupo_id');
+    }
+
+    public function respondidoPor()
+    {
+        return $this->belongsTo(User::class, 'respondido_por_id');
+    }
 }
