@@ -14,7 +14,7 @@ class solicitudes_inscripcion extends Model {
      * Almacena las peticiones de los estudiantes para unirse a un grupo o las invitaciones enviadas por los docentes
      * */
 
-    protected $table = 'solicitudes_inscripcion';
+    protected $table = 'solicitudes_inscripcions';
 
     protected $fillable = [
         'estudiante_id',
