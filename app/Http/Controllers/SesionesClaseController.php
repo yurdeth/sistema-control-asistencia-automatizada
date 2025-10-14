@@ -158,44 +158,57 @@ class SesionesClaseController extends Controller
             ], 500);
         }
     }
+public function getBySchedule($id)
+{
+    try {
+        $sesiones = sesiones_clase::where('horario_id', $id)->get();
 
-    public function getBySchedule($id)
-    {
-        try {
-            $sesiones = sesiones_clase::where('horario_id', $id)->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $sesiones
-            ], 200);
-        } catch (\Exception $e) {
+        if ($sesiones->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las sesiones del horario',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'No se encontraron sesiones para este horario'
+            ], 404);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $sesiones
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las sesiones del horario',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
-    public function getByStatus($estado)
-    {
-        try {
-            $sesiones = sesiones_clase::with(['horario.grupo', 'horario.aula'])
-                ->where('estado', $estado)
-                ->get();
+public function getByStatus($estado)
+{
+    try {
+        $sesiones = sesiones_clase::with(['horario.grupo', 'horario.aula'])
+            ->where('estado', $estado)
+            ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $sesiones
-            ], 200);
-        } catch (\Exception $e) {
+        if ($sesiones->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las sesiones por estado',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => "No se encontraron sesiones con estado: {$estado}"
+            ], 404);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $sesiones
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las sesiones por estado',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function startSession(Request $request)
     {
