@@ -132,14 +132,15 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/classroom-resources/get/status/all', [AulaRecursosController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
     Route::patch('/classroom-resources/change-status/{id}', [AulaRecursosController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
 
+    
     //************************************ MANAGE ACADEMIC TERM ************************************//
     Route::get('/academic-terms/get/all', [CiclosAcademicosController::class, 'index'])->name('academicTerms.index');
+    Route::get('/academic-terms/get/current', [CiclosAcademicosController::class, 'getCurrentTerm'])->name('academicTerms.getCurrent');
+    Route::get('/academic-terms/get/status/{estado}', [CiclosAcademicosController::class, 'getByStatus'])->name('academicTerms.getByStatus');
     Route::get('/academic-terms/get/{id}', [CiclosAcademicosController::class, 'show'])->name('academicTerms.show');
     Route::post('/academic-terms/new', [CiclosAcademicosController::class, 'store'])->name('academicTerms.store');
     Route::delete('/academic-terms/delete/{id}', [CiclosAcademicosController::class, 'destroy'])->name('academicTerms.delete');
     Route::patch('/academic-terms/edit/{id}', [CiclosAcademicosController::class, 'edit'])->name('academicTerms.edit');
-    Route::get('/academic-terms/get/status/{estado}', [CiclosAcademicosController::class, 'getByStatus'])->name('academicTerms.getByStatus');
-    Route::get('/academic-terms/get/current', [CiclosAcademicosController::class, 'getCurrentTerm'])->name('academicTerms.getCurrent');
 
     //************************************ MANAGE RESOURCE TYPES ************************************//
     Route::get('/resource-types/get/all', [RecursosTipoController::class, 'index'])->name('resourceTypes.index');
