@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoremantenimientosRequest;
 use App\Http\Requests\UpdatemantenimientosRequest;
 use App\Models\mantenimientos;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator; 
+use Carbon\Carbon;  
+
 
 class MantenimientosController extends Controller
 {

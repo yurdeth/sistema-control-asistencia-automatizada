@@ -24,4 +24,15 @@ class mantenimientos extends Model {
         'fecha_fin_real',
         'estado',
     ];
+
+    public function aula()
+    {
+        return $this->belongsTo(aulas::class, 'aula_id');
+    }
+
+    
+    public function usuarioRegistro()
+    {
+        return $this->belongsTo(User::class, 'usuario_registro_id');
+    }
 }
