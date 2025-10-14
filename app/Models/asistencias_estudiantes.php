@@ -5,13 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class asistencias_estudiantes extends Model {
-    /** @use HasFactory<\Database\Factories\AsistenciasEstudiantesFactory> */
+class asistencias_estudiantes extends Model 
+{
     use HasFactory;
-
-    /*
-     * Planifica y registra los períodos en que un aula está fuera de servicio por mantenimiento.
-     * */
 
     protected $table = 'asistencias_estudiantes';
 
@@ -22,4 +18,15 @@ class asistencias_estudiantes extends Model {
         'estado',
         'validado_por_qr',
     ];
+
+    public function sesionClase()
+    {
+        return $this->belongsTo(sesiones_clase::class, 'sesion_clase_id');
+    }
+
+  
+    public function estudiante()
+    {
+        return $this->belongsTo(User::class, 'estudiante_id');
+    }
 }

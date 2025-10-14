@@ -125,7 +125,7 @@ class HorariosController extends Controller {
         $rules = [
             'grupo_id' => 'required|exists:grupos,id',
             'aula_id' => 'required|exists:aulas,id',
-            'dia_semana' => 'required|in:lunes,martes,miercoles,jueves,viernes,sabado,domingo',
+            'dia_semana' => 'required|in:Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo',
             'hora_inicio' => 'required|date_format:H:i',
             'hora_fin' => 'required|date_format:H:i|after:hora_inicio'
         ];
@@ -136,7 +136,7 @@ class HorariosController extends Controller {
             'aula_id.required' => 'El campo aula_id es obligatorio.',
             'aula_id.exists' => 'El aula especificada no existe.',
             'dia_semana.required' => 'El campo dia_semana es obligatorio.',
-            'dia_semana.in' => 'El campo dia_semana debe ser uno de los siguientes valores: lunes, martes, miercoles, jueves, viernes, sabado, domingo.',
+            'dia_semana.in' => 'El campo dia_semana debe ser uno de los siguientes valores: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo.',
             'hora_inicio.required' => 'El campo hora_inicio es obligatorio.',
             'hora_inicio.date_format' => 'El campo hora_inicio debe tener el formato HH:MM.',
             'hora_fin.required' => 'El campo hora_fin es obligatorio.',
@@ -218,7 +218,7 @@ class HorariosController extends Controller {
         $rules = [
             'grupo_id' => 'sometimes|exists:grupos,id',
             'aula_id' => 'sometimes|exists:aulas,id',
-            'dia_semana' => 'sometimes|in:lunes,martes,miercoles,jueves,viernes,sabado,domingo',
+            'dia_semana' => 'sometimes|in:Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo',
             'hora_inicio' => 'sometimes|date_format:H:i',
             'hora_fin' => 'sometimes|date_format:H:i|after:hora_inicio'
         ];
@@ -226,7 +226,7 @@ class HorariosController extends Controller {
         $messages = [
             'grupo_id.exists' => 'El grupo especificado no existe.',
             'aula_id.exists' => 'El aula especificada no existe.',
-            'dia_semana.in' => 'El campo dia_semana debe ser uno de los siguientes valores: lunes, martes, miercoles, jueves, viernes, sabado, domingo.',
+            'dia_semana.in' => 'El campo dia_semana debe ser uno de los siguientes valores: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo.',
             'hora_inicio.date_format' => 'El campo hora_inicio debe tener el formato HH:MM.',
             'hora_fin.date_format' => 'El campo hora_fin debe tener el formato HH:MM.',
             'hora_fin.after' => 'El campo hora_fin debe ser una hora posterior a hora_inicio.'
