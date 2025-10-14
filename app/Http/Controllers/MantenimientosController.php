@@ -6,9 +6,8 @@ use App\Http\Requests\StoremantenimientosRequest;
 use App\Http\Requests\UpdatemantenimientosRequest;
 use App\Models\mantenimientos;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator; 
-use Carbon\Carbon;  
-
+use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class MantenimientosController extends Controller
 {
@@ -16,6 +15,14 @@ class MantenimientosController extends Controller
     {
         try {
             $mantenimientos = mantenimientos::with(['aula', 'usuarioRegistro'])->get();
+            
+            if ($mantenimientos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron mantenimientos'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $mantenimientos
@@ -32,7 +39,15 @@ class MantenimientosController extends Controller
     public function show($id)
     {
         try {
-            $mantenimiento = mantenimientos::with(['aula', 'usuarioRegistro'])->findOrFail($id);
+            $mantenimiento = mantenimientos::with(['aula', 'usuarioRegistro'])->find($id);
+            
+            if (!$mantenimiento) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mantenimiento no encontrado'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $mantenimiento
@@ -40,9 +55,9 @@ class MantenimientosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Mantenimiento no encontrado',
+                'message' => 'Error al obtener el mantenimiento',
                 'error' => $e->getMessage()
-            ], 404);
+            ], 500);
         }
     }
 
@@ -51,6 +66,7 @@ class MantenimientosController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'aula_id' => 'required|exists:aulas,id',
+                'usuario_registro_id' => 'required|exists:users,id',
                 'motivo' => 'required|string',
                 'fecha_inicio' => 'required|date',
                 'fecha_fin_programada' => 'required|date|after:fecha_inicio',
@@ -64,9 +80,25 @@ class MantenimientosController extends Controller
                 ], 422);
             }
 
+            // Validar si hay un mantenimiento activo para la misma aula en las mismas fechas
+            $conflicto = mantenimientos::where('aula_id', $request->aula_id)
+                ->whereIn('estado', ['programado', 'en_proceso'])
+                ->where(function($query) use ($request) {
+                    $query->whereBetween('fecha_inicio', [$request->fecha_inicio, $request->fecha_fin_programada])
+                        ->orWhereBetween('fecha_fin_programada', [$request->fecha_inicio, $request->fecha_fin_programada]);
+                })
+                ->first();
+
+            if ($conflicto) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya existe un mantenimiento programado para esta aula en el rango de fechas seleccionado'
+                ], 409);
+            }
+
             $mantenimiento = mantenimientos::create([
                 'aula_id' => $request->aula_id,
-                'usuario_registro_id' => auth()->id(),
+                'usuario_registro_id' => $request->usuario_registro_id,
                 'motivo' => $request->motivo,
                 'fecha_inicio' => $request->fecha_inicio,
                 'fecha_fin_programada' => $request->fecha_fin_programada,
@@ -90,7 +122,14 @@ class MantenimientosController extends Controller
     public function edit(Request $request, $id)
     {
         try {
-            $mantenimiento = mantenimientos::findOrFail($id);
+            $mantenimiento = mantenimientos::find($id);
+
+            if (!$mantenimiento) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mantenimiento no encontrado'
+                ], 404);
+            }
 
             $validator = Validator::make($request->all(), [
                 'aula_id' => 'sometimes|exists:aulas,id',
@@ -128,7 +167,15 @@ class MantenimientosController extends Controller
     public function destroy($id)
     {
         try {
-            $mantenimiento = mantenimientos::findOrFail($id);
+            $mantenimiento = mantenimientos::find($id);
+
+            if (!$mantenimiento) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mantenimiento no encontrado'
+                ], 404);
+            }
+
             $mantenimiento->delete();
 
             return response()->json([
@@ -151,6 +198,13 @@ class MantenimientosController extends Controller
                 ->where('aula_id', $id)
                 ->get();
 
+            if ($mantenimientos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron mantenimientos para esta aula'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $mantenimientos
@@ -170,6 +224,13 @@ class MantenimientosController extends Controller
             $mantenimientos = mantenimientos::with(['aula', 'usuarioRegistro'])
                 ->where('estado', $estado)
                 ->get();
+
+            if ($mantenimientos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se encontraron mantenimientos con estado: {$estado}"
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
@@ -193,6 +254,13 @@ class MantenimientosController extends Controller
                 ->orderBy('fecha_inicio', 'asc')
                 ->get();
 
+            if ($mantenimientos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay mantenimientos próximos programados'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $mantenimientos
@@ -209,7 +277,22 @@ class MantenimientosController extends Controller
     public function finishMaintenance(Request $request, $id)
     {
         try {
-            $mantenimiento = mantenimientos::findOrFail($id);
+            $mantenimiento = mantenimientos::find($id);
+
+            if (!$mantenimiento) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mantenimiento no encontrado'
+                ], 404);
+            }
+
+            // Validar que el mantenimiento esté en proceso
+            if ($mantenimiento->estado !== 'en_proceso') {
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se puede finalizar un mantenimiento con estado: {$mantenimiento->estado}. Solo se pueden finalizar mantenimientos en proceso."
+                ], 400);
+            }
             
             $mantenimiento->update([
                 'fecha_fin_real' => Carbon::now(),
@@ -233,7 +316,14 @@ class MantenimientosController extends Controller
     public function changeStatus(Request $request, $id)
     {
         try {
-            $mantenimiento = mantenimientos::findOrFail($id);
+            $mantenimiento = mantenimientos::find($id);
+
+            if (!$mantenimiento) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mantenimiento no encontrado'
+                ], 404);
+            }
 
             $validator = Validator::make($request->all(), [
                 'estado' => 'required|in:programado,en_proceso,finalizado,cancelado'
@@ -282,6 +372,13 @@ class MantenimientosController extends Controller
             $mantenimientos = mantenimientos::with(['aula', 'usuarioRegistro'])
                 ->whereBetween('fecha_inicio', [$request->fecha_inicio, $request->fecha_fin])
                 ->get();
+
+            if ($mantenimientos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron mantenimientos en el rango de fechas especificado'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
