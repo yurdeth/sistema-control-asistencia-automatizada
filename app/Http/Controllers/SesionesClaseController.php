@@ -210,110 +210,163 @@ public function getByStatus($estado)
     }
 }
 
-    public function startSession(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'horario_id' => 'required|exists:horarios,id',
-                'fecha_clase' => 'required|date',
-            ]);
+   public function startSession(Request $request)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'horario_id' => 'required|exists:horarios,id',
+            'fecha_clase' => 'required|date',
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Errores de validación',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $sesion = sesiones_clase::create([
-                'horario_id' => $request->horario_id,
-                'fecha_clase' => $request->fecha_clase,
-                'hora_inicio_real' => Carbon::now(),
-                'estado' => 'en_curso'
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Sesión iniciada exitosamente',
-                'data' => $sesion
-            ], 201);
-        } catch (\Exception $e) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al iniciar la sesión',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Errores de validación',
+                'errors' => $validator->errors()
+            ], 422);
         }
-    }
 
-    public function finishSession(Request $request, $id)
-    {
-        try {
-            $sesion = sesiones_clase::findOrFail($id);
-            
-            $sesion->update([
-                'hora_fin_real' => Carbon::now(),
-                'estado' => 'finalizada'
-            ]);
+    
+        $sesionExistente = sesiones_clase::where('horario_id', $request->horario_id)
+            ->where('fecha_clase', $request->fecha_clase)
+            ->where('estado', 'en_curso')
+            ->first();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Sesión finalizada exitosamente',
-                'data' => $sesion
-            ], 200);
-        } catch (\Exception $e) {
+        if ($sesionExistente) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al finalizar la sesión',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Ya existe una sesión en curso para este horario y fecha'
+            ], 409); 
         }
+
+        $sesion = sesiones_clase::create([
+            'horario_id' => $request->horario_id,
+            'fecha_clase' => $request->fecha_clase,
+            'hora_inicio_real' => Carbon::now(),
+            'estado' => 'en_curso'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión iniciada exitosamente',
+            'data' => $sesion
+        ], 201);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al iniciar la sesión',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
-    public function getTodayByProfessor($id)
-    {
-        try {
-            $today = Carbon::today();
-            $sesiones = sesiones_clase::with(['horario.grupo', 'horario.aula'])
-                ->whereHas('horario.grupo', function($query) use ($id) {
-                    $query->where('docente_id', $id);
-                })
-                ->whereDate('fecha_clase', $today)
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $sesiones
-            ], 200);
-        } catch (\Exception $e) {
+public function finishSession(Request $request, $id)
+{
+    try {
+        $sesion = sesiones_clase::find($id);
+        
+        if (!$sesion) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las sesiones de hoy del docente',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Sesión no encontrada'
+            ], 404);
         }
-    }
 
-    public function getByDate($fecha)
-    {
-        try {
-            $sesiones = sesiones_clase::with(['horario.grupo', 'horario.aula'])
-                ->whereDate('fecha_clase', $fecha)
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $sesiones
-            ], 200);
-        } catch (\Exception $e) {
+        if ($sesion->estado !== 'en_curso') {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las sesiones por fecha',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => "No se puede finalizar una sesión con estado: {$sesion->estado}. Solo se pueden finalizar sesiones en curso."
+            ], 400); 
         }
+
+        $sesion->update([
+            'hora_fin_real' => Carbon::now(),
+            'estado' => 'finalizada'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión finalizada exitosamente',
+            'data' => $sesion
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al finalizar la sesión',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
+public function getTodayByProfessor($id)
+{
+    try {
+        $today = Carbon::today();
+        $sesiones = sesiones_clase::with(['horario.grupo', 'horario.aula'])
+            ->whereHas('horario.grupo', function($query) use ($id) {
+                $query->where('docente_id', $id);
+            })
+            ->whereDate('fecha_clase', $today)
+            ->get();
+
+        if ($sesiones->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El docente no tiene sesiones programadas para hoy'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $sesiones
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las sesiones de hoy del docente',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+   public function getByDate($fecha)
+{
+    try {
+        $validator = Validator::make(['fecha' => $fecha], [
+            'fecha' => 'required|date'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Formato de fecha inválido',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $sesiones = sesiones_clase::with(['horario.grupo', 'horario.aula'])
+            ->whereDate('fecha_clase', $fecha)
+            ->get();
+
+        if ($sesiones->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => "No se encontraron sesiones para la fecha: {$fecha}"
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $sesiones
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las sesiones por fecha',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
     public function changeStatus(Request $request, $id)
     {
