@@ -23,12 +23,12 @@ class inscripciones extends Model {
 
      public function estudiante()
     {
-        return $this->belongsTo(User::class, 'estudiante_id');
+        return $this->belongsTo(User::class, 'estudiante_id','id');
     }
 
     public function grupo()
     {
-        return $this->belongsTo(grupos::class, 'grupo_id');
+        return $this->belongsTo(grupos::class, 'grupo_id','id');
     }
 
 }
