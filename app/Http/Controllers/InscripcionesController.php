@@ -271,23 +271,31 @@ public function getByStatus($estado)
     }
 
     public function getActiveByStudent($student_id)
-    {
-        try {
-            $inscripciones = inscripciones::with(['grupo.materia', 'grupo.docente', 'grupo.ciclo'])
-                ->where('estudiante_id', $student_id)
-                ->where('estado', 'activo')
-                ->get();
+{
+    try {
+        $inscripciones = inscripciones::with(['grupo.materia', 'grupo.docente', 'grupo.ciclo'])
+            ->where('estudiante_id', $student_id)
+            ->where('estado', 'activo')
+            ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $inscripciones
-            ], 200);
-        } catch (\Exception $e) {
+      
+        if ($inscripciones->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las inscripciones activas del estudiante',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'No se encontraron inscripciones activas para este estudiante'
+            ], 404);
         }
+
+        return response()->json([
+            'success' => true,
+            'data' => $inscripciones
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener las inscripciones activas del estudiante',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 }
