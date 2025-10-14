@@ -88,7 +88,7 @@ class SolicitudesInscripcionController extends Controller
             $solicitud = solicitudes_inscripcion::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                'estudiante_id' => 'sometimes|exists:usuarios,id',
+                'estudiante_id' => 'sometimes|exists:users,id',
                 'grupo_id' => 'sometimes|exists:grupos,id',
                 'tipo_solicitud' => 'sometimes|in:estudiante_solicita,docente_invita',
                 'estado' => 'sometimes|in:pendiente,aceptada,rechazada,cancelada'
