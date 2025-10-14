@@ -914,6 +914,12 @@ class UserController extends Controller {
         }
 
         $user = (new User())->myProfile(Auth::user()->id)->first();
+        $departamento_nombre = DB::table('departamentos')
+            ->join('users', 'departamentos.id', '=', 'users.departamento_id')
+            ->where('users.id', $user->id)
+            ->value('departamentos.nombre');
+
+        $user->departamento_nombre = $departamento_nombre;
 
         if (!$user) {
             return response()->json([
