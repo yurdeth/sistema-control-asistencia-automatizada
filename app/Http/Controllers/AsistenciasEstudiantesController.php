@@ -5,13 +5,24 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Storeasistencias_estudiantesRequest;
 use App\Http\Requests\Updateasistencias_estudiantesRequest;
 use App\Models\asistencias_estudiantes;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class AsistenciasEstudiantesController extends Controller
 {
-     public function index()
+    public function index()
     {
         try {
             $asistencias = asistencias_estudiantes::with(['sesionClase', 'estudiante'])->get();
+            
+            if ($asistencias->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron asistencias'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $asistencias
@@ -28,7 +39,15 @@ class AsistenciasEstudiantesController extends Controller
     public function show($id)
     {
         try {
-            $asistencia = asistencias_estudiantes::with(['sesionClase', 'estudiante'])->findOrFail($id);
+            $asistencia = asistencias_estudiantes::with(['sesionClase', 'estudiante'])->find($id);
+            
+            if (!$asistencia) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Asistencia no encontrada'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $asistencia
@@ -36,9 +55,9 @@ class AsistenciasEstudiantesController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Asistencia no encontrada',
+                'message' => 'Error al obtener la asistencia',
                 'error' => $e->getMessage()
-            ], 404);
+            ], 500);
         }
     }
 
@@ -46,8 +65,8 @@ class AsistenciasEstudiantesController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'sesion_clase_id' => 'required|exists:sesiones_clase,id',
-                'estudiante_id' => 'required|exists:usuarios,id',
+                'sesion_clase_id' => 'required|exists:sesiones_clases,id',
+                'estudiante_id' => 'required|exists:users,id',
                 'estado' => 'required|in:presente,tarde,ausente',
                 'validado_por_qr' => 'boolean'
             ]);
@@ -58,6 +77,18 @@ class AsistenciasEstudiantesController extends Controller
                     'message' => 'Errores de validación',
                     'errors' => $validator->errors()
                 ], 422);
+            }
+
+            // Verificar si ya existe un registro de asistencia
+            $existente = asistencias_estudiantes::where('sesion_clase_id', $request->sesion_clase_id)
+                ->where('estudiante_id', $request->estudiante_id)
+                ->first();
+
+            if ($existente) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La asistencia ya fue registrada para este estudiante en esta sesión'
+                ], 409);
             }
 
             $asistencia = asistencias_estudiantes::create([
@@ -85,11 +116,18 @@ class AsistenciasEstudiantesController extends Controller
     public function edit(Request $request, $id)
     {
         try {
-            $asistencia = asistencias_estudiantes::findOrFail($id);
+            $asistencia = asistencias_estudiantes::find($id);
+
+            if (!$asistencia) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Asistencia no encontrada'
+                ], 404);
+            }
 
             $validator = Validator::make($request->all(), [
-                'sesion_clase_id' => 'sometimes|exists:sesiones_clase,id',
-                'estudiante_id' => 'sometimes|exists:usuarios,id',
+                'sesion_clase_id' => 'sometimes|exists:sesiones_clases,id',
+                'estudiante_id' => 'sometimes|exists:users,id',
                 'estado' => 'sometimes|in:presente,tarde,ausente',
                 'validado_por_qr' => 'sometimes|boolean'
             ]);
@@ -121,7 +159,15 @@ class AsistenciasEstudiantesController extends Controller
     public function destroy($id)
     {
         try {
-            $asistencia = asistencias_estudiantes::findOrFail($id);
+            $asistencia = asistencias_estudiantes::find($id);
+
+            if (!$asistencia) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Asistencia no encontrada'
+                ], 404);
+            }
+
             $asistencia->delete();
 
             return response()->json([
@@ -144,6 +190,13 @@ class AsistenciasEstudiantesController extends Controller
                 ->where('sesion_clase_id', $id)
                 ->get();
 
+            if ($asistencias->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron asistencias para esta sesión'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $asistencias
@@ -163,6 +216,13 @@ class AsistenciasEstudiantesController extends Controller
             $asistencias = asistencias_estudiantes::with(['sesionClase.horario.grupo'])
                 ->where('estudiante_id', $id)
                 ->get();
+
+            if ($asistencias->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron asistencias para este estudiante'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
@@ -184,6 +244,13 @@ class AsistenciasEstudiantesController extends Controller
                 ->where('estado', $estado)
                 ->get();
 
+            if ($asistencias->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se encontraron asistencias con estado: {$estado}"
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $asistencias
@@ -201,8 +268,8 @@ class AsistenciasEstudiantesController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'sesion_clase_id' => 'required|exists:sesiones_clase,id',
-                'estudiante_id' => 'required|exists:usuarios,id',
+                'sesion_clase_id' => 'required|exists:sesiones_clases,id',
+                'estudiante_id' => 'required|exists:users,id',
             ]);
 
             if ($validator->fails()) {
@@ -257,6 +324,13 @@ class AsistenciasEstudiantesController extends Controller
                 })
                 ->get();
 
+            if ($asistencias->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron asistencias para este estudiante en este grupo'
+                ], 404);
+            }
+
             $total = $asistencias->count();
             $presentes = $asistencias->where('estado', 'presente')->count();
             $tardes = $asistencias->where('estado', 'tarde')->count();
@@ -289,6 +363,13 @@ class AsistenciasEstudiantesController extends Controller
     {
         try {
             $asistencias = asistencias_estudiantes::where('estudiante_id', $student_id)->get();
+
+            if ($asistencias->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron asistencias para este estudiante'
+                ], 404);
+            }
 
             $total = $asistencias->count();
             $presentes = $asistencias->where('estado', 'presente')->count();

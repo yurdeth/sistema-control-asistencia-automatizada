@@ -24,4 +24,8 @@ class ciclos_academicos extends Model {
         'fecha_fin',
         'estado',
     ];
+    public function grupos()
+    {
+        return $this->hasMany(Grupo::class, 'ciclo_id');
+    }
 }

@@ -5,13 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class escaneos_qr extends Model {
-    /** @use HasFactory<\Database\Factories\EscaneosQrFactory> */
+class escaneos_qr extends Model 
+{
     use HasFactory;
-
-    /*
-     * Registra cada intento de escaneo de un código QR, sea exitoso o no
-     * */
 
     protected $table = 'escaneos_qr';
 
@@ -23,5 +19,23 @@ class escaneos_qr extends Model {
         'resultado',
         'motivo_fallo',
         'ip_address',
+       
     ];
+
+
+    
+    public function aula()
+    {
+        return $this->belongsTo(Aula::class, 'aula_id');
+    }
+
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    public function sesionClase()
+    {
+        return $this->belongsTo(sesiones_clase::class, 'sesion_clase_id');
+    }
 }

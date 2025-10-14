@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Storeescaneos_qrRequest;
 use App\Http\Requests\Updateescaneos_qrRequest;
 use App\Models\escaneos_qr;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class EscaneosQrController extends Controller
 {
@@ -12,6 +15,14 @@ class EscaneosQrController extends Controller
     {
         try {
             $escaneos = escaneos_qr::with(['aula', 'usuario', 'sesionClase'])->get();
+            
+            if ($escaneos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron escaneos QR'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $escaneos
@@ -28,7 +39,15 @@ class EscaneosQrController extends Controller
     public function show($id)
     {
         try {
-            $escaneo = escaneos_qr::with(['aula', 'usuario', 'sesionClase'])->findOrFail($id);
+            $escaneo = escaneos_qr::with(['aula', 'usuario', 'sesionClase'])->find($id);
+            
+            if (!$escaneo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Escaneo no encontrado'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $escaneo
@@ -36,9 +55,9 @@ class EscaneosQrController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Escaneo no encontrado',
+                'message' => 'Error al obtener el escaneo',
                 'error' => $e->getMessage()
-            ], 404);
+            ], 500);
         }
     }
 
@@ -47,9 +66,9 @@ class EscaneosQrController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'aula_id' => 'required|exists:aulas,id',
-                'usuario_id' => 'required|exists:usuarios,id',
+                'usuario_id' => 'required|exists:users,id',
                 'tipo_escaneo' => 'required|in:entrada_docente,salida_docente,asistencia_estudiante',
-                'sesion_clase_id' => 'nullable|exists:sesiones_clase,id',
+                'sesion_clase_id' => 'nullable|exists:sesiones_clases,id',
             ]);
 
             if ($validator->fails()) {
@@ -66,8 +85,8 @@ class EscaneosQrController extends Controller
                 'sesion_clase_id' => $request->sesion_clase_id,
                 'tipo_escaneo' => $request->tipo_escaneo,
                 'resultado' => 'exitoso',
-                'ip_address' => $request->ip(),
-                'fecha_hora' => Carbon::now()
+                'ip_address' => $request->ip()
+                // created_at se crea automáticamente
             ]);
 
             return response()->json([
@@ -84,8 +103,8 @@ class EscaneosQrController extends Controller
                 'tipo_escaneo' => $request->tipo_escaneo ?? 'entrada_docente',
                 'resultado' => 'fallido',
                 'motivo_fallo' => $e->getMessage(),
-                'ip_address' => $request->ip(),
-                'fecha_hora' => Carbon::now()
+                'ip_address' => $request->ip()
+                // created_at se crea automáticamente
             ]);
 
             return response()->json([
@@ -102,6 +121,13 @@ class EscaneosQrController extends Controller
             $escaneos = escaneos_qr::with(['usuario', 'sesionClase'])
                 ->where('aula_id', $id)
                 ->get();
+
+            if ($escaneos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron escaneos para esta aula'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
@@ -123,6 +149,13 @@ class EscaneosQrController extends Controller
                 ->where('usuario_id', $id)
                 ->get();
 
+            if ($escaneos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron escaneos para este usuario'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $escaneos
@@ -142,6 +175,13 @@ class EscaneosQrController extends Controller
             $escaneos = escaneos_qr::with(['aula', 'usuario'])
                 ->where('sesion_clase_id', $id)
                 ->get();
+
+            if ($escaneos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron escaneos para esta sesión'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
@@ -163,6 +203,13 @@ class EscaneosQrController extends Controller
                 ->where('tipo_escaneo', $tipo)
                 ->get();
 
+            if ($escaneos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se encontraron escaneos de tipo: {$tipo}"
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $escaneos
@@ -183,6 +230,13 @@ class EscaneosQrController extends Controller
                 ->where('resultado', $resultado)
                 ->get();
 
+            if ($escaneos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se encontraron escaneos con resultado: {$resultado}"
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $escaneos
@@ -201,9 +255,16 @@ class EscaneosQrController extends Controller
         try {
             $escaneos = escaneos_qr::with(['aula', 'usuario'])
                 ->where('resultado', 'fallido')
-                ->orderBy('fecha_hora', 'desc')
+                ->orderBy('created_at', 'desc')  // Usar created_at en lugar de fecha_hora
                 ->limit(50)
                 ->get();
+
+            if ($escaneos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron escaneos fallidos recientes'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
@@ -235,8 +296,15 @@ class EscaneosQrController extends Controller
             }
 
             $escaneos = escaneos_qr::with(['aula', 'usuario', 'sesionClase'])
-                ->whereBetween('fecha_hora', [$request->fecha_inicio, $request->fecha_fin])
+                ->whereBetween('created_at', [$request->fecha_inicio, $request->fecha_fin])  // Usar created_at
                 ->get();
+
+            if ($escaneos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron escaneos en el rango de fechas especificado'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
