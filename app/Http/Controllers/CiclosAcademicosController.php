@@ -76,7 +76,7 @@ class CiclosAcademicosController extends Controller {
         ]);
 
         $rules = [
-            'nombre' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9]+$/'],
+            'nombre' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9_\-\s]+$/'],
             'anio' => 'required|integer|min:2000|max:2100',
             'numero_ciclo' => 'required|integer|min:1|max:10',
             'fecha_inicio' => 'required|date',
@@ -202,7 +202,7 @@ class CiclosAcademicosController extends Controller {
         ]);
 
         $rules = [
-            'nombre' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9]+$/'],
+           'nombre' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9_\-\s]+$/'],
             'anio' => 'required|integer|min:2000|max:2100',
             'numero_ciclo' => 'required|integer|min:1|max:10',
             'fecha_inicio' => 'required|date',
