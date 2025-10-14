@@ -13,7 +13,7 @@ class sesiones_clase extends Model {
      * Cada registro representa una única sesión de clase y almacena los datos reales de inicio y fin
      * */
 
-    protected $table = 'sesiones_clase';
+    protected $table = 'sesiones_clases';
 
     protected $fillable = [
         'horario_id',
