@@ -148,4 +148,19 @@ class horarios extends Model {
             ->orderBy('horarios.hora_inicio')
             ->get();
     }
+
+    public function grupo()
+    {
+        return $this->belongsTo(grupos::class, 'grupo_id', 'id');
+    }
+
+    public function aula()
+    {
+        return $this->belongsTo(aulas::class, 'aula_id', 'id');
+    }
+
+    public function sesiones()
+    {
+        return $this->hasMany(sesiones_clase::class, 'horario_id', 'id');
+    }
 }
