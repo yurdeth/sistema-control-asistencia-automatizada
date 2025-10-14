@@ -137,4 +137,19 @@ class grupos extends Model {
             ->where('grupos.estado', '=', 'activo')
             ->get();
     }
+
+    public function materia()
+    {
+        return $this->belongsTo(materias::class, 'materia_id');
+    }
+
+    public function docente()
+    {
+        return $this->belongsTo(User::class, 'docente_id');
+    }
+
+    public function ciclo()
+    {
+        return $this->belongsTo(ciclos::class, 'ciclo_id');
+    }
 }
