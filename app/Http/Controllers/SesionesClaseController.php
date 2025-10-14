@@ -6,11 +6,12 @@ use App\Http\Requests\Storesesiones_claseRequest;
 use App\Http\Requests\Updatesesiones_claseRequest;
 use App\Models\sesiones_clase;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator; 
+use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class SesionesClaseController extends Controller
 {
-     public function index()
+    public function index()
     {
         try {
             $sesiones = sesiones_clase::with(['horario.grupo', 'horario.aula'])->get();
