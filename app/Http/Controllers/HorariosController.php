@@ -125,7 +125,7 @@ class HorariosController extends Controller {
         $rules = [
             'grupo_id' => 'required|exists:grupos,id',
             'aula_id' => 'required|exists:aulas,id',
-            'dia_semana' => 'required|in:lunes,martes,miercoles,jueves,viernes,sabado,domingo',
+            'dia_semana' => 'required|in:Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo',
             'hora_inicio' => 'required|date_format:H:i',
             'hora_fin' => 'required|date_format:H:i|after:hora_inicio'
         ];
@@ -218,7 +218,7 @@ class HorariosController extends Controller {
         $rules = [
             'grupo_id' => 'sometimes|exists:grupos,id',
             'aula_id' => 'sometimes|exists:aulas,id',
-            'dia_semana' => 'sometimes|in:lunes,martes,miercoles,jueves,viernes,sabado,domingo',
+            'dia_semana' => 'sometimes|in:Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo',
             'hora_inicio' => 'sometimes|date_format:H:i',
             'hora_fin' => 'sometimes|date_format:H:i|after:hora_inicio'
         ];
