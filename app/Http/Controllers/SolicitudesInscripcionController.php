@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Storesolicitudes_inscripcionRequest;
 use App\Http\Requests\Updatesolicitudes_inscripcionRequest;
 use App\Models\solicitudes_inscripcion;
+use Illuminate\Http\Request;  
+use Illuminate\Support\Facades\Validator; 
 
 class SolicitudesInscripcionController extends Controller
 {
@@ -46,7 +48,7 @@ class SolicitudesInscripcionController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'estudiante_id' => 'required|exists:usuarios,id',
+                'estudiante_id' => 'required|exists:users,id',
                 'grupo_id' => 'required|exists:grupos,id',
                 'tipo_solicitud' => 'required|in:estudiante_solicita,docente_invita',
             ]);
