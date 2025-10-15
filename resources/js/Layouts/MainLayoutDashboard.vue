@@ -22,7 +22,15 @@
                 :style="{ color: colorText }">
                     <i class="fa-solid fa-grip"></i>
                     Dashboard
-            </Link>
+                </Link>
+
+                <Link
+                href="/departamentos"
+                class="sidebar-link p-2 rounded flex items-center gap-2"
+                :style="{ color: colorText }">
+                    <i class="fa-solid fa-list"></i>
+                    Departamentos
+                </Link>
 
             <!-- Submenús -->
             <div v-for="(menu, index) in menus" :key="index">

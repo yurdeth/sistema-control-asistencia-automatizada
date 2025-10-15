@@ -32,6 +32,7 @@ Route::get('/login', function () {
     ]);
 })->name('dashboard');*/
 
+
 Route::middleware(['auth:api', NoBrowserCacheMiddleware::class])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard', [
@@ -46,6 +47,10 @@ Route::middleware(['auth:api', NoBrowserCacheMiddleware::class])->group(function
 
     Route::get('/disponibilidad', function () {
         return Inertia::render('Administration/classroomManagement/availability');
+    });
+
+    Route::get('/departamentos', function () {
+        return Inertia::render('Administration/General/departments');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
