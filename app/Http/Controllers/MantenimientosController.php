@@ -119,50 +119,83 @@ class MantenimientosController extends Controller
         }
     }
 
-    public function edit(Request $request, $id)
-    {
-        try {
-            $mantenimiento = mantenimientos::find($id);
+   public function edit(Request $request, $id)
+{
+    try {
+        $mantenimiento = mantenimientos::find($id);
 
-            if (!$mantenimiento) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Mantenimiento no encontrado'
-                ], 404);
-            }
-
-            $validator = Validator::make($request->all(), [
-                'aula_id' => 'sometimes|exists:aulas,id',
-                'motivo' => 'sometimes|string',
-                'fecha_inicio' => 'sometimes|date',
-                'fecha_fin_programada' => 'sometimes|date',
-                'fecha_fin_real' => 'sometimes|date',
-                'estado' => 'sometimes|in:programado,en_proceso,finalizado,cancelado'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Errores de validación',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $mantenimiento->update($request->all());
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Mantenimiento actualizado exitosamente',
-                'data' => $mantenimiento
-            ], 200);
-        } catch (\Exception $e) {
+        if (!$mantenimiento) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar el mantenimiento',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Mantenimiento no encontrado'
+            ], 404);
         }
+
+        $validator = Validator::make($request->all(), [
+            'aula_id' => 'sometimes|exists:aulas,id',
+            'motivo' => 'sometimes|string|max:500',
+            'fecha_inicio' => 'sometimes|date',
+            'fecha_fin_programada' => 'sometimes|date|after_or_equal:fecha_inicio',
+            'fecha_fin_real' => 'sometimes|date|after_or_equal:fecha_inicio',
+            'estado' => 'sometimes|in:programado,en_proceso,finalizado,cancelado'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errores de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+       
+        $aula_id = $request->aula_id ?? $mantenimiento->aula_id;
+        $fecha_inicio = $request->fecha_inicio ?? $mantenimiento->fecha_inicio;
+        $fecha_fin = $request->fecha_fin_programada ?? $mantenimiento->fecha_fin_programada;
+
+        $conflicto = mantenimientos::where('aula_id', $aula_id)
+            ->where('id', '!=', $id) 
+            ->where('estado', '!=', 'cancelado')
+            ->where(function($query) use ($fecha_inicio, $fecha_fin) {
+                $query->whereBetween('fecha_inicio', [$fecha_inicio, $fecha_fin])
+                    ->orWhereBetween('fecha_fin_programada', [$fecha_inicio, $fecha_fin])
+                    ->orWhere(function($q) use ($fecha_inicio, $fecha_fin) {
+                        $q->where('fecha_inicio', '<=', $fecha_inicio)
+                          ->where('fecha_fin_programada', '>=', $fecha_fin);
+                    });
+            })
+            ->exists();
+
+        if ($conflicto) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ya existe un mantenimiento programado para esta aula en ese período'
+            ], 422);
+        }
+
+        $mantenimiento->update($request->only([
+            'aula_id',
+            'motivo',
+            'fecha_inicio',
+            'fecha_fin_programada',
+            'fecha_fin_real',
+            'estado'
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mantenimiento actualizado exitosamente',
+            'data' => $mantenimiento
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al actualizar el mantenimiento',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function destroy($id)
     {
