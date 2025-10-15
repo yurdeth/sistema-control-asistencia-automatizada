@@ -84,7 +84,8 @@ class EscaneosQrController extends Controller
                 'usuario_id' => $request->usuario_id,
                 'sesion_clase_id' => $request->sesion_clase_id,
                 'tipo_escaneo' => $request->tipo_escaneo,
-                'resultado' => 'exitoso',
+                // El enum en la BD acepta: 'exito', 'fallo', 'no_autorizado'
+                'resultado' => 'exito',
                 'ip_address' => $request->ip()
                 // created_at se crea automáticamente
             ]);
@@ -101,7 +102,7 @@ class EscaneosQrController extends Controller
                 'usuario_id' => $request->usuario_id ?? null,
                 'sesion_clase_id' => $request->sesion_clase_id ?? null,
                 'tipo_escaneo' => $request->tipo_escaneo ?? 'entrada_docente',
-                'resultado' => 'fallido',
+                'resultado' => 'fallo',
                 'motivo_fallo' => $e->getMessage(),
                 'ip_address' => $request->ip()
                 // created_at se crea automáticamente
@@ -254,7 +255,7 @@ class EscaneosQrController extends Controller
     {
         try {
             $escaneos = escaneos_qr::with(['aula', 'usuario'])
-                ->where('resultado', 'fallido')
+                ->where('resultado', 'fallo')
                 ->orderBy('created_at', 'desc')  // Usar created_at en lugar de fecha_hora
                 ->limit(50)
                 ->get();
@@ -273,7 +274,7 @@ class EscaneosQrController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener los escaneos fallidos recientes',
+                'message' => 'Error al obtener los escaneos fallos recientes',
                 'error' => $e->getMessage()
             ], 500);
         }

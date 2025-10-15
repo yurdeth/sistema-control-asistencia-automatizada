@@ -9,7 +9,7 @@ class escaneos_qr extends Model
 {
     use HasFactory;
 
-    protected $table = 'escaneos_qr';
+    protected $table = 'escaneos_qrs';
 
     protected $fillable = [
         'aula_id',
@@ -26,7 +26,7 @@ class escaneos_qr extends Model
     
     public function aula()
     {
-        return $this->belongsTo(Aula::class, 'aula_id');
+        return $this->belongsTo(aulas::class, 'aula_id');
     }
 
     public function usuario()
