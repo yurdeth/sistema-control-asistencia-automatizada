@@ -1,9 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AuthController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
-use App\Http\Middleware\RoleBasedMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -58,5 +56,4 @@ Route::middleware(['auth:api', NoBrowserCacheMiddleware::class])->group(function
 // en routes/web.php
 
 
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
