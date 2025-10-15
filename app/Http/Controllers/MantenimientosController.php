@@ -283,7 +283,7 @@ class MantenimientosController extends Controller
         try {
             $mantenimientos = mantenimientos::with(['aula', 'usuarioRegistro'])
                 ->where('estado', 'programado')
-                ->where('fecha_inicio', '>=', Carbon::now())
+                ->where('fecha_inicio', '>=', Carbon::today())
                 ->orderBy('fecha_inicio', 'asc')
                 ->get();
 
