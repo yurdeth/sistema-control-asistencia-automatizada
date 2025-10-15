@@ -2,20 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Storeasistencias_estudiantesRequest;
-use App\Http\Requests\Updateasistencias_estudiantesRequest;
 use App\Models\asistencias_estudiantes;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
-class AsistenciasEstudiantesController extends Controller
-{
-    public function index()
-    {
+class AsistenciasEstudiantesController extends Controller {
+    public function index(): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [1, 2, 3];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $asistencias = asistencias_estudiantes::with(['sesionClase', 'estudiante'])->get();
-            
+
             if ($asistencias->isEmpty()) {
                 return response()->json([
                     'success' => false,
@@ -36,11 +53,28 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function show($id)
-    {
+    public function show($id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [1, 2, 3];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $asistencia = asistencias_estudiantes::with(['sesionClase', 'estudiante'])->find($id);
-            
+
             if (!$asistencia) {
                 return response()->json([
                     'success' => false,
@@ -61,8 +95,25 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [5, 6];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $validator = Validator::make($request->all(), [
                 'sesion_clase_id' => 'required|exists:sesiones_clases,id',
@@ -113,8 +164,25 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function edit(Request $request, $id)
-    {
+    public function edit(Request $request, $id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [5];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $asistencia = asistencias_estudiantes::find($id);
 
@@ -156,8 +224,25 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function destroy($id)
-    {
+    public function destroy($id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [5];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $asistencia = asistencias_estudiantes::find($id);
 
@@ -183,8 +268,25 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function getBySession($id)
-    {
+    public function getBySession($id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [2, 4, 5];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $asistencias = asistencias_estudiantes::with(['estudiante'])
                 ->where('sesion_clase_id', $id)
@@ -210,8 +312,25 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function getByStudent($id)
-    {
+    public function getByStudent($id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [2, 4, 5];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $asistencias = asistencias_estudiantes::with(['sesionClase.horario.grupo'])
                 ->where('estudiante_id', $id)
@@ -237,8 +356,25 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function getByStatus($estado)
-    {
+    public function getByStatus($estado): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [2, 4, 5];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $asistencias = asistencias_estudiantes::with(['sesionClase', 'estudiante'])
                 ->where('estado', $estado)
@@ -264,8 +400,25 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function registerAttendance(Request $request)
-    {
+    public function registerAttendance(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [2, 4, 5];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $validator = Validator::make($request->all(), [
                 'sesion_clase_id' => 'required|exists:sesiones_clases,id',
@@ -314,12 +467,29 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function getAttendanceReport($student_id, $group_id)
-    {
+    public function getAttendanceReport($student_id, $group_id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [1, 2, 3, 4, 5];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $asistencias = asistencias_estudiantes::with(['sesionClase'])
                 ->where('estudiante_id', $student_id)
-                ->whereHas('sesionClase.horario', function($query) use ($group_id) {
+                ->whereHas('sesionClase.horario', function ($query) use ($group_id) {
                     $query->where('grupo_id', $group_id);
                 })
                 ->get();
@@ -359,8 +529,25 @@ class AsistenciasEstudiantesController extends Controller
         }
     }
 
-    public function getStudentStatistics($student_id)
-    {
+    public function getStudentStatistics($student_id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+
+        $rolesPermitidos = [1, 2, 3, 4, 5];
+
+        if (!in_array($user_rol, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $asistencias = asistencias_estudiantes::where('estudiante_id', $student_id)->get();
 
@@ -394,5 +581,16 @@ class AsistenciasEstudiantesController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function getUserRole() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 }
