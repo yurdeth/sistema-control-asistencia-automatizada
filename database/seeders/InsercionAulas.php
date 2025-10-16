@@ -11,8 +11,8 @@ class InsercionAulas extends Seeder
     public function run(): void
     {
         // Primero limpiar la tabla
-        DB::table('aulas')->truncate();
-        
+//        DB::table('aulas')->truncate();
+
         $aulas = [
             ['codigo' => 'AULA-31-1N', 'nombre' => 'Aula 31 1er Nivel', 'capacidad_pupitres' => 100, 'ubicacion' => 'Edificio Minerva, 300 m al norte sobre la entrada principal, sobre la calle principal de la Universidad', 'estado' => 'disponible'],
             ['codigo' => 'AULA-32-1N', 'nombre' => 'Aula 32 1er Nivel', 'capacidad_pupitres' => 100, 'ubicacion' => 'Edificio Minerva, 300 m al norte sobre la entrada principal, sobre la calle principal de la Universidad', 'estado' => 'disponible'],
