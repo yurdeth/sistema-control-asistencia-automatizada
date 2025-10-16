@@ -14,7 +14,7 @@
                     <input
                         v-model="searchTerm"
                         type="text"
-                        placeholder="Buscar por nombre, categoría o descripción..."
+                        placeholder="Buscar por nombre o estado"
                         class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <button
@@ -54,24 +54,40 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                                <tr  v-for="department in departments"  :key="department.id" class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 text-sm text-gray-900">{{ department.id }}</td>
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ department.nombre }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
-                                        <div class="relative group">
-                                            <!-- Texto truncado -->
-                                            <p class="truncate">
-                                                {{ department.descripcion || 'Sin descripción' }}
-                                            </p>
+                <!-- Mensaje cuando no hay resultados -->
+                <tr v-if="departments.length === 0">
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        <div class="flex flex-col items-center gap-2">
+                            <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-lg font-medium">No se encontraron resultados</p>
+                            <p class="text-sm">
+                                {{ searchTerm ? `No hay departamentos que coincidan con "${searchTerm}"` : 'No hay departamentos registrados' }}
+                            </p>
+                        </div>
+                    </td>
+                </tr>
 
-                                            <!-- Tooltip con descripción completa al hacer hover -->
-                                            <div class="invisible group-hover:visible absolute z-10 w-64 p-3 text-white text-xs rounded-lg shadow-lg -top-2 left-0 transform -translate-y-full"
-                                            :style="{ background: '#ff6e61' }">
-                                            {{ department.descripcion || 'Sin descripción' }}
-                                                <div class="absolute bottom-0 left-6 transform translate-y-1/2 rotate-45 w-2 h-2" :style="{ background: '#ff6e61' }"></div>
-                                            </div>
-                                        </div>
-                                        </td>
+                <!-- Filas con datos -->
+                <tr v-else v-for="department in departments" :key="department.id" class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 text-sm text-gray-900">{{ department.id }}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ department.nombre }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                        <div class="relative group">
+                            <!-- Texto truncado -->
+                            <p class="truncate">
+                                {{ department.descripcion || 'Sin descripción' }}
+                            </p>
+
+                            <!-- Tooltip con descripción completa al hacer hover -->
+                            <div class="invisible group-hover:visible absolute z-10 w-64 p-3 text-white text-xs rounded-lg shadow-lg -top-2 left-0 transform -translate-y-full"
+                            :style="{ background: '#ff6e61' }">
+                            {{ department.descripcion || 'Sin descripción' }}
+                                <div class="absolute bottom-0 left-6 transform translate-y-1/2 rotate-45 w-2 h-2" :style="{ background: '#ff6e61' }"></div>
+                            </div>
+                        </div>
+                    </td>
                                     <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ department.estado }}</td>
                                     <td class="px-6 py-4 text-sm">
                                         <div class="flex gap-2">
@@ -112,6 +128,7 @@
                     <input
                         type="text"
                         v-model="form.nombre"
+                        @input="form.nombre = form.nombre.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')"
                         class="w-full mt-1 border-gray-300 rounded-md"
                         :class="{ 'border-red-500': formErrors.nombre }"
                     />
@@ -164,10 +181,10 @@
 
 <script setup>
     import { Head } from '@inertiajs/vue3';
-    import { ref, computed, onMounted } from 'vue';
+    import { ref, onMounted, computed  } from 'vue';
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
     import Modal from '@/Components/Modal.vue';
-    import { getDeparmentsAll, createDeparments, updateDepartment, deleteDepartment } from '@/Services/deparmentsService';
+    import { getDeparmentsAll, createDeparments, updateDepartment, deleteDepartment, searchName, searchStatus } from '@/Services/deparmentsService';
 
     // Definimos las propiedades necesarias
     const colorText = ref('#1F2937')
@@ -175,14 +192,34 @@
     const loading = ref(false)
     const error = ref(null)
 
-    const departments = ref([]);
+    const allDepartments = ref([]);
+
+    // Computed property para filtrar departamentos
+    const departments = computed(() => {
+        if (!searchTerm.value.trim()) {
+            return allDepartments.value;
+        }
+
+        const search = searchTerm.value.toLowerCase().trim();
+
+        return allDepartments.value.filter(dept => {
+            const nombre = dept.nombre?.toLowerCase() || '';
+            const estado = dept.estado?.toLowerCase() || '';
+            const descripcion = dept.descripcion?.toLowerCase() || '';
+
+            return nombre.includes(search) ||
+                estado.includes(search) ||
+                descripcion.includes(search);
+        });
+    });
 
     // Función para cargar departamentos
     async function fetchDepartments() {
         try {
             loading.value = true;
+            error.value = null;
             const response = await getDeparmentsAll();
-            departments.value = Array.isArray(response) ? response : response.data;
+            allDepartments.value = Array.isArray(response) ? response : response.data;
         } catch (error) {
             console.error('Error al obtener los departamentos:', error);
             error.value = 'Error al cargar los departamentos';
@@ -226,8 +263,7 @@
         isEditMode.value = true
         form.value = { ...department }
         formErrors.value = {}
-        showModal.value = true
-        console.log('Editando departamento:', form.value);
+        showModal.value = true;
     }
 
     // Función para cerrar modal
@@ -249,6 +285,13 @@
             } else {
                 // Crear nuevo departamento
                 console.log('Creando departamento:', form.value);
+                // Validación personalizada: no permitir números en el nombre
+                const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+                if (!nombreRegex.test(form.value.nombre)) {
+                    formErrors.value.nombre = ['El nombre no debe contener números ni caracteres especiales.'];
+                    return;
+                }
+
                 await createDeparments(form.value);
                 alert('Departamento creado exitosamente');
             }
@@ -278,29 +321,25 @@
     }
 
     // Función para eliminar departamento
-    // async function deleteItem(id) {
-    //     if (!confirm('¿Estás seguro de que deseas eliminar este departamento?')) {
-    //         return;
-    //     }
+    async function deleteItem(id) {
+        if (!confirm('¿Estás seguro de que deseas eliminar este departamento?')) {
+            return;
+        }
 
-    //     try {
-    //         console.log('Eliminando departamento ID:', id);
-    //         await deleteDepartment(id);
+        try {
+            await deleteDepartment(id);
 
-    //         // Recargar la tabla DESPUÉS de eliminar
-    //         await fetchDepartments();
-
-    //         alert('Departamento eliminado exitosamente');
-    //     } catch (error) {
-    //         console.error('Error al eliminar:', error);
-    //         if (error.response?.status === 404) {
-    //             alert('El departamento no existe o ya fue eliminado.');
-    //         } else if (error.response?.status === 403) {
-    //             alert('No tienes permisos para eliminar este departamento.');
-    //         } else {
-    //             alert('Error al eliminar: ' + (error.response?.data?.message || error.message));
-    //         }
-    //     }
-    // }
-
+            allDepartments.value = allDepartments.value.filter(dept => dept.id !== id);
+            alert('Departamento eliminado exitosamente');
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            if (error.response?.status === 404) {
+                alert('El departamento no existe o ya fue eliminado.');
+            } else if (error.response?.status === 403) {
+                alert('No tienes permisos para eliminar este departamento.');
+            } else {
+                alert('Error al eliminar: ' + (error.response?.data?.message || error.message));
+            }
+        }
+    }
 </script>

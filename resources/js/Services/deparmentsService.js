@@ -82,3 +82,43 @@ export const deleteDepartment = async(id) => {
         throw error;
     }
 }
+
+// Función para buscar por nombre
+export const searchName = async(nombre) => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Faltan datos de autenticación");
+
+        const url = `${API_URL}get/name/${nombre}`;
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Error en searchName:', error);
+        throw error;
+    }
+}
+
+// Función para buscar por estado
+export const searchStatus = async(estado) => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Faltan datos de autenticación");
+
+        const url = `${API_URL}get/status/${estado}`;;
+        const response = await axios.get(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Error en searchStatus:', error);
+        throw error;
+    }
+}
