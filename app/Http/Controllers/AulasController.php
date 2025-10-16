@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class AulasController extends Controller {
 
@@ -90,84 +91,93 @@ class AulasController extends Controller {
     }
 
     public function store(Request $request): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        $user_rol = $this->getUserRole();
-        // Solo permitir para Administrador académico
-        if ($user_rol != 2) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        $request->merge([
-            'codigo' => $this->sanitizeInput($request->codigo),
-            'nombre' => $this->sanitizeInput($request->nombre),
-            'capacidad_pupitres' => (int)$request->capacidad_pupitres,
-            'ubicacion' => $this->sanitizeInput($request->ubicacion),
-            'qr_code' => $this->sanitizeInput($request->qr_code),
-            'estado' => $this->sanitizeInput($request->estado)
-        ]);
-
-        $rules = [
-            'codigo' => 'required|string|max:50|unique:aulas,codigo',
-            'nombre' => 'required|string|max:100',
-            'capacidad_pupitres' => 'required|integer|min:1',
-            'ubicacion' => 'required|string|max:255',
-            'qr_code' => 'nullable|string|max:255|unique:aulas,qr_code',
-            'estado' => 'required|in:disponible,ocupada,mantenimiento,inactiva'
-        ];
-
-        $messages = [
-            'codigo.required' => 'El campo código es obligatorio.',
-            'codigo.string' => 'El campo código debe ser una cadena de texto.',
-            'codigo.max' => 'El campo código no debe exceder los 50 caracteres.',
-            'codigo.unique' => 'El código ya está en uso.',
-            'nombre.required' => 'El campo nombre es obligatorio.',
-            'nombre.string' => 'El campo nombre debe ser una cadena de texto.',
-            'nombre.max' => 'El campo nombre no debe exceder los 100 caracteres.',
-            'capacidad_pupitres.required' => 'El campo capacidad de pupitres es obligatorio.',
-            'capacidad_pupitres.integer' => 'El campo capacidad de pupitres debe ser un número entero.',
-            'capacidad_pupitres.min' => 'El campo capacidad de pupitres debe ser al menos 1.',
-            'ubicacion.required' => 'El campo ubicación es obligatorio.',
-            'ubicacion.string' => 'El campo ubicación debe ser una cadena de texto.',
-            'ubicacion.max' => 'El campo ubicación no debe exceder los 255 caracteres.',
-            'qr_code.string' => 'El campo QR code debe ser una cadena de texto.',
-            'qr_code.max' => 'El campo QR code no debe exceder los 255 caracteres.',
-            'qr_code.unique' => 'El QR code ya está en uso.',
-            'estado.required' => 'El campo estado es obligatorio.',
-            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: disponible, ocupada, mantenimiento, inactiva.'
-        ];
-
-        try {
-            $validation = $request->validate($rules, $messages);
-
-            DB::beginTransaction();
-
-            $aula = aulas::create($validation);
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Aula creada exitosamente',
-                'success' => true,
-                'data' => $aula
-            ], 201);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Error al crear el aula',
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'Acceso no autorizado',
+            'success' => false
+        ], 401);
     }
+
+    $user_rol = $this->getUserRole();
+  
+    if ($user_rol != 2) {
+        return response()->json([
+            'message' => 'Acceso no autorizado',
+            'success' => false
+        ], 401);
+    }
+
+    $request->merge([
+        'codigo' => $this->sanitizeInput($request->codigo),
+        'nombre' => $this->sanitizeInput($request->nombre),
+        'capacidad_pupitres' => (int)$request->capacidad_pupitres,
+        'ubicacion' => $this->sanitizeInput($request->ubicacion),
+        'estado' => $this->sanitizeInput($request->estado)
+    ]);
+
+    $rules = [
+        'codigo' => 'required|string|max:50|unique:aulas,codigo',
+        'nombre' => 'required|string|max:100',
+        'capacidad_pupitres' => 'required|integer|min:1',
+        'ubicacion' => 'required|string|max:255',
+        'estado' => 'required|in:disponible,ocupada,mantenimiento,inactiva'
+    ];
+
+    $messages = [
+        'codigo.required' => 'El campo código es obligatorio.',
+        'codigo.string' => 'El campo código debe ser una cadena de texto.',
+        'codigo.max' => 'El campo código no debe exceder los 50 caracteres.',
+        'codigo.unique' => 'El código ya está en uso.',
+        'nombre.required' => 'El campo nombre es obligatorio.',
+        'nombre.string' => 'El campo nombre debe ser una cadena de texto.',
+        'nombre.max' => 'El campo nombre no debe exceder los 100 caracteres.',
+        'capacidad_pupitres.required' => 'El campo capacidad de pupitres es obligatorio.',
+        'capacidad_pupitres.integer' => 'El campo capacidad de pupitres debe ser un número entero.',
+        'capacidad_pupitres.min' => 'El campo capacidad de pupitres debe ser al menos 1.',
+        'ubicacion.required' => 'El campo ubicación es obligatorio.',
+        'ubicacion.string' => 'El campo ubicación debe ser una cadena de texto.',
+        'ubicacion.max' => 'El campo ubicación no debe exceder los 255 caracteres.',
+        'estado.required' => 'El campo estado es obligatorio.',
+        'estado.in' => 'El campo estado debe ser uno de los siguientes valores: disponible, ocupada, mantenimiento, inactiva.'
+    ];
+
+    try {
+        $validation = $request->validate($rules, $messages);
+
+        DB::beginTransaction();
+
+      
+        $qrContent = url('/aulas/' . $validation['codigo']);
+        
+        $qrCodeSvg = QrCode::format('svg')
+                          ->size(400)
+                          ->errorCorrection('H')
+                          ->margin(2)
+                          ->generate($qrContent);
+
+   
+        $validation['qr_code'] = $qrCodeSvg;
+
+        $aula = aulas::create($validation);
+
+        DB::commit();
+
+        return response()->json([
+            'message' => 'Aula creada exitosamente con código QR único',
+            'success' => true,
+            'data' => $aula
+        ], 201);
+
+    } catch (Exception $e) {
+        DB::rollBack();
+        
+        return response()->json([
+            'message' => 'Error al crear el aula',
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
     public function edit(Request $request, $id): JsonResponse {
         if (!Auth::check()) {
