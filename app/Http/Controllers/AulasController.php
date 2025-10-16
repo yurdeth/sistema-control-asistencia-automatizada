@@ -146,17 +146,8 @@ class AulasController extends Controller {
 
         DB::beginTransaction();
 
-      
-        $qrContent = url('/aulas/' . $validation['codigo']);
-        
-        $qrCodeSvg = QrCode::format('svg')
-                          ->size(400)
-                          ->errorCorrection('H')
-                          ->margin(2)
-                          ->generate($qrContent);
-
-   
-        $validation['qr_code'] = $qrCodeSvg;
+      //genera el uuid
+        $validation['qr_code'] = \Illuminate\Support\Str::uuid()->toString();
 
         $aula = aulas::create($validation);
 

@@ -4,15 +4,12 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Str;
 
 class InsercionAulas extends Seeder
 {
     public function run(): void
     {
-        // Primero limpiar la tabla
-//        DB::table('aulas')->truncate();
-
         $aulas = [
             ['codigo' => 'AULA-31-1N', 'nombre' => 'Aula 31 1er Nivel', 'capacidad_pupitres' => 100, 'ubicacion' => 'Edificio Minerva, 300 m al norte sobre la entrada principal, sobre la calle principal de la Universidad', 'estado' => 'disponible'],
             ['codigo' => 'AULA-32-1N', 'nombre' => 'Aula 32 1er Nivel', 'capacidad_pupitres' => 100, 'ubicacion' => 'Edificio Minerva, 300 m al norte sobre la entrada principal, sobre la calle principal de la Universidad', 'estado' => 'disponible'],
@@ -31,26 +28,21 @@ class InsercionAulas extends Seeder
             ['codigo' => 'AULA-212-3N', 'nombre' => 'Aula 212 3er Nivel', 'capacidad_pupitres' => 50, 'ubicacion' => 'Edificio Minerva, 300 m al norte sobre la entrada principal, sobre la calle principal de la Universidad', 'estado' => 'disponible'],
         ];
 
-        $this->command->info('🔧 Creando aulas con códigos QR (SVG)...');
 
         foreach ($aulas as $index => $aula) {
-            $qrContent = url('/aulas/' . $aula['codigo']);
-            $qrCodeSvg = QrCode::format('svg')->size(400)->errorCorrection('H')->generate($qrContent);
+            $qrUuid = Str::uuid()->toString();
 
             DB::table('aulas')->insert([
                 'codigo' => $aula['codigo'],
                 'nombre' => $aula['nombre'],
                 'capacidad_pupitres' => $aula['capacidad_pupitres'],
                 'ubicacion' => $aula['ubicacion'],
-                'qr_code' => $qrCodeSvg,
+                'qr_code' => $qrUuid, 
                 'estado' => $aula['estado'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            $this->command->line("✓ [" . ($index + 1) . "/15] {$aula['codigo']}");
         }
-
-        $this->command->info('🎉 15 aulas creadas');
     }
 }
