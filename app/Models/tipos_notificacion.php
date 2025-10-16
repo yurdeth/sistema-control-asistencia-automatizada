@@ -19,4 +19,13 @@ class tipos_notificacion extends Model {
         'nombre',
         'prioridad',
     ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function notificaciones(): HasMany {
+        return $this->hasMany(notificaciones::class, 'tipo_notificacion_id');
+    }
 }

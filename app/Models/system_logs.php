@@ -23,4 +23,14 @@ class system_logs extends Model {
         'usuario_id',
         'contexto',
     ];
+
+    protected $casts = [
+        'contexto' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function usuario(): BelongsTo {
+        return $this->belongsTo(User::class, 'usuario_id');
+    }
 }

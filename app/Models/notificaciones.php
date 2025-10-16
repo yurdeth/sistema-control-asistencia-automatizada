@@ -21,4 +21,17 @@ class notificaciones extends Model {
         'canal',
         'estado',
     ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function tipoNotificacion(): BelongsTo {
+        return $this->belongsTo(tipos_notificacion::class, 'tipo_notificacion_id');
+    }
+
+    public function usuarioDestino(): BelongsTo {
+        return $this->belongsTo(User::class, 'usuario_destino_id');
+    }
 }
