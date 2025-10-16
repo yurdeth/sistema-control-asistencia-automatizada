@@ -2,23 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Storesolicitudes_inscripcionRequest;
-use App\Http\Requests\Updatesolicitudes_inscripcionRequest;
 use App\Models\solicitudes_inscripcion;
-use Illuminate\Http\Request;  
-use Illuminate\Support\Facades\Validator; 
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
-class SolicitudesInscripcionController extends Controller
-{
-     public function index()
-    {
+class SolicitudesInscripcionController extends Controller {
+    public function index(): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo', 'respondidoPor'])->get();
             return response()->json([
                 'success' => true,
                 'data' => $solicitudes
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener las solicitudes de inscripción',
@@ -27,15 +43,30 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function show($id)
-    {
+    public function show($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $solicitud = solicitudes_inscripcion::with(['estudiante', 'grupo', 'respondidoPor'])->findOrFail($id);
             return response()->json([
                 'success' => true,
                 'data' => $solicitud
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Solicitud no encontrada',
@@ -44,14 +75,37 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $request->merge([
+            'estudiante_id' => $this->sanitizeInput($request->input('estudiante_id')),
+            'grupo_id' => $this->sanitizeInput($request->input('grupo_id')),
+            'tipo_solicitud' => $this->sanitizeInput($request->input('tipo_solicitud')),
+        ]);
+
+        $rules = [
+            'estudiante_id' => 'required|exists:users,id',
+            'grupo_id' => 'required|exists:grupos,id',
+            'tipo_solicitud' => 'required|in:estudiante_solicita,docente_invita',
+        ];
+
+        $messages = [
+            'estudiante_id.required' => 'El campo estudiante_id es obligatorio.',
+            'estudiante_id.exists' => 'El estudiante_id proporcionado no existe.',
+            'grupo_id.required' => 'El campo grupo_id es obligatorio.',
+            'grupo_id.exists' => 'El grupo_id proporcionado no existe.',
+            'tipo_solicitud.required' => 'El campo tipo_solicitud es obligatorio.',
+            'tipo_solicitud.in' => 'El campo tipo_solicitud debe ser estudiante_solicita o docente_invita.',
+        ];
+
         try {
-            $validator = Validator::make($request->all(), [
-                'estudiante_id' => 'required|exists:users,id',
-                'grupo_id' => 'required|exists:grupos,id',
-                'tipo_solicitud' => 'required|in:estudiante_solicita,docente_invita',
-            ]);
+            $validator = Validator::make($request->all(), $rules, $messages);
 
             if ($validator->fails()) {
                 return response()->json([
@@ -73,7 +127,7 @@ class SolicitudesInscripcionController extends Controller
                 'message' => 'Solicitud creada exitosamente',
                 'data' => $solicitud
             ], 201);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al crear la solicitud',
@@ -82,17 +136,39 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function edit(Request $request, $id)
-    {
+    public function edit(Request $request, $id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $request->merge([
+            'estudiante_id' => $this->sanitizeInput($request->input('estudiante_id')),
+            'grupo_id' => $this->sanitizeInput($request->input('grupo_id')),
+            'tipo_solicitud' => $this->sanitizeInput($request->input('tipo_solicitud')),
+            'estado' => $this->sanitizeInput($request->input('estado')),
+        ]);
+
+        $rules = [
+            'estudiante_id' => 'sometimes|exists:users,id',
+            'grupo_id' => 'sometimes|exists:grupos,id',
+            'tipo_solicitud' => 'sometimes|in:estudiante_solicita,docente_invita',
+            'estado' => 'sometimes|in:pendiente,aceptada,rechazada,cancelada'
+        ];
+
+        $messages = [
+            'estudiante_id.exists' => 'El estudiante_id proporcionado no existe.',
+            'grupo_id.exists' => 'El grupo_id proporcionado no existe.',
+            'tipo_solicitud.in' => 'El campo tipo_solicitud debe ser estudiante_solicita o docente_invita.',
+            'estado.in' => 'El campo estado debe ser pendiente, aceptada, rechazada o cancelada.'
+        ];
+
         try {
             $solicitud = solicitudes_inscripcion::findOrFail($id);
 
-            $validator = Validator::make($request->all(), [
-                'estudiante_id' => 'sometimes|exists:users,id',
-                'grupo_id' => 'sometimes|exists:grupos,id',
-                'tipo_solicitud' => 'sometimes|in:estudiante_solicita,docente_invita',
-                'estado' => 'sometimes|in:pendiente,aceptada,rechazada,cancelada'
-            ]);
+            $validator = Validator::make($request->all(), $rules, $messages);
 
             if ($validator->fails()) {
                 return response()->json([
@@ -109,7 +185,7 @@ class SolicitudesInscripcionController extends Controller
                 'message' => 'Solicitud actualizada exitosamente',
                 'data' => $solicitud
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar la solicitud',
@@ -118,8 +194,23 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function destroy($id)
-    {
+    public function destroy($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $solicitud = solicitudes_inscripcion::findOrFail($id);
             $solicitud->delete();
@@ -128,7 +219,7 @@ class SolicitudesInscripcionController extends Controller
                 'success' => true,
                 'message' => 'Solicitud eliminada exitosamente'
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al eliminar la solicitud',
@@ -137,8 +228,23 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function getByStudent($id)
-    {
+    public function getByStudent($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $solicitudes = solicitudes_inscripcion::with(['grupo', 'respondidoPor'])
                 ->where('estudiante_id', $id)
@@ -148,7 +254,7 @@ class SolicitudesInscripcionController extends Controller
                 'success' => true,
                 'data' => $solicitudes
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener las solicitudes del estudiante',
@@ -157,8 +263,23 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function getByGroup($id)
-    {
+    public function getByGroup($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $solicitudes = solicitudes_inscripcion::with(['estudiante', 'respondidoPor'])
                 ->where('grupo_id', $id)
@@ -168,7 +289,7 @@ class SolicitudesInscripcionController extends Controller
                 'success' => true,
                 'data' => $solicitudes
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener las solicitudes del grupo',
@@ -177,8 +298,25 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function getByStatus($estado)
-    {
+    public function getByStatus($estado): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        $estado = $this->sanitizeInput($estado);
+
         try {
             $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo', 'respondidoPor'])
                 ->where('estado', $estado)
@@ -197,8 +335,25 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function getByType($tipo)
-    {
+    public function getByType($tipo): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        $tipo = $this->sanitizeInput($tipo);
+
         try {
             $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo', 'respondidoPor'])
                 ->where('tipo_solicitud', $tipo)
@@ -208,7 +363,7 @@ class SolicitudesInscripcionController extends Controller
                 'success' => true,
                 'data' => $solicitudes
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener las solicitudes por tipo',
@@ -217,11 +372,26 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function acceptRequest(Request $request, $id)
-    {
+    public function acceptRequest(Request $request, $id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $solicitud = solicitudes_inscripcion::findOrFail($id);
-            
+
             $solicitud->update([
                 'estado' => 'aceptada',
                 'respondido_por_id' => auth()->id()
@@ -232,7 +402,7 @@ class SolicitudesInscripcionController extends Controller
                 'message' => 'Solicitud aceptada exitosamente',
                 'data' => $solicitud
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al aceptar la solicitud',
@@ -241,11 +411,26 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function rejectRequest(Request $request, $id)
-    {
+    public function rejectRequest(Request $request, $id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $solicitud = solicitudes_inscripcion::findOrFail($id);
-            
+
             $solicitud->update([
                 'estado' => 'rechazada',
                 'respondido_por_id' => auth()->id()
@@ -256,7 +441,7 @@ class SolicitudesInscripcionController extends Controller
                 'message' => 'Solicitud rechazada exitosamente',
                 'data' => $solicitud
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al rechazar la solicitud',
@@ -265,11 +450,26 @@ class SolicitudesInscripcionController extends Controller
         }
     }
 
-    public function getPendingByProfessor($id)
-    {
+    public function getPendingByProfessor($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo'])
-                ->whereHas('grupo', function($query) use ($id) {
+                ->whereHas('grupo', function ($query) use ($id) {
                     $query->where('docente_id', $id);
                 })
                 ->where('estado', 'pendiente')
@@ -279,12 +479,23 @@ class SolicitudesInscripcionController extends Controller
                 'success' => true,
                 'data' => $solicitudes
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener las solicitudes pendientes del docente',
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function getUserRole() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 }
