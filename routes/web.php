@@ -45,6 +45,10 @@ Route::middleware(['auth:api', NoBrowserCacheMiddleware::class])->group(function
         return Inertia::render('Administration/classroomManagement/catalogo');
     });
 
+    Route::get('/docentes', function () {
+        return Inertia::render('Administration/General/docentes');
+    });
+
     Route::get('/disponibilidad', function () {
         return Inertia::render('Administration/classroomManagement/availability');
     });

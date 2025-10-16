@@ -188,7 +188,7 @@ onMounted(() => {
             items: [
                 {
                     label: "Docentes.",
-                    href: "#",
+                    href: "/docentes",
                     icon: "fa-solid fa-chalkboard-user",
                 },
                 {
