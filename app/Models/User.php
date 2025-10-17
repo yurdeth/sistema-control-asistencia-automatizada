@@ -137,6 +137,10 @@ class User extends Authenticatable {
         return $this->getAllUsers()->where('rol_id', '=', 5);
     }
 
+    public function getStudentsOnly(): Collection {
+        return $this->getAllUsers()->where('rol_id', '=', 6);
+    }
+
     public function myProfile($user_id): Collection {
         return $this->getAllUsers()->where('id', '=', $user_id);
     }

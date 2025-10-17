@@ -63,6 +63,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/users/get/department-managers/all', [UserController::class, 'getDepartmentManagersOnly'])->name('users.getDepManagers');
     Route::get('/users/get/career-managers/all', [UserController::class, 'getCareerManagersOnly'])->name('users.getCareerManagers');
     Route::get('/users/get/professors/all', [UserController::class, 'getProfessorsOnly'])->name('users.getProfessors');
+    Route::get('/users/get/students/all', [UserController::class, 'getStudentsOnly'])->name('users.getStudents');
     Route::get('/users/get/profile/me', [UserController::class, 'getMyProfile'])->name('users.getMyProfile');
     Route::post('/users/get/name', [UserController::class, 'getByName'])->name('users.getByName');
 

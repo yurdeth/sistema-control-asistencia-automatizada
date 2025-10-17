@@ -905,6 +905,40 @@ class UserController extends Controller {
         ]);
     }
 
+    public function getStudentsOnly(): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = Cache::remember('students_only', 60, function () {
+            return (new User())->getStudentsOnly();
+        });
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron estudiantes',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Estudiantes encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
     public function getMyProfile(): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
