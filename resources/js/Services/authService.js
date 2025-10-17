@@ -14,7 +14,7 @@ export const authService ={
 
     async login(email, password){
         try {
-                const response = await axios.post(`${API_BASE_URL}/login`, {
+                const response = await axios.post(`${API_BASE_URL}/login-web`, {
                     email,
                     password
                 });

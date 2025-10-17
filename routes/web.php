@@ -33,7 +33,7 @@ Route::get('/login', function () {
 })->name('dashboard');*/
 
 
-Route::middleware(['auth:api', NoBrowserCacheMiddleware::class])->group(function () {
+Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard', [
             'mustCheckAuth' => true

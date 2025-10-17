@@ -73,7 +73,7 @@ class AuthController extends Controller {
 
             $user->role_id = $role_id;
 
-            Auth::login($user);
+//            Auth::login($user);
 
             $tokenResult = $user->createToken('Personal Access Token');
             $token = $tokenResult->token;
@@ -86,7 +86,7 @@ class AuthController extends Controller {
                 ->value('departamentos.nombre');
 
             $user->departamento_nombre = $departamento_nombre;
-            
+
             $role_nombre = DB::table('roles')
                 ->join('usuario_roles', 'roles.id', '=', 'usuario_roles.rol_id')
                 ->where('usuario_roles.usuario_id', $user->id)
@@ -101,6 +101,103 @@ class AuthController extends Controller {
                 'token_type' => 'Bearer',
                 'expires_at' => Carbon::parse($token->expires_at)->toDateTimeString(),
             ]);
+
+        } catch (Exception $e) {
+            Log::error('Error en login', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Error en el servidor',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    public function loginWeb(Request $request): JsonResponse {
+        if (!$request->email && !$request->password) {
+            return response()->json([
+                'message' => 'El correo electrónico y la contraseña son obligatorios',
+                'success' => false
+            ], 400);
+        }
+
+        if (!$request->email) {
+            return response()->json([
+                'message' => 'El correo electrónico es obligatorio',
+                'success' => false
+            ], 400);
+        }
+
+        if (!$request->password) {
+            return response()->json([
+                'message' => 'La contraseña es obligatoria',
+                'success' => false
+            ], 400);
+        }
+
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        try {
+            if(Auth::attempt($credentials)){
+                $user = Auth::user();
+                Auth::login($user);
+
+                if ($user->estado !== 'activo') {
+                    return response()->json([
+                        'message' => 'El usuario no está activo',
+                        'success' => false
+                    ], 403);
+                }
+
+                $user->ultimo_acceso = Carbon::now();
+
+                $user->save();
+
+                $role_id = DB::table('usuario_roles')
+                    ->where('usuario_id', $user->id)
+                    ->value('rol_id');
+
+                $user->role_id = $role_id;
+
+                $tokenResult = $user->createToken('Personal Access Token');
+                $token = $tokenResult->token;
+                $token->expires_at = Carbon::now()->addDays(30);
+                $token->save();
+
+                $departamento_nombre = DB::table('departamentos')
+                    ->join('users', 'departamentos.id', '=', 'users.departamento_id')
+                    ->where('users.id', $user->id)
+                    ->value('departamentos.nombre');
+
+                $user->departamento_nombre = $departamento_nombre;
+
+                $role_nombre = DB::table('roles')
+                    ->join('usuario_roles', 'roles.id', '=', 'usuario_roles.rol_id')
+                    ->where('usuario_roles.usuario_id', $user->id)
+                    ->value('roles.nombre');
+                $user->role_nombre = $role_nombre;
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Inicio de sesión exitoso',
+                    'user' => $user,
+                    'token' => $tokenResult->accessToken,
+                    'token_type' => 'Bearer',
+                    'expires_at' => Carbon::parse($token->expires_at)->toDateTimeString(),
+                ]);
+
+            } else {
+                return response()->json([
+                    'message' => 'Credenciales inválidas',
+                    'success' => false
+                ], 401);
+            }
 
         } catch (Exception $e) {
             Log::error('Error en login', [
@@ -159,7 +256,7 @@ class AuthController extends Controller {
                 ->value('departamentos.nombre');
 
             $user->departamento_nombre = $departamento_nombre;
-            
+
             $role_nombre = DB::table('roles')
                 ->join('usuario_roles', 'roles.id', '=', 'usuario_roles.rol_id')
                 ->where('usuario_roles.usuario_id', $user->id)

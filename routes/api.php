@@ -34,6 +34,7 @@ Route::get('/login', function () {
 })->name('login.get');
 
 Route::post('/login', [AuthController::class, "login"])->name('login.post');
+Route::post('/login-web', [AuthController::class, "loginWeb"])->name('login.post.web');
 Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
 
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
@@ -136,7 +137,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/classroom-resources/get/status/all', [AulaRecursosController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
     Route::patch('/classroom-resources/change-status/{id}', [AulaRecursosController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
 
-    
+
     //************************************ MANAGE ACADEMIC TERM ************************************//
     Route::get('/academic-terms/get/all', [CiclosAcademicosController::class, 'index'])->name('academicTerms.index');
     Route::get('/academic-terms/get/current', [CiclosAcademicosController::class, 'getCurrentTerm'])->name('academicTerms.getCurrent');
