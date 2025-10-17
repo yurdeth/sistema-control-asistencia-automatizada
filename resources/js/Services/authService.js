@@ -22,7 +22,7 @@ export const authService ={
                 }
             });
 
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             if (!response.ok) {
                 // Token inválido, limpiar y redirigir

@@ -32,33 +32,25 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
     // Rutas de administración
     Route::get('/catalogo', function () {
         return Inertia::render('Administration/classroomManagement/catalogo', [
-            'auth' => [
-                'user' => Auth::check() ? Auth::user() : null,
-            ]
+            'mustCheckAuth' => true
         ]);
     });
 
     Route::get('/docentes', function () {
         return Inertia::render('Administration/General/docentes', [
-            'auth' => [
-                'user' => Auth::check() ? Auth::user() : null,
-            ]
+            'mustCheckAuth' => true
         ]);
     });
 
     Route::get('/disponibilidad', function () {
         return Inertia::render('Administration/classroomManagement/availability', [
-            'auth' => [
-                'user' => Auth::check() ? Auth::user() : null,
-            ]
+            'mustCheckAuth' => true
         ]);
     });
 
     Route::get('/departamentos', function () {
         return Inertia::render('Administration/General/departments', [
-            'auth' => [
-                'user' => Auth::check() ? Auth::user() : null,
-            ]
+            'mustCheckAuth' => true
         ]);
     });
 
