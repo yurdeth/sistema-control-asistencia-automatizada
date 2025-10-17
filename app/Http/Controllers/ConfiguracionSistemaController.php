@@ -2,65 +2,457 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Storeconfiguracion_sistemaRequest;
-use App\Http\Requests\Updateconfiguracion_sistemaRequest;
 use App\Models\configuracion_sistema;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
-class ConfiguracionSistemaController extends Controller
-{
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+class ConfiguracionSistemaController extends Controller {
+    public function index(): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Solo administradores pueden ver configuraciones (rol 1 o 2)
+        if ($user_rol > 2) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $configuraciones = configuracion_sistema::with(['usuarioModificacion'])->get();
+
+            if ($configuraciones->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron configuraciones del sistema'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $configuraciones
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las configuraciones del sistema',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+    public function show($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Solo administradores pueden ver configuraciones (rol 1 o 2)
+        if ($user_rol > 2) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $configuracion = configuracion_sistema::with(['usuarioModificacion'])->find($id);
+
+            if (!$configuracion) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Configuración no encontrada'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $configuracion
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener la configuración',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Storeconfiguracion_sistemaRequest $request)
-    {
-        //
+    public function getByKey($clave): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Solo administradores pueden ver configuraciones (rol 1 o 2)
+        if ($user_rol > 2) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $configuracion = configuracion_sistema::where('clave', $clave)->first();
+
+            if (!$configuracion) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Configuración no encontrada'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $configuracion
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener la configuración',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(configuracion_sistema $configuracion_sistema)
-    {
-        //
+    public function store(Request $request): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Solo root puede crear configuraciones (rol 1)
+        if ($user_rol !== 1) {
+            return response()->json([
+                'message' => 'Acceso no autorizado. Solo root puede crear configuraciones',
+                'success' => false
+            ], 403);
+        }
+
+        $request->merge([
+            'clave' => $this->sanitizeInput($request->input('clave')),
+            'valor' => $this->sanitizeInput($request->input('valor')),
+            'tipo_dato' => $this->sanitizeInput($request->input('tipo_dato')),
+            'descripcion' => $this->sanitizeInput($request->input('descripcion')),
+            'categoria' => $this->sanitizeInput($request->input('categoria')),
+        ]);
+
+        $rules = [
+            'clave' => 'required|string|max:100|unique:configuracion_sistema,clave',
+            'valor' => 'required|string',
+            'tipo_dato' => 'required|in:string,integer,boolean',
+            'descripcion' => 'nullable|string',
+            'categoria' => 'nullable|string|max:50',
+            'modificable' => 'boolean',
+        ];
+
+        $messages = [
+            'clave.required' => 'La clave es obligatoria.',
+            'clave.unique' => 'Ya existe una configuración con esa clave.',
+            'clave.max' => 'La clave no puede exceder 100 caracteres.',
+            'valor.required' => 'El valor es obligatorio.',
+            'tipo_dato.required' => 'El tipo de dato es obligatorio.',
+            'tipo_dato.in' => 'El tipo de dato debe ser: string, integer o boolean.',
+            'categoria.max' => 'La categoría no puede exceder 50 caracteres.',
+        ];
+
+        try {
+            $validator = Validator::make($request->all(), $rules, $messages);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Errores de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            $configuracion = configuracion_sistema::create([
+                'clave' => $request->clave,
+                'valor' => $request->valor,
+                'tipo_dato' => $request->tipo_dato,
+                'descripcion' => $request->descripcion,
+                'categoria' => $request->categoria,
+                'modificable' => $request->input('modificable', true),
+                'usuario_identificacion_id' => Auth::id(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Configuración creada exitosamente',
+                'data' => $configuracion
+            ], 201);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear la configuración',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(configuracion_sistema $configuracion_sistema)
-    {
-        //
+    public function update(Request $request, $id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Solo administradores pueden actualizar configuraciones (rol 1 o 2)
+        if ($user_rol > 2) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $configuracion = configuracion_sistema::find($id);
+
+            if (!$configuracion) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Configuración no encontrada'
+                ], 404);
+            }
+
+            // Verificar si la configuración es modificable
+            if (!$configuracion->modificable) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Esta configuración no es modificable'
+                ], 403);
+            }
+
+            $request->merge([
+                'valor' => $this->sanitizeInput($request->input('valor')),
+                'descripcion' => $this->sanitizeInput($request->input('descripcion')),
+            ]);
+
+            $rules = [
+                'valor' => 'required|string',
+                'descripcion' => 'nullable|string',
+            ];
+
+            $messages = [
+                'valor.required' => 'El valor es obligatorio.',
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Errores de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            $configuracion->update([
+                'valor' => $request->valor,
+                'descripcion' => $request->descripcion ?? $configuracion->descripcion,
+                'usuario_identificacion_id' => Auth::id(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Configuración actualizada exitosamente',
+                'data' => $configuracion
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar la configuración',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Updateconfiguracion_sistemaRequest $request, configuracion_sistema $configuracion_sistema)
-    {
-        //
+    public function destroy($id): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Solo root puede eliminar configuraciones (rol 1)
+        if ($user_rol !== 1) {
+            return response()->json([
+                'message' => 'Acceso no autorizado. Solo root puede eliminar configuraciones',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $configuracion = configuracion_sistema::find($id);
+
+            if (!$configuracion) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Configuración no encontrada'
+                ], 404);
+            }
+
+            // Verificar si la configuración es modificable
+            if (!$configuracion->modificable) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Esta configuración no puede ser eliminada'
+                ], 403);
+            }
+
+            DB::beginTransaction();
+
+            $configuracion->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Configuración eliminada exitosamente'
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar la configuración',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(configuracion_sistema $configuracion_sistema)
-    {
-        //
+    public function getByCategory($categoria): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Solo administradores pueden ver configuraciones (rol 1 o 2)
+        if ($user_rol > 2) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $configuraciones = configuracion_sistema::where('categoria', $categoria)->get();
+
+            if ($configuraciones->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se encontraron configuraciones en la categoría: {$categoria}"
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $configuraciones
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las configuraciones por categoría',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getModifiable(): JsonResponse {
+        $user_rol = $this->getUserRole();
+
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Solo administradores pueden ver configuraciones (rol 1 o 2)
+        if ($user_rol > 2) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $configuraciones = configuracion_sistema::where('modificable', true)->get();
+
+            if ($configuraciones->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron configuraciones modificables'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $configuraciones
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las configuraciones modificables',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function getUserRole() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 }

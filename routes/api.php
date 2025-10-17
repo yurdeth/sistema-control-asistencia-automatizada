@@ -21,6 +21,8 @@ use App\Http\Controllers\HistorialAulasController;
 use App\Http\Controllers\SystemLogsController;
 use App\Http\Controllers\TiposNotificacionController;
 use App\Http\Controllers\NotificacionesController;
+use App\Http\Controllers\EstadisticasAulasDiariasController;
+use App\Http\Controllers\ConfiguracionSistemaController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -275,4 +277,25 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/notifications/get/status/{estado}', [NotificacionesController::class, 'getByStatus'])->name('notifications.getByStatus');
     Route::get('/notifications/get/type/{tipo_id}', [NotificacionesController::class, 'getByType'])->name('notifications.getByType');
     Route::get('/notifications/get/pending/all', [NotificacionesController::class, 'getPending'])->name('notifications.getPending');
+
+    //************************************ MANAGE CLASSROOM STATISTICS ************************************//
+    Route::get('/classroom-stats/get/all', [EstadisticasAulasDiariasController::class, 'index'])->name('classroomStats.index');
+    Route::get('/classroom-stats/get/{id}', [EstadisticasAulasDiariasController::class, 'show'])->name('classroomStats.show');
+    Route::get('/classroom-stats/get/classroom/{id}', [EstadisticasAulasDiariasController::class, 'getByClassroom'])->name('classroomStats.getByClassroom');
+    Route::get('/classroom-stats/get/date/{fecha}', [EstadisticasAulasDiariasController::class, 'getByDate'])->name('classroomStats.getByDate');
+    Route::post('/classroom-stats/get/range/all', [EstadisticasAulasDiariasController::class, 'getByDateRange'])->name('classroomStats.getByDateRange');
+    Route::get('/classroom-stats/get/top-occupied/all', [EstadisticasAulasDiariasController::class, 'getTopOccupied'])->name('classroomStats.getTopOccupied');
+    Route::get('/classroom-stats/get/low-occupancy/all', [EstadisticasAulasDiariasController::class, 'getLowOccupancy'])->name('classroomStats.getLowOccupancy');
+    Route::get('/classroom-stats/get/average/all', [EstadisticasAulasDiariasController::class, 'getAverageOccupancy'])->name('classroomStats.getAverageOccupancy');
+    Route::get('/classroom-stats/get/total-minutes/{id}', [EstadisticasAulasDiariasController::class, 'getTotalMinutesByClassroom'])->name('classroomStats.getTotalMinutesByClassroom');
+
+    //************************************ MANAGE SYSTEM CONFIGURATION ************************************//
+    Route::get('/system-config/get/all', [ConfiguracionSistemaController::class, 'index'])->name('systemConfig.index');
+    Route::get('/system-config/get/{id}', [ConfiguracionSistemaController::class, 'show'])->name('systemConfig.show');
+    Route::get('/system-config/get/key/{clave}', [ConfiguracionSistemaController::class, 'getByKey'])->name('systemConfig.getByKey');
+    Route::post('/system-config/create', [ConfiguracionSistemaController::class, 'store'])->name('systemConfig.store');
+    Route::put('/system-config/update/{id}', [ConfiguracionSistemaController::class, 'update'])->name('systemConfig.update');
+    Route::delete('/system-config/delete/{id}', [ConfiguracionSistemaController::class, 'destroy'])->name('systemConfig.destroy');
+    Route::get('/system-config/get/category/{categoria}', [ConfiguracionSistemaController::class, 'getByCategory'])->name('systemConfig.getByCategory');
+    Route::get('/system-config/get/modifiable/all', [ConfiguracionSistemaController::class, 'getModifiable'])->name('systemConfig.getModifiable');
 });
