@@ -1,5 +1,14 @@
 <template>
     <Head title="Disponibilidad" />
+
+    <!-- Loader mientras verifica -->
+    <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
+            <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+        </div>
+    </div>
+
     <MainLayoutDashboard>
         <div class="p-6">
             <!-- Header de la vista-->
@@ -284,7 +293,9 @@
     import { Head, Link } from '@inertiajs/vue3';
     import { ref, computed, onMounted } from 'vue';
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
+    import {authService} from "@/Services/authService.js";
 
+    const isLoading = ref(true);
     // Constantes reactivas para los colores de la interfaz
     const colorText = ref('#2C2D2F');
     const colorButton = ref('#d93f3f');
@@ -430,7 +441,9 @@
     };
 
     // Datos de ejemplos para probar
-    onMounted(() => {
+    onMounted(async () => {
+        await authService.verifyToken(localStorage.getItem("token"));
+
         aulas.value = [
             {
                 id: 1,
@@ -567,9 +580,11 @@
         ];
 
         sectores.value = [
-            { id: 1, nombre: 'Sector A' },
-            { id: 2, nombre: 'Sector B' },
-            { id: 3, nombre: 'Sector C' }
+            {id: 1, nombre: 'Sector A'},
+            {id: 2, nombre: 'Sector B'},
+            {id: 3, nombre: 'Sector C'}
         ];
+
+        isLoading.value = false;
     });
 </script>

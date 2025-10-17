@@ -1,5 +1,14 @@
 <template>
     <Head title="Departamentos" />
+
+    <!-- Loader mientras verifica -->
+    <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
+            <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+        </div>
+    </div>
+
     <MainLayoutDashboard>
         <div class="p-6">
             <!-- Header de la vista-->
@@ -185,6 +194,9 @@
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
     import Modal from '@/Components/Modal.vue';
     import { getDeparmentsAll, createDeparments, updateDepartment, deleteDepartment, searchName, searchStatus } from '@/Services/deparmentsService';
+    import {authService} from "@/Services/authService.js";
+
+    const isLoading = ref(true)
 
     // Definimos las propiedades necesarias
     const colorText = ref('#1F2937')
@@ -229,7 +241,10 @@
     }
 
     onMounted(async () => {
+        await authService.verifyToken(localStorage.getItem("token"));
+
         await fetchDepartments();
+        isLoading.value = false;
     });
 
     // parte donde se trabaja lo del modal

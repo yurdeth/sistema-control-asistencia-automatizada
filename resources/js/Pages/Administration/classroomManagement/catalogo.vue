@@ -1,5 +1,14 @@
 <template>
     <Head title="Catalogo" />
+
+    <!-- Loader mientras verifica -->
+    <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
+            <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+        </div>
+    </div>
+
     <MainLayoutDashboard>
         <div class="p-6">
             <!-- Header -->
@@ -121,7 +130,9 @@ import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
 import axios from 'axios';
 // componentes
 import Card from '@/Components/AdministrationComponent/Card.vue';
+import {authService} from "@/Services/authService.js";
 
+const isLoading = ref(true);
 const colorText = ref('#2C2D2F');
 const colorButton = ref('#d93f3f');
 
@@ -300,7 +311,10 @@ const cerrarMensaje = () => {
 };
 
 
-onMounted(() => {
-    cargarAulas();
+onMounted(async () => {
+    await authService.verifyToken(localStorage.getItem("token"));
+
+    await cargarAulas();
+    isLoading.value = false;
 });
 </script>

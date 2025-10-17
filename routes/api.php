@@ -36,11 +36,12 @@ Route::get('/login', function () {
 })->name('login.get');
 
 Route::post('/login', [AuthController::class, "login"])->name('login.post');
-Route::post('/login-web', [AuthController::class, "loginWeb"])->name('login.post.web');
+//Route::post('/login-web', [AuthController::class, "loginWeb"])->name('login.post.web');
 Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
 
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
+    Route::get('/verify-token', [AuthController::class, 'verifyToken']);
 
     //************************************ MANAGE ROLES ************************************//
     Route::get('/roles/get/all', [RolesController::class, 'index'])->name('roles.index');

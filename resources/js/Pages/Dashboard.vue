@@ -25,7 +25,7 @@ onMounted(async () => {
 
     // Si hay token, verificar que sea válido con el backend
     try {
-        authService.setAxiosToken(token)
+        await authService.verifyToken(token);
 
         // Obtener el usuario guardado en localStorage
         const user = authService.getUser()

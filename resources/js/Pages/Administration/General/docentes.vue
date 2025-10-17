@@ -1,5 +1,14 @@
 <template>
     <Head title="Docentes" />
+
+    <!-- Loader mientras verifica -->
+    <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
+            <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+        </div>
+    </div>
+
     <MainLayoutDashboard>
         <div class="p-6">
             <div class="mb-6">
@@ -130,7 +139,9 @@
     import { ref, computed, onMounted, watch } from 'vue';
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
     import { getDocentesAll } from '@/Services/docentesService.js';
+    import {authService} from "@/Services/authService.js";
 
+    const isLoading = ref(true);
     // --- Estado General ---
     const colorText = ref('#1F2937');
     const searchTerm = ref('');
@@ -186,11 +197,11 @@
             loading.value = true;
             const response = await getDocentesAll();
             console.log('API Response:', response);
-            
-            const data = response && response.data 
+
+            const data = response && response.data
                 ? Object.values(response.data)
                 : [];
-            
+
             console.log('Processed Data:', data);
             allDocentes.value = data.map(docente => ({
                 id: docente.id || 'N/A',
@@ -209,9 +220,12 @@
         }
     }
 
-    onMounted(() => {
+    onMounted(async () => {
+        await authService.verifyToken(localStorage.getItem("token"));
+
         searchTerm.value = '';
-        fetchDocentes();
+        await fetchDocentes();
+        isLoading.value = false;
     });
 
 </script>
