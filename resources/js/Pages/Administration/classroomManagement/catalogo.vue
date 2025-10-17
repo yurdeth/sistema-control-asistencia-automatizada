@@ -10,7 +10,7 @@
                         <p class="text-gray-600 text-sm mt-1">Gestiona y visualiza todas las aulas disponibles dentro de la facultad</p>
                     </div>
 
-                    <button 
+                    <button
                         class="hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
                         :style="{background: colorButton}"
                         @click="irACrearAula"
@@ -22,7 +22,7 @@
             </div>
 
             <!-- Mensajes -->
-            <div v-if="mensaje.mostrar" 
+            <div v-if="mensaje.mostrar"
                  :class="mensaje.tipo === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'"
                  class="border-l-4 p-4 mb-4 rounded">
                 <div class="flex justify-between items-center">
@@ -87,7 +87,7 @@
                 <i class="fa-solid fa-exclamation-triangle text-6xl text-red-400 mb-4"></i>
                 <p class="text-red-600 text-lg font-semibold">Error al cargar las aulas</p>
                 <p class="text-gray-600 text-sm mt-2">{{ error }}</p>
-                <button 
+                <button
                     @click="cargarAulas"
                     class="mt-4 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700"
                 >
@@ -145,7 +145,7 @@ const filtros = ref({
 const aulasFiltradas = computed(() => {
     return aulas.value.filter(aula => {
         // Filtrado por nombre, código o ubicación
-        const busquedaAula = 
+        const busquedaAula =
             aula.nombre.toLowerCase().includes(filtros.value.busqueda.toLowerCase()) ||
             aula.codigo.toLowerCase().includes(filtros.value.busqueda.toLowerCase()) ||
             aula.ubicacion.toLowerCase().includes(filtros.value.busqueda.toLowerCase());
@@ -168,13 +168,17 @@ const aulasFiltradas = computed(() => {
 const cargarAulas = async () => {
     cargando.value = true;
     error.value = null;
-    
+
     try {
-        const response = await axios.get('/api/classrooms/get/all');
-        
+        const response = await axios.get('/api/classrooms/get/all', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
         if (response.data.success) {
             aulas.value = response.data.data;
-            
+
             if (aulas.value.length === 0) {
                 mostrarMensaje('success', 'No hay aulas registradas. Ejecuta el seeder para agregar aulas de prueba.');
             } else {
@@ -184,7 +188,7 @@ const cargarAulas = async () => {
             throw new Error(response.data.message || 'Error al cargar las aulas');
         }
     } catch (err) {
-        
+
         if (err.response?.status === 404) {
             error.value = 'Ruta no encontrada. Verifica que las rutas estén en api.php';
         } else if (err.response?.status === 401) {
@@ -194,7 +198,7 @@ const cargarAulas = async () => {
         } else {
             error.value = err.response?.data?.message || err.message || 'Error al conectar con el servidor';
         }
-        
+
         mostrarMensaje('error', error.value);
     } finally {
         cargando.value = false;
@@ -205,16 +209,16 @@ const cargarAulas = async () => {
 const verDetalle = async (aula) => {
     try {
         const response = await axios.get(`/api/classrooms/get/${aula.id}`);
-        
+
         if (response.data.success) {
             const aulaDetalle = response.data.data;
             let recursos = '';
             if (aulaDetalle.recursos && aulaDetalle.recursos.length > 0) {
-                recursos = '\n\n Recursos:\n' + aulaDetalle.recursos.map(r => 
+                recursos = '\n\n Recursos:\n' + aulaDetalle.recursos.map(r =>
                     `  • ${r.nombre} (x${r.cantidad}) - ${r.estado}`
                 ).join('\n');
             }
-            
+
             alert(`
                     ${aulaDetalle.nombre}
                     Código: ${aulaDetalle.codigo}
@@ -239,7 +243,7 @@ const editarAula = (aula) => {
  * Gestionar disponibilidad (cambiar estado)
  */
 const gestionarDisponibilidad = async (aula) => {
-    
+
     const nuevoEstado = prompt(
         `Estado actual: ${aula.estado}\n\n` +
         'Ingrese el nuevo estado:\n' +
@@ -249,16 +253,16 @@ const gestionarDisponibilidad = async (aula) => {
         '4. inactiva',
         aula.estado
     );
-    
+
     if (nuevoEstado && ['disponible', 'ocupada', 'mantenimiento', 'inactiva'].includes(nuevoEstado)) {
         try {
             const response = await axios.patch(`/api/classrooms/change-status/${aula.id}`, {
                 estado: nuevoEstado
             });
-            
+
             if (response.data.success) {
                 mostrarMensaje('success', 'Estado actualizado exitosamente');
-                cargarAulas(); 
+                cargarAulas();
             }
         } catch (err) {
             mostrarMensaje('error', 'Error al cambiar el estado del aula');
@@ -282,7 +286,7 @@ const mostrarMensaje = (tipo, texto) => {
         tipo,
         texto
     };
-    
+
     setTimeout(() => {
         cerrarMensaje();
     }, 5000);
