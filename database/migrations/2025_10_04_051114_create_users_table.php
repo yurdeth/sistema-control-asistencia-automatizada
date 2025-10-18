@@ -16,8 +16,9 @@ return new class extends Migration {
             $table->string('telefono')->nullable();
             $table->string('password');
             $table->foreignId('departamento_id')
+                ->nullable()
                 ->constrained('departamentos')
-                ->onDelete('cascade')
+                ->onDelete('set null')
                 ->onUpdate('cascade');
             $table->boolean('email_verificado')->default(false);
             $table->enum('estado', ['activo', 'inactivo', 'suspendido'])->default('activo');
