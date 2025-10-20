@@ -57,6 +57,8 @@ class aulas extends Model {
                 'aulas.ubicacion as ubicacion_aula',
                 'aulas.qr_code as qr_code',
                 'aulas.estado as estado_aula',
+                'aulas.created_at as created_at',
+                'aulas.updated_at as updated_at',
                 'recursos_tipos.nombre as recurso_tipo_nombre',
                 'recursos_tipos.descripcion as recurso_tipo_descripcion',
                 'aula_recursos.cantidad as recurso_cantidad',

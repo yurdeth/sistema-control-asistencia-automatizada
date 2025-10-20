@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class AulasController extends Controller {
-
     public function index(): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -35,6 +34,8 @@ class AulasController extends Controller {
                     'ubicacion' => $aula->ubicacion_aula,
                     'qr_code' => $aula->qr_code,
                     'estado' => $aula->estado_aula,
+                    'created_at' => $aula->created_at,
+                    'updated_at' => $aula->updated_at,
                     'recursos' => []
                 ];
             }
@@ -73,19 +74,47 @@ class AulasController extends Controller {
             ], 401);
         }
 
-        $aula = (new aulas())->getAllById($id);
+        $aulas = (new aulas())->getAllById($id);
 
-        if (!$aula) {
+        if (!$aulas || $aulas->isEmpty()) {
             return response()->json([
                 'message' => 'Aula no encontrada',
                 'success' => false
             ], 404);
         }
 
+        // Crear array recursos, agrupando por aula_id
+        $aula_data = null;
+        foreach ($aulas as $aula) {
+            if (!$aula_data) {
+                $aula_data = [
+                    'id' => $aula->aula_id,
+                    'codigo' => $aula->codigo_aula,
+                    'nombre' => $aula->nombre_aula,
+                    'capacidad_pupitres' => $aula->capacidad_pupitres,
+                    'ubicacion' => $aula->ubicacion_aula,
+                    'qr_code' => $aula->qr_code,
+                    'estado' => $aula->estado_aula,
+                    'created_at' => $aula->created_at,
+                    'updated_at' => $aula->updated_at,
+                    'recursos' => []
+                ];
+            }
+            if ($aula->recurso_tipo_nombre) {
+                $aula_data['recursos'][] = [
+                    'nombre' => $aula->recurso_tipo_nombre,
+                    'cantidad' => $aula->recurso_cantidad,
+                    'estado' => $aula->estado_recurso,
+                    'observaciones_recurso' => $aula->observaciones_recurso,
+                    'aula_recurso_id' => $aula->aula_id
+                ];
+            }
+        }
+
         return response()->json([
             'message' => 'Aula obtenida exitosamente',
             'success' => true,
-            'data' => $aula
+            'data' => $aula_data
         ], 200);
     }
 
