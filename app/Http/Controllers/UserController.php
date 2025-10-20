@@ -408,15 +408,18 @@ class UserController extends Controller {
 
         // Si se está actualizando el rol, aplicar validaciones condicionales
         if ($request->has('rol_id')) {
+            // Obtener el usuario actual para verificar sus valores existentes
+            $currentUser = User::find($id);
+
             $departamento_id = $request->input('departamento_id');
             $carrera_id = $request->input('carrera_id');
 
             // Validaciones según el rol
             switch ((int)$rol_id) {
-                case 1:
-                case 2:
-                case 7:
-                    // Ni departamento_id ni carrera_id
+                case 1: // root
+                case 2: // administrador_academico
+                case 7: // invitado
+                    // NO deben tener ni departamento_id ni carrera_id
                     if ($request->has('departamento_id')) {
                         $rules['departamento_id'] = 'prohibited';
                     }
@@ -425,22 +428,51 @@ class UserController extends Controller {
                     }
                     break;
 
-                case 3:
-                    $rules['departamento_id'] = 'sometimes|required|integer|exists:departamentos,id';
+                case 3: // jefe_departamento
+                    // SOLO debe tener departamento_id (obligatorio)
+                    // Si no se proporciona en la petición, verificar que el usuario ya tenga uno
+                    if (!$request->has('departamento_id') && !$currentUser->departamento_id) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'departamento_id' => ['El departamento es obligatorio para el rol de jefe de departamento.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = 'required|integer|exists:departamentos,id';
+                    }
                     if ($request->has('carrera_id')) {
                         $rules['carrera_id'] = 'prohibited';
                     }
                     break;
 
-                case 4:
-                case 6:
-                    $rules['carrera_id'] = 'sometimes|required|integer|exists:carreras,id';
+                case 4: // coordinador_carreras
+                case 6: // estudiante
+                    // SOLO debe tener carrera_id (obligatorio)
+                    // Si no se proporciona en la petición, verificar que el usuario ya tenga una
+                    if (!$request->has('carrera_id') && !$currentUser->carrera_id) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'carrera_id' => ['La carrera es obligatoria para este rol.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = 'required|integer|exists:carreras,id';
+                    }
                     if ($request->has('departamento_id')) {
                         $rules['departamento_id'] = 'prohibited';
                     }
                     break;
 
-                case 5:
+                case 5: // docente
+                    // Puede tener departamento_id O carrera_id (uno de los dos obligatorio, pero no ambos)
                     if (!empty($departamento_id) && !empty($carrera_id)) {
                         return response()->json([
                             'message' => 'Error de validación',
@@ -452,14 +484,26 @@ class UserController extends Controller {
                         ], 422);
                     }
 
-                    if ($request->has('departamento_id') || $request->has('carrera_id')) {
-                        if (!empty($departamento_id)) {
-                            $rules['departamento_id'] = 'sometimes|required|integer|exists:departamentos,id';
-                            $rules['carrera_id'] = 'nullable';
-                        } elseif (!empty($carrera_id)) {
-                            $rules['carrera_id'] = 'sometimes|required|integer|exists:carreras,id';
-                            $rules['departamento_id'] = 'nullable';
-                        }
+                    // Verificar que tenga al menos uno (en la petición o en la BD)
+                    $tieneDepartamento = $request->has('departamento_id') ? !empty($departamento_id) : !empty($currentUser->departamento_id);
+                    $tieneCarrera = $request->has('carrera_id') ? !empty($carrera_id) : !empty($currentUser->carrera_id);
+
+                    if (!$tieneDepartamento && !$tieneCarrera) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'departamento_id' => ['Se debe especificar un departamento o una carrera para un docente.'],
+                                'carrera_id' => ['Se debe especificar un departamento o una carrera para un docente.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = !empty($departamento_id) ? 'required|integer|exists:departamentos,id' : 'nullable';
+                    }
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = !empty($carrera_id) ? 'required|integer|exists:carreras,id' : 'nullable';
                     }
                     break;
 
@@ -521,6 +565,45 @@ class UserController extends Controller {
 
             if (isset($validatedData['estado'])) {
                 $user->estado = $validatedData['estado'];
+            }
+
+            // Si se está cambiando el rol, limpiar departamento_id y carrera_id según las reglas del nuevo rol
+            if (isset($validatedData['rol_id'])) {
+                $new_rol_id = (int)$validatedData['rol_id'];
+
+                switch ($new_rol_id) {
+                    case 1: // root
+                    case 2: // administrador_academico
+                    case 7: // invitado
+                        // Estos roles NO deben tener ni departamento_id ni carrera_id
+                        $user->departamento_id = null;
+                        $user->carrera_id = null;
+                        break;
+
+                    case 3: // jefe_departamento
+                        // SOLO debe tener departamento_id, limpiar carrera_id
+                        $user->carrera_id = null;
+                        // Si no se proporcionó departamento_id en la actualización, mantener el actual
+                        break;
+
+                    case 4: // coordinador_carreras
+                    case 6: // estudiante
+                        // SOLO debe tener carrera_id, limpiar departamento_id
+                        $user->departamento_id = null;
+                        // Si no se proporcionó carrera_id en la actualización, mantener el actual
+                        break;
+
+                    case 5: // docente
+                        // Puede tener departamento_id O carrera_id
+                        // Si se proporcionó uno, limpiar el otro
+                        if (isset($validatedData['departamento_id']) && $validatedData['departamento_id']) {
+                            $user->carrera_id = null;
+                        } elseif (isset($validatedData['carrera_id']) && $validatedData['carrera_id']) {
+                            $user->departamento_id = null;
+                        }
+                        // Si no se proporcionó ninguno, mantener el que ya tiene
+                        break;
+                }
             }
 
             $user->save();
