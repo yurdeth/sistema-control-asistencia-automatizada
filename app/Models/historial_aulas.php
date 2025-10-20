@@ -24,4 +24,17 @@ class historial_aulas extends Model {
         'valor_nuevo',
         'tipo_operacion',
     ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function aula(): BelongsTo {
+        return $this->belongsTo(Aula::class, 'aula_id');
+    }
+
+    public function usuarioModificacion(): BelongsTo {
+        return $this->belongsTo(User::class, 'usuario_modificacion_id');
+    }
 }

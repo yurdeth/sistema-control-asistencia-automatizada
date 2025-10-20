@@ -17,8 +17,15 @@ use App\Http\Controllers\SesionesClaseController;
 use App\Http\Controllers\AsistenciasEstudiantesController;
 use App\Http\Controllers\MantenimientosController;
 use App\Http\Controllers\EscaneosQrController;
+use App\Http\Controllers\HistorialAulasController;
+use App\Http\Controllers\SystemLogsController;
+use App\Http\Controllers\TiposNotificacionController;
+use App\Http\Controllers\NotificacionesController;
+use App\Http\Controllers\EstadisticasAulasDiariasController;
+use App\Http\Controllers\ConfiguracionSistemaController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CarrerasController;
 
 // routes/api.php
 
@@ -30,10 +37,12 @@ Route::get('/login', function () {
 })->name('login.get');
 
 Route::post('/login', [AuthController::class, "login"])->name('login.post');
+//Route::post('/login-web', [AuthController::class, "loginWeb"])->name('login.post.web');
 Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
 
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
+    Route::get('/verify-token', [AuthController::class, 'verifyToken']);
 
     //************************************ MANAGE ROLES ************************************//
     Route::get('/roles/get/all', [RolesController::class, 'index'])->name('roles.index');
@@ -58,6 +67,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/users/get/department-managers/all', [UserController::class, 'getDepartmentManagersOnly'])->name('users.getDepManagers');
     Route::get('/users/get/career-managers/all', [UserController::class, 'getCareerManagersOnly'])->name('users.getCareerManagers');
     Route::get('/users/get/professors/all', [UserController::class, 'getProfessorsOnly'])->name('users.getProfessors');
+    Route::get('/users/get/students/all', [UserController::class, 'getStudentsOnly'])->name('users.getStudents');
     Route::get('/users/get/profile/me', [UserController::class, 'getMyProfile'])->name('users.getMyProfile');
     Route::post('/users/get/name', [UserController::class, 'getByName'])->name('users.getByName');
 
@@ -132,7 +142,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/classroom-resources/get/status/all', [AulaRecursosController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
     Route::patch('/classroom-resources/change-status/{id}', [AulaRecursosController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
 
-    
+
     //************************************ MANAGE ACADEMIC TERM ************************************//
     Route::get('/academic-terms/get/all', [CiclosAcademicosController::class, 'index'])->name('academicTerms.index');
     Route::get('/academic-terms/get/current', [CiclosAcademicosController::class, 'getCurrentTerm'])->name('academicTerms.getCurrent');
@@ -228,5 +238,69 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/qr-scans/get/failed/recent', [EscaneosQrController::class, 'getRecentFailed'])->name('qrScans.getRecentFailed');
     Route::post('/qr-scans/get/range/all', [EscaneosQrController::class, 'getByDateRange'])->name('qrScans.getByDateRange');
 
+    //************************************ MANAGE CLASSROOM HISTORY ************************************//
+    Route::get('/classroom-history/get/all', [HistorialAulasController::class, 'index'])->name('classroomHistory.index');
+    Route::get('/classroom-history/get/{id}', [HistorialAulasController::class, 'show'])->name('classroomHistory.show');
+    Route::get('/classroom-history/get/classroom/{id}', [HistorialAulasController::class, 'getByClassroom'])->name('classroomHistory.getByClassroom');
+    Route::get('/classroom-history/get/user/{id}', [HistorialAulasController::class, 'getByUser'])->name('classroomHistory.getByUser');
+    Route::get('/classroom-history/get/operation/{tipo}', [HistorialAulasController::class, 'getByOperation'])->name('classroomHistory.getByOperation');
+    Route::get('/classroom-history/get/field/{campo}', [HistorialAulasController::class, 'getByField'])->name('classroomHistory.getByField');
+    Route::get('/classroom-history/get/recent/all', [HistorialAulasController::class, 'getRecent'])->name('classroomHistory.getRecent');
+    Route::post('/classroom-history/get/range/all', [HistorialAulasController::class, 'getByDateRange'])->name('classroomHistory.getByDateRange');
 
+    //************************************ MANAGE SYSTEM LOGS ************************************//
+    Route::get('/system-logs/get/all', [SystemLogsController::class, 'index'])->name('systemLogs.index');
+    Route::get('/system-logs/get/{id}', [SystemLogsController::class, 'show'])->name('systemLogs.show');
+    Route::post('/system-logs/create', [SystemLogsController::class, 'store'])->name('systemLogs.store');
+    Route::get('/system-logs/get/level/{nivel}', [SystemLogsController::class, 'getByLevel'])->name('systemLogs.getByLevel');
+    Route::get('/system-logs/get/module/{modulo}', [SystemLogsController::class, 'getByModule'])->name('systemLogs.getByModule');
+    Route::get('/system-logs/get/user/{id}', [SystemLogsController::class, 'getByUser'])->name('systemLogs.getByUser');
+    Route::get('/system-logs/get/errors/all', [SystemLogsController::class, 'getErrors'])->name('systemLogs.getErrors');
+    Route::get('/system-logs/get/recent/all', [SystemLogsController::class, 'getRecent'])->name('systemLogs.getRecent');
+    Route::post('/system-logs/get/range/all', [SystemLogsController::class, 'getByDateRange'])->name('systemLogs.getByDateRange');
+    Route::delete('/system-logs/delete/old', [SystemLogsController::class, 'deleteOldLogs'])->name('systemLogs.deleteOldLogs');
+
+    //************************************ MANAGE NOTIFICATION TYPES ************************************//
+    Route::get('/notification-types/get/all', [TiposNotificacionController::class, 'index'])->name('notificationTypes.index');
+    Route::get('/notification-types/get/{id}', [TiposNotificacionController::class, 'show'])->name('notificationTypes.show');
+    Route::post('/notification-types/create', [TiposNotificacionController::class, 'store'])->name('notificationTypes.store');
+    Route::put('/notification-types/update/{id}', [TiposNotificacionController::class, 'update'])->name('notificationTypes.update');
+    Route::delete('/notification-types/delete/{id}', [TiposNotificacionController::class, 'destroy'])->name('notificationTypes.destroy');
+    Route::get('/notification-types/get/priority/{prioridad}', [TiposNotificacionController::class, 'getByPriority'])->name('notificationTypes.getByPriority');
+
+    //************************************ MANAGE NOTIFICATIONS ************************************//
+    Route::get('/notifications/get/all', [NotificacionesController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/get/{id}', [NotificacionesController::class, 'show'])->name('notifications.show');
+    Route::post('/notifications/create', [NotificacionesController::class, 'store'])->name('notifications.store');
+    Route::patch('/notifications/mark-read/{id}', [NotificacionesController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::get('/notifications/get/my/all', [NotificacionesController::class, 'getMyNotifications'])->name('notifications.getMyNotifications');
+    Route::get('/notifications/get/my/unread', [NotificacionesController::class, 'getMyUnreadNotifications'])->name('notifications.getMyUnreadNotifications');
+    Route::get('/notifications/get/user/{id}', [NotificacionesController::class, 'getByUser'])->name('notifications.getByUser');
+    Route::get('/notifications/get/status/{estado}', [NotificacionesController::class, 'getByStatus'])->name('notifications.getByStatus');
+    Route::get('/notifications/get/type/{tipo_id}', [NotificacionesController::class, 'getByType'])->name('notifications.getByType');
+    Route::get('/notifications/get/pending/all', [NotificacionesController::class, 'getPending'])->name('notifications.getPending');
+
+    //************************************ MANAGE CLASSROOM STATISTICS ************************************//
+    Route::get('/classroom-stats/get/all', [EstadisticasAulasDiariasController::class, 'index'])->name('classroomStats.index');
+    Route::get('/classroom-stats/get/{id}', [EstadisticasAulasDiariasController::class, 'show'])->name('classroomStats.show');
+    Route::get('/classroom-stats/get/classroom/{id}', [EstadisticasAulasDiariasController::class, 'getByClassroom'])->name('classroomStats.getByClassroom');
+    Route::get('/classroom-stats/get/date/{fecha}', [EstadisticasAulasDiariasController::class, 'getByDate'])->name('classroomStats.getByDate');
+    Route::post('/classroom-stats/get/range/all', [EstadisticasAulasDiariasController::class, 'getByDateRange'])->name('classroomStats.getByDateRange');
+    Route::get('/classroom-stats/get/top-occupied/all', [EstadisticasAulasDiariasController::class, 'getTopOccupied'])->name('classroomStats.getTopOccupied');
+    Route::get('/classroom-stats/get/low-occupancy/all', [EstadisticasAulasDiariasController::class, 'getLowOccupancy'])->name('classroomStats.getLowOccupancy');
+    Route::get('/classroom-stats/get/average/all', [EstadisticasAulasDiariasController::class, 'getAverageOccupancy'])->name('classroomStats.getAverageOccupancy');
+    Route::get('/classroom-stats/get/total-minutes/{id}', [EstadisticasAulasDiariasController::class, 'getTotalMinutesByClassroom'])->name('classroomStats.getTotalMinutesByClassroom');
+
+    //************************************ MANAGE SYSTEM CONFIGURATION ************************************//
+    Route::get('/system-config/get/all', [ConfiguracionSistemaController::class, 'index'])->name('systemConfig.index');
+    Route::get('/system-config/get/{id}', [ConfiguracionSistemaController::class, 'show'])->name('systemConfig.show');
+    Route::get('/system-config/get/key/{clave}', [ConfiguracionSistemaController::class, 'getByKey'])->name('systemConfig.getByKey');
+    Route::post('/system-config/create', [ConfiguracionSistemaController::class, 'store'])->name('systemConfig.store');
+    Route::put('/system-config/update/{id}', [ConfiguracionSistemaController::class, 'update'])->name('systemConfig.update');
+    Route::delete('/system-config/delete/{id}', [ConfiguracionSistemaController::class, 'destroy'])->name('systemConfig.destroy');
+    Route::get('/system-config/get/category/{categoria}', [ConfiguracionSistemaController::class, 'getByCategory'])->name('systemConfig.getByCategory');
+    Route::get('/system-config/get/modifiable/all', [ConfiguracionSistemaController::class, 'getModifiable'])->name('systemConfig.getModifiable');
+
+    Route::get('/careers/get/all', [CarrerasController::class, 'index'])->name('carreras.index');
+    Route::get('/careers/get/by-departamento/{departamentoId}', [CarrerasController::class, 'getByDepartamento'])->name('carreras.by.departamento');
 });

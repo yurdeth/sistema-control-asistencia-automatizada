@@ -21,4 +21,16 @@ class estadisticas_aulas_diarias extends Model {
         'minutos_ocupada',
         'porcentaje_ocupacion',
     ];
+
+    protected $casts = [
+        'fecha' => 'date',
+        'minutos_ocupada' => 'integer',
+        'porcentaje_ocupacion' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function aula(): BelongsTo {
+        return $this->belongsTo(Aula::class, 'aula_id');
+    }
 }

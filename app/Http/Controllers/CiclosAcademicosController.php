@@ -16,36 +16,45 @@ class CiclosAcademicosController extends Controller {
      * Display a listing of the resource.
      */
     public function index(): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
-        try {
-            $ciclos_academicos = ciclos_academicos::all();
-            return response()->json([
-                'message' => 'Ciclos académicos obtenidos exitosamente',
-                'success' => true,
-                'data' => $ciclos_academicos
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Error al obtener los ciclos académicos',
-                'error' => $e->getMessage(),
-                'success' => false
-            ], 500);
-        }
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'Acceso no autorizado',
+            'success' => false
+        ], 401);
     }
+
+    $user_rol = $this->getUserRole();
+    if ($user_rol >= 6) {
+        return response()->json([
+            'message' => 'Acceso no autorizado',
+            'success' => false
+        ], 401);
+    }
+
+    try {
+        $ciclos_academicos = ciclos_academicos::all();
+        
+        // ← AGREGAR ESTA VALIDACIÓN
+        if ($ciclos_academicos->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron ciclos académicos',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Ciclos académicos obtenidos exitosamente',
+            'success' => true,
+            'data' => $ciclos_academicos
+        ], 200);
+    } catch (Exception $e) {
+        return response()->json([
+            'message' => 'Error al obtener los ciclos académicos',
+            'error' => $e->getMessage(),
+            'success' => false
+        ], 500);
+    }
+}
 
     /**
      * Store a newly created resource in storage.

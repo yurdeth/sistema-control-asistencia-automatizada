@@ -25,7 +25,7 @@ onMounted(async () => {
 
     // Si hay token, verificar que sea válido con el backend
     try {
-        authService.setAxiosToken(token)
+        await authService.verifyToken(token);
 
         // Obtener el usuario guardado en localStorage
         const user = authService.getUser()
@@ -39,7 +39,11 @@ onMounted(async () => {
         const url = `/api/users/get/${user.id}`
         console.log('   Haciendo petición GET...')
 
-        const response = await axios.get(url)
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
         console.log('   Status:', response.status)
 
         isAuthenticated.value = true

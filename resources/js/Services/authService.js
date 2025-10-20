@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {router} from "@inertiajs/vue3";
 
 const API_BASE_URL = '/api';
 
@@ -9,6 +10,31 @@ export const authService ={
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         }else{
             delete axios.defaults.headers.common['Authorization'];
+        }
+    },
+
+    async verifyToken(token) {
+        try {
+            const response = await fetch('/api/verify-token', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                }
+            });
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            if (!response.ok) {
+                // Token inválido, limpiar y redirigir
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                router.visit('/login');
+            }
+        } catch (error) {
+            console.error('Error verificando token:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            router.visit('/login');
         }
     },
 

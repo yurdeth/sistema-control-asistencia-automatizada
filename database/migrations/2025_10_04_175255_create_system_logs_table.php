@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('system_logs', function (Blueprint $table) {
             $table->id();
-            $table->enum('nivel', ['DEGUB', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']);
+            $table->enum('nivel', ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']);
             $table->string('modulo', 100);
             $table->string('accion', 255);
             $table->foreignId('usuario_id')

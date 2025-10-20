@@ -24,4 +24,14 @@ class configuracion_sistema extends Model {
         'modificable',
         'usuario_identificacion_id',
     ];
+
+    protected $casts = [
+        'modificable' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function usuarioModificacion(): BelongsTo {
+        return $this->belongsTo(User::class, 'usuario_identificacion_id');
+    }
 }

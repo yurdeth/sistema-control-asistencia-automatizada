@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('nombre', 100);
             $table->integer('capacidad_pupitres');
             $table->string('ubicacion', 255);
-            $table->string('qr_code', 255);
+            $table->text('qr_code');
             $table->enum('estado', ['disponible', 'ocupada', 'mantenimiento', 'inactiva'])->default('disponible');
             $table->timestamps();
         });

@@ -52,24 +52,28 @@ class User extends Authenticatable {
     }
 
     public function getAllUsers(): Collection {
-        return DB::table('users')
-            ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
-            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
-            ->join('departamentos', 'users.departamento_id', '=', 'departamentos.id')
-            ->select(
-                'users.id',
-                'users.nombre_completo',
-                'users.email',
-                'users.telefono',
-                'users.departamento_id',
-                'users.estado',
-                'usuario_roles.rol_id',
-                'roles.nombre as rol_nombre',
-                'departamentos.nombre as departamento_nombre'
-            )
-            ->limit(50)
-            ->get();
-    }
+    return DB::table('users')
+        ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
+        ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+        ->leftJoin('departamentos', 'users.departamento_id', '=', 'departamentos.id')
+        ->leftJoin('carreras', 'users.carrera_id', '=', 'carreras.id')
+        ->select(
+            'users.id',
+            'users.nombre_completo',
+            'users.email',
+            'users.telefono',
+            'users.departamento_id',
+            'users.carrera_id',
+            'users.estado',
+            'usuario_roles.rol_id',
+            'roles.nombre as rol_nombre',
+            'departamentos.nombre as departamento_nombre',
+            'carreras.nombre as carrera_nombre'
+        )
+        ->limit(50)
+        ->get();
+}
+
 
     public function getUsersBasedOnMyUserRole(int $my_role_id): Collection {
         $all_users = $this->getAllUsers();
@@ -135,6 +139,10 @@ class User extends Authenticatable {
 
     public function getProfessorsOnly(): Collection {
         return $this->getAllUsers()->where('rol_id', '=', 5);
+    }
+
+    public function getStudentsOnly(): Collection {
+        return $this->getAllUsers()->where('rol_id', '=', 6);
     }
 
     public function myProfile($user_id): Collection {

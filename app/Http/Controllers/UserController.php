@@ -80,7 +80,8 @@ class UserController extends Controller {
             'telefono' => $this->sanitizeInput($request->input('telefono')),
             'password' => $this->sanitizeInput($request->input('password')),
             'password_confirmation' => $this->sanitizeInput($request->input('password_confirmation')),
-            'departamento_id' => $this->sanitizeInput($request->input('departamento_id')),
+            'departamento_id' => $request->input('departamento_id') ? $this->sanitizeInput($request->input('departamento_id')) : null,
+            'carrera_id' => $request->input('carrera_id') ? $this->sanitizeInput($request->input('carrera_id')) : null,
             'rol_id' => $this->sanitizeInput($request->input('rol_id')),
             'estado' => $this->sanitizeInput($request->input('estado')),
         ]);
@@ -91,7 +92,6 @@ class UserController extends Controller {
             'telefono' => ['nullable', 'string', 'max:20', new PhoneRule()],
             'password' => ['required', 'string', 'min:8', new PasswordFormatRule()],
             'password_confirmation' => 'required|string|same:password',
-            'departamento_id' => 'required|integer|exists:departamentos,id',
             'rol_id' => 'required|integer|exists:roles,id',
             'estado' => 'required|in:activo,inactivo,suspendido',
         ];
@@ -114,15 +114,87 @@ class UserController extends Controller {
             'password_confirmation.required' => 'La confirmación de la contraseña es obligatoria.',
             'password_confirmation.string' => 'La confirmación de la contraseña debe ser una cadena de texto.',
             'password_confirmation.same' => 'La confirmación de la contraseña no coincide con la contraseña.',
-            'departamento_id.required' => 'El ID del departamento es obligatorio.',
+            'departamento_id.required' => 'El ID del departamento es obligatorio para este rol.',
             'departamento_id.integer' => 'El ID del departamento debe ser un número entero.',
             'departamento_id.exists' => 'El ID del departamento no existe.',
+            'departamento_id.prohibited' => 'El departamento no debe ser especificado para este rol.',
+            'carrera_id.required' => 'El ID de la carrera es obligatorio para este rol.',
+            'carrera_id.integer' => 'El ID de la carrera debe ser un número entero.',
+            'carrera_id.exists' => 'El ID de la carrera no existe.',
+            'carrera_id.prohibited' => 'La carrera no debe ser especificada para este rol.',
             'rol_id.required' => 'El ID del rol es obligatorio.',
             'rol_id.integer' => 'El ID del rol debe ser un número entero.',
             'rol_id.exists' => 'El ID del rol no existe.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser uno de los siguientes: activo, inactivo, suspendido.',
         ];
+
+        // Validación condicional basada en el rol_id
+        $rol_id = $request->input('rol_id');
+        $departamento_id = $request->input('departamento_id');
+        $carrera_id = $request->input('carrera_id');
+
+        // Validaciones según el rol
+        switch ((int)$rol_id) {
+            case 1:
+            case 2:
+            case 7:
+                //Ni departamento_id ni carrera_id
+                $rules['departamento_id'] = 'prohibited';
+                $rules['carrera_id'] = 'prohibited';
+                break;
+
+            case 3:
+                //departamento_id (obligatorio)
+                $rules['departamento_id'] = 'required|integer|exists:departamentos,id';
+                $rules['carrera_id'] = 'prohibited';
+                break;
+
+            case 4:
+            case 6:
+                $rules['carrera_id'] = 'required|integer|exists:carreras,id';
+                $rules['departamento_id'] = 'prohibited';
+                break;
+
+            case 5:
+                // Puede tener departamento_id O carrera_id (uno de los dos obligatorio, pero no ambos)
+                if (!empty($departamento_id) && !empty($carrera_id)) {
+                    return response()->json([
+                        'message' => 'Error de validación',
+                        'errors' => [
+                            'departamento_id' => ['No se puede especificar departamento y carrera al mismo tiempo para un docente.'],
+                            'carrera_id' => ['No se puede especificar departamento y carrera al mismo tiempo para un docente.']
+                        ],
+                        'success' => false
+                    ], 422);
+                }
+
+                if (empty($departamento_id) && empty($carrera_id)) {
+                    return response()->json([
+                        'message' => 'Error de validación',
+                        'errors' => [
+                            'departamento_id' => ['Se debe especificar un departamento o una carrera para un docente.'],
+                            'carrera_id' => ['Se debe especificar un departamento o una carrera para un docente.']
+                        ],
+                        'success' => false
+                    ], 422);
+                }
+
+                if (!empty($departamento_id)) {
+                    $rules['departamento_id'] = 'required|integer|exists:departamentos,id';
+                    $rules['carrera_id'] = 'nullable';
+                } else {
+                    $rules['carrera_id'] = 'required|integer|exists:carreras,id';
+                    $rules['departamento_id'] = 'nullable';
+                }
+                break;
+
+            default:
+                // Para roles no definidos, permitir null en ambos
+                $rules['departamento_id'] = 'nullable|integer|exists:departamentos,id';
+                $rules['carrera_id'] = 'nullable|integer|exists:carreras,id';
+                break;
+        }
 
         try {
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -148,7 +220,8 @@ class UserController extends Controller {
             $user->email = $validatedData['email'];
             $user->telefono = $telefono;
             $user->password = Hash::make($validatedData['password']);
-            $user->departamento_id = $validatedData['departamento_id'];
+            $user->departamento_id = $validatedData['departamento_id'] ?? null;
+            $user->carrera_id = $validatedData['carrera_id'] ?? null;
             $user->estado = $validatedData['estado'];
             $user->save();
 
@@ -264,7 +337,11 @@ class UserController extends Controller {
         }
 
         if ($request->has('departamento_id')) {
-            $dataToMerge['departamento_id'] = $this->sanitizeInput($request->input('departamento_id', ''));
+            $dataToMerge['departamento_id'] = $request->input('departamento_id') ? $this->sanitizeInput($request->input('departamento_id')) : null;
+        }
+
+        if ($request->has('carrera_id')) {
+            $dataToMerge['carrera_id'] = $request->input('carrera_id') ? $this->sanitizeInput($request->input('carrera_id')) : null;
         }
 
         if ($request->has('rol_id')) {
@@ -284,7 +361,6 @@ class UserController extends Controller {
                 'unique:users,email,' . $id, new FormatEmailRule()
             ],
             'telefono' => ['nullable', 'string', 'max:20', new PhoneRule()],
-            'departamento_id' => 'sometimes|required|integer|exists:departamentos,id',
             'rol_id' => 'sometimes|required|integer|exists:roles,id',
             'estado' => 'sometimes|required|in:activo,inactivo,suspendido',
         ];
@@ -312,15 +388,136 @@ class UserController extends Controller {
             'password_confirmation.required' => 'La confirmación de la contraseña es obligatoria.',
             'password_confirmation.string' => 'La confirmación de la contraseña debe ser una cadena de texto.',
             'password_confirmation.same' => 'La confirmación de la contraseña no coincide con la contraseña.',
-            'departamento_id.required' => 'El ID del departamento es obligatorio.',
+            'departamento_id.required' => 'El ID del departamento es obligatorio para este rol.',
             'departamento_id.integer' => 'El ID del departamento debe ser un número entero.',
             'departamento_id.exists' => 'El ID del departamento no existe.',
+            'departamento_id.prohibited' => 'El departamento no debe ser especificado para este rol.',
+            'carrera_id.required' => 'El ID de la carrera es obligatorio para este rol.',
+            'carrera_id.integer' => 'El ID de la carrera debe ser un número entero.',
+            'carrera_id.exists' => 'El ID de la carrera no existe.',
+            'carrera_id.prohibited' => 'La carrera no debe ser especificada para este rol.',
             'rol_id.required' => 'El ID del rol es obligatorio.',
             'rol_id.integer' => 'El ID del rol debe ser un número entero.',
             'rol_id.exists' => 'El ID del rol no existe.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser uno de los siguientes: activo, inactivo, suspendido.',
         ];
+
+        // Validación condicional basada en el rol_id (si se está actualizando)
+        $rol_id = $request->input('rol_id');
+
+        // Si se está actualizando el rol, aplicar validaciones condicionales
+        if ($request->has('rol_id')) {
+            // Obtener el usuario actual para verificar sus valores existentes
+            $currentUser = User::find($id);
+
+            $departamento_id = $request->input('departamento_id');
+            $carrera_id = $request->input('carrera_id');
+
+            // Validaciones según el rol
+            switch ((int)$rol_id) {
+                case 1: // root
+                case 2: // administrador_academico
+                case 7: // invitado
+                    // NO deben tener ni departamento_id ni carrera_id
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = 'prohibited';
+                    }
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = 'prohibited';
+                    }
+                    break;
+
+                case 3: // jefe_departamento
+                    // SOLO debe tener departamento_id (obligatorio)
+                    // Si no se proporciona en la petición, verificar que el usuario ya tenga uno
+                    if (!$request->has('departamento_id') && !$currentUser->departamento_id) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'departamento_id' => ['El departamento es obligatorio para el rol de jefe de departamento.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = 'required|integer|exists:departamentos,id';
+                    }
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = 'prohibited';
+                    }
+                    break;
+
+                case 4: // coordinador_carreras
+                case 6: // estudiante
+                    // SOLO debe tener carrera_id (obligatorio)
+                    // Si no se proporciona en la petición, verificar que el usuario ya tenga una
+                    if (!$request->has('carrera_id') && !$currentUser->carrera_id) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'carrera_id' => ['La carrera es obligatoria para este rol.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = 'required|integer|exists:carreras,id';
+                    }
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = 'prohibited';
+                    }
+                    break;
+
+                case 5: // docente
+                    // Puede tener departamento_id O carrera_id (uno de los dos obligatorio, pero no ambos)
+                    if (!empty($departamento_id) && !empty($carrera_id)) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'departamento_id' => ['No se puede especificar departamento y carrera al mismo tiempo para un docente.'],
+                                'carrera_id' => ['No se puede especificar departamento y carrera al mismo tiempo para un docente.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    // Verificar que tenga al menos uno (en la petición o en la BD)
+                    $tieneDepartamento = $request->has('departamento_id') ? !empty($departamento_id) : !empty($currentUser->departamento_id);
+                    $tieneCarrera = $request->has('carrera_id') ? !empty($carrera_id) : !empty($currentUser->carrera_id);
+
+                    if (!$tieneDepartamento && !$tieneCarrera) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'departamento_id' => ['Se debe especificar un departamento o una carrera para un docente.'],
+                                'carrera_id' => ['Se debe especificar un departamento o una carrera para un docente.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = !empty($departamento_id) ? 'required|integer|exists:departamentos,id' : 'nullable';
+                    }
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = !empty($carrera_id) ? 'required|integer|exists:carreras,id' : 'nullable';
+                    }
+                    break;
+
+                default:
+                    // Para roles no definidos, permitir null en ambos
+                    $rules['departamento_id'] = 'sometimes|nullable|integer|exists:departamentos,id';
+                    $rules['carrera_id'] = 'sometimes|nullable|integer|exists:carreras,id';
+                    break;
+            }
+        } else {
+            // Si no se está actualizando el rol, solo validar si se proporcionan los campos
+            $rules['departamento_id'] = 'sometimes|nullable|integer|exists:departamentos,id';
+            $rules['carrera_id'] = 'sometimes|nullable|integer|exists:carreras,id';
+        }
 
         try {
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -362,8 +559,51 @@ class UserController extends Controller {
                 $user->departamento_id = $validatedData['departamento_id'];
             }
 
+            if (isset($validatedData['carrera_id'])) {
+                $user->carrera_id = $validatedData['carrera_id'];
+            }
+
             if (isset($validatedData['estado'])) {
                 $user->estado = $validatedData['estado'];
+            }
+
+            // Si se está cambiando el rol, limpiar departamento_id y carrera_id según las reglas del nuevo rol
+            if (isset($validatedData['rol_id'])) {
+                $new_rol_id = (int)$validatedData['rol_id'];
+
+                switch ($new_rol_id) {
+                    case 1: // root
+                    case 2: // administrador_academico
+                    case 7: // invitado
+                        // Estos roles NO deben tener ni departamento_id ni carrera_id
+                        $user->departamento_id = null;
+                        $user->carrera_id = null;
+                        break;
+
+                    case 3: // jefe_departamento
+                        // SOLO debe tener departamento_id, limpiar carrera_id
+                        $user->carrera_id = null;
+                        // Si no se proporcionó departamento_id en la actualización, mantener el actual
+                        break;
+
+                    case 4: // coordinador_carreras
+                    case 6: // estudiante
+                        // SOLO debe tener carrera_id, limpiar departamento_id
+                        $user->departamento_id = null;
+                        // Si no se proporcionó carrera_id en la actualización, mantener el actual
+                        break;
+
+                    case 5: // docente
+                        // Puede tener departamento_id O carrera_id
+                        // Si se proporcionó uno, limpiar el otro
+                        if (isset($validatedData['departamento_id']) && $validatedData['departamento_id']) {
+                            $user->carrera_id = null;
+                        } elseif (isset($validatedData['carrera_id']) && $validatedData['carrera_id']) {
+                            $user->departamento_id = null;
+                        }
+                        // Si no se proporcionó ninguno, mantener el que ya tiene
+                        break;
+                }
             }
 
             $user->save();
@@ -900,6 +1140,40 @@ class UserController extends Controller {
 
         return response()->json([
             'message' => 'Docentes encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function getStudentsOnly(): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rol = $this->getUserRole();
+        if ($user_rol >= 6) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $users = Cache::remember('students_only', 60, function () {
+            return (new User())->getStudentsOnly();
+        });
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron estudiantes',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Estudiantes encontrados',
             'success' => true,
             'data' => $users
         ]);
