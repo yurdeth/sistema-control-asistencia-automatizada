@@ -25,6 +25,7 @@ use App\Http\Controllers\EstadisticasAulasDiariasController;
 use App\Http\Controllers\ConfiguracionSistemaController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CarrerasController;
 
 // routes/api.php
 
@@ -299,4 +300,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::delete('/system-config/delete/{id}', [ConfiguracionSistemaController::class, 'destroy'])->name('systemConfig.destroy');
     Route::get('/system-config/get/category/{categoria}', [ConfiguracionSistemaController::class, 'getByCategory'])->name('systemConfig.getByCategory');
     Route::get('/system-config/get/modifiable/all', [ConfiguracionSistemaController::class, 'getModifiable'])->name('systemConfig.getModifiable');
+
+    Route::get('/careers/get/all', [CarrerasController::class, 'index'])->name('carreras.index');
+    Route::get('/careers/get/by-departamento/{departamentoId}', [CarrerasController::class, 'getByDepartamento'])->name('carreras.by.departamento');
 });
