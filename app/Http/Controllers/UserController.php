@@ -80,8 +80,8 @@ class UserController extends Controller {
             'telefono' => $this->sanitizeInput($request->input('telefono')),
             'password' => $this->sanitizeInput($request->input('password')),
             'password_confirmation' => $this->sanitizeInput($request->input('password_confirmation')),
-            'departamento_id' => $this->sanitizeInput($request->input('departamento_id')),
-            'carrera_id' => $this->sanitizeInput($request->input('carrera_id')),
+            'departamento_id' => $request->input('departamento_id') ? $this->sanitizeInput($request->input('departamento_id')) : null,
+            'carrera_id' => $request->input('carrera_id') ? $this->sanitizeInput($request->input('carrera_id')) : null,
             'rol_id' => $this->sanitizeInput($request->input('rol_id')),
             'estado' => $this->sanitizeInput($request->input('estado')),
         ]);
@@ -337,11 +337,11 @@ class UserController extends Controller {
         }
 
         if ($request->has('departamento_id')) {
-            $dataToMerge['departamento_id'] = $this->sanitizeInput($request->input('departamento_id', ''));
+            $dataToMerge['departamento_id'] = $request->input('departamento_id') ? $this->sanitizeInput($request->input('departamento_id')) : null;
         }
 
         if ($request->has('carrera_id')) {
-            $dataToMerge['carrera_id'] = $this->sanitizeInput($request->input('carrera_id', ''));
+            $dataToMerge['carrera_id'] = $request->input('carrera_id') ? $this->sanitizeInput($request->input('carrera_id')) : null;
         }
 
         if ($request->has('rol_id')) {
