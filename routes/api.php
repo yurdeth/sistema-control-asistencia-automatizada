@@ -1,32 +1,31 @@
 <?php
 
+use App\Http\Controllers\AsistenciasEstudiantesController;
 use App\Http\Controllers\AulaRecursosController;
 use App\Http\Controllers\AulasController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CarrerasController;
 use App\Http\Controllers\CiclosAcademicosController;
+use App\Http\Controllers\ConfiguracionSistemaController;
 use App\Http\Controllers\DepartamentosController;
+use App\Http\Controllers\EscaneosQrController;
+use App\Http\Controllers\EstadisticasAulasDiariasController;
 use App\Http\Controllers\GruposController;
+use App\Http\Controllers\HistorialAulasController;
 use App\Http\Controllers\HorariosController;
+use App\Http\Controllers\InscripcionesController;
+use App\Http\Controllers\MantenimientosController;
 use App\Http\Controllers\MateriasController;
+use App\Http\Controllers\NotificacionesController;
 use App\Http\Controllers\RecursosTipoController;
 use App\Http\Controllers\RolesController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\SolicitudesInscripcionController;
-use App\Http\Controllers\InscripcionesController;
 use App\Http\Controllers\SesionesClaseController;
-use App\Http\Controllers\AsistenciasEstudiantesController;
-use App\Http\Controllers\MantenimientosController;
-use App\Http\Controllers\EscaneosQrController;
-use App\Http\Controllers\HistorialAulasController;
+use App\Http\Controllers\SolicitudesInscripcionController;
 use App\Http\Controllers\SystemLogsController;
 use App\Http\Controllers\TiposNotificacionController;
-use App\Http\Controllers\NotificacionesController;
-use App\Http\Controllers\EstadisticasAulasDiariasController;
-use App\Http\Controllers\ConfiguracionSistemaController;
-use App\Http\Middleware\GuestAuthMiddleware;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CarrerasController;
 
 // routes/api.php
 
@@ -160,7 +159,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/resource-types/edit/{id}', [RecursosTipoController::class, 'edit'])->name('resourceTypes.edit');
     Route::delete('/resource-types/delete/{id}', [RecursosTipoController::class, 'destroy'])->name('resourceTypes.delete');
 
-  //************************************ MANAGE ENROLLMENT REQUESTS ************************************//
+    //************************************ MANAGE ENROLLMENT REQUESTS ************************************//
     Route::get('/enrollment-requests/get/all', [SolicitudesInscripcionController::class, 'index'])->name('enrollmentRequests.index');
     Route::get('/enrollment-requests/get/{id}', [SolicitudesInscripcionController::class, 'show'])->name('enrollmentRequests.show');
     Route::post('/enrollment-requests/new', [SolicitudesInscripcionController::class, 'store'])->name('enrollmentRequests.store');
@@ -304,9 +303,4 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
 
     Route::get('/careers/get/all', [CarrerasController::class, 'index'])->name('carreras.index');
     Route::get('/careers/get/by-departamento/{departamentoId}', [CarrerasController::class, 'getByDepartamento'])->name('carreras.by.departamento');
-});
-
-Route::middleware([GuestAuthMiddleware::class, 'throttle:600,1'])->group(function () {
-    Route::get('/classrooms/guest/get/all', [AulasController::class, 'index'])->name('aulas.index.guest');
-    Route::get('/classrooms/guest/get/{id}', [AulasController::class, 'show'])->name('aulas.show.guest');
 });

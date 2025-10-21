@@ -14,39 +14,33 @@ use Illuminate\Support\Facades\Log;
 class AuthController extends Controller {
     public function loginAsGuest(): JsonResponse {
         try {
-            $guestApiKey = env('GUEST_API_KEY');
+            // En esta verga, creo un usuario aleatorio temporalmente para el invitado
+            $randomUser = User::create([
+                'nombre_completo' => 'guest ' . uniqid(),
+                'email' => 'guest_' . uniqid() . '@ues.edu.sv',
+                'password' => bcrypt(uniqid()),
+                'departamento_id' => null,
+                'estado' => 'activo',
+                'ultimo_acceso' => Carbon::now(),
+            ]);
 
-            if (!$guestApiKey) {
-                return response()->json([
-                    'message' => 'Configuración de invitado no disponible',
-                    'success' => false
-                ], 500);
-            }
+            $randomUser->save();
+            Auth::login($randomUser);
+            $user = $randomUser;
 
-            // Verificar que el usuario guest existe y está activo
-            $user = User::where('email', env('GUEST_EMAIL'))->first();
-
-            if (!$user || $user->estado !== 'activo') {
-                return response()->json([
-                    'message' => 'Usuario invitado no disponible',
-                    'success' => false
-                ], 403);
-            }
-
-            // Actualizar último acceso
-            $user->ultimo_acceso = Carbon::now();
-            $user->save();
+            // Crear token de invitado
+            $tokenResult = $user->createToken('Personal Access Token');
+            $guestToken = $tokenResult->token;
+            $guestToken->expires_at = Carbon::now()->addDays(30);
+            $guestToken->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Acceso como invitado otorgado',
-                'api_key' => $guestApiKey,
-                'user' => [
-                    'id' => $user->id,
-                    'nombre_completo' => $user->nombre_completo,
-                    'email' => $user->email,
-                ],
-                'instructions' => 'Use el header X-Guest-Key en sus peticiones a las rutas permitidas',
+                'message' => 'Inicio de sesión exitoso',
+                'user' => $user,
+                'token' => $tokenResult->accessToken,
+                'token_type' => 'Bearer',
+                'expires_at' => Carbon::parse($guestToken->expires_at)->toDateTimeString(),
             ]);
         } catch (Exception $e) {
             Log::error('Error en login de invitado', [

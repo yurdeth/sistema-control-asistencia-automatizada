@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\GuestAuthMiddleware;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Foundation\Application;
