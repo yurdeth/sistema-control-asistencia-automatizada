@@ -5,7 +5,6 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
@@ -42,38 +41,28 @@ class User extends Authenticatable {
      */
     protected $hidden = ['password', 'remember_token',];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array {
-        return ['email_verified_at' => 'datetime', 'password' => 'hashed',];
-    }
-
     public function getAllUsers(): Collection {
-    return DB::table('users')
-        ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
-        ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
-        ->leftJoin('departamentos', 'users.departamento_id', '=', 'departamentos.id')
-        ->leftJoin('carreras', 'users.carrera_id', '=', 'carreras.id')
-        ->select(
-            'users.id',
-            'users.nombre_completo',
-            'users.email',
-            'users.telefono',
-            'users.departamento_id',
-            'users.carrera_id',
-            'users.estado',
-            'usuario_roles.rol_id',
-            'roles.nombre as rol_nombre',
-            'departamentos.nombre as departamento_nombre',
-            'carreras.nombre as carrera_nombre'
-        )
-        ->limit(50)
-        ->get();
-}
-
+        return DB::table('users')
+            ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->leftJoin('departamentos', 'users.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('carreras', 'users.carrera_id', '=', 'carreras.id')
+            ->select(
+                'users.id',
+                'users.nombre_completo',
+                'users.email',
+                'users.telefono',
+                'users.departamento_id',
+                'users.carrera_id',
+                'users.estado',
+                'usuario_roles.rol_id',
+                'roles.nombre as rol_nombre',
+                'departamentos.nombre as departamento_nombre',
+                'carreras.nombre as carrera_nombre'
+            )
+            ->limit(50)
+            ->get();
+    }
 
     public function getUsersBasedOnMyUserRole(int $my_role_id): Collection {
         $all_users = $this->getAllUsers();
@@ -90,6 +79,19 @@ class User extends Authenticatable {
 
     public function getUser(int $user_id): Collection {
         return $this->getAllUsers()->where('id', $user_id);
+    }
+
+    public function getUserBasedOnMyUserRole(int $my_role_id, int $user_id): Collection {
+        $user = $this->getUser($user_id);
+
+        return match ($my_role_id) {
+            1 => $user,
+            2 => $user->where('rol_id', '!=', 1),
+            3 => $user->whereNotIn('rol_id', [1, 2]),
+            4 => $user->whereNotIn('rol_id', [1, 2, 3]),
+            5 => $user->whereNotIn('rol_id', [1, 2, 3, 4]),
+            default => collect(),
+        };
     }
 
     public function getUsersByRole(int $role_id): Collection {
@@ -153,5 +155,14 @@ class User extends Authenticatable {
         return DB::table('users')
             ->where('nombre_completo', 'like', '%' . $name . '%')
             ->get();
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array {
+        return ['email_verified_at' => 'datetime', 'password' => 'hashed',];
     }
 }
