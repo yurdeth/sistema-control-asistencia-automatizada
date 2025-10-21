@@ -13,104 +13,25 @@ use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller {
     public function loginAsGuest(): JsonResponse {
-        if (Auth::check()) {
+        $user = User::where('email', env('GUEST_EMAIL'))->first();
+
+        if (!$user) {
             return response()->json([
-                'message' => 'Ya autenticado',
+                'message' => 'Usuario invitado no encontrado',
                 'success' => false
-            ], 400);
+            ], 404);
         }
 
-        $credentials = [
-            'email' => env('GUEST_EMAIL'),
-            'password' => env('GUEST_PASSWORD')
-        ];
+        // Token estático desde .env
+        $token = env('GUEST_TOKEN');
 
-        try {
-            // Verificar que las credenciales de invitado estén configuradas
-            if (!$credentials['email'] || !$credentials['password']) {
-                return response()->json([
-                    'message' => 'Las credenciales de invitado no están configuradas',
-                    'success' => false
-                ], 500);
-            }
-
-            // Verificar si el usuario existe
-            $user = User::where('email', $credentials['email'])->first();
-
-            if (!$user) {
-                return response()->json([
-                    'message' => 'El usuario invitado no existe',
-                    'success' => false
-                ], 404);
-            }
-
-            // Verificar el estado del usuario antes de intentar login
-            if ($user->estado !== 'activo') {
-                return response()->json([
-                    'message' => 'El usuario invitado no está activo',
-                    'success' => false
-                ], 403);
-            }
-
-            // Intentar autenticación
-            if (!Auth::attempt($credentials)) {
-                return response()->json([
-                    'message' => 'Error en las credenciales de invitado',
-                    'success' => false
-                ], 401);
-            }
-
-            // Actualizar último acceso
-            $user->ultimo_acceso = Carbon::now();
-            $user->save();
-
-            // Obtener rol del usuario
-            $role_id = DB::table('usuario_roles')
-                ->where('usuario_id', $user->id)
-                ->value('rol_id');
-
-            $user->role_id = $role_id;
-
-            // Crear token de acceso
-            $tokenResult = $user->createToken('Guest Access Token');
-            $token = $tokenResult->token;
-            $token->expires_at = Carbon::now()->addDays(30);
-            $token->save();
-
-            // Obtener información adicional del usuario
-            $departamento_nombre = DB::table('departamentos')
-                ->where('id', $user->departamento_id)
-                ->value('nombre');
-
-            $user->departamento_nombre = $departamento_nombre;
-
-            $role_nombre = DB::table('roles')
-                ->join('usuario_roles', 'roles.id', '=', 'usuario_roles.rol_id')
-                ->where('usuario_roles.usuario_id', $user->id)
-                ->value('nombre');
-
-            $user->role_nombre = $role_nombre;
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Inicio de sesión como invitado exitoso',
-                'user' => $user,
-                'token' => $tokenResult->accessToken,
-                'token_type' => 'Bearer',
-                'expires_at' => Carbon::parse($token->expires_at)->toDateTimeString(),
-            ]);
-
-        } catch (Exception $e) {
-            Log::error('Error en login de invitado', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'message' => 'Error en el servidor',
-                'success' => false
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Acceso como invitado concedido',
+            'user' => $user,
+            'token' => $token,
+            'token_type' => 'Bearer'
+        ]);
     }
 
     public function login(Request $request): JsonResponse {
