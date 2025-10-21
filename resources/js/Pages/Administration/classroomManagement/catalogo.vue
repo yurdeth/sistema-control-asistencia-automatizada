@@ -224,7 +224,9 @@
                         type="number"
                         v-model="form.capacidad"
                         class="w-full mt-1 border-gray-300 rounded-md"
+                        max="150"
                         :class="{ 'border-red-500': formErrors.capacidad }"
+                        @input="validateCapacity"
                     />
                     <p v-if="formErrors.capacidad" class="text-red-500 text-xs mt-1">
                         {{ formErrors.capacidad[0] }}
@@ -250,8 +252,10 @@
                         class="w-full mt-1 border-gray-300 rounded-md"
                         :class="{ 'border-red-500': formErrors.estado }"
                     >
-                        <option value="activo">Activo</option>
-                        <option value="inactivo">Inactivo</option>
+                        <option value="activo">Disponible</option>
+                        <option value="inactivo">Ocupada</option>
+                        <option value="inactivo">Mantenimiento</option>
+                        <option value="inactivo">Inactiva</option>
                     </select>
                     <p v-if="formErrors.estado" class="text-red-500 text-xs mt-1">
                         {{ formErrors.estado[0] }}
@@ -519,10 +523,10 @@ async function handleSubmit() {
         if (isEditMode.value) {
             // Actualizar departamento existente
             await updateDepartment(form.value.id, form.value);
-            alert('Departamento actualizado exitosamente');
+            alert('Aula actualizada exitosamente');
         } else {
             // Crear nuevo departamento
-            console.log('Creando departamento:', form.value);
+            console.log('Creando aula:', form.value);
             // Validación personalizada: no permitir números en el nombre
             const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
             if (!nombreRegex.test(form.value.nombre)) {
@@ -531,11 +535,11 @@ async function handleSubmit() {
             }
 
             await createDeparments(form.value);
-            alert('Departamento creado exitosamente');
+            alert('Aula creada exitosamente');
         }
 
         // Recargar la tabla
-        await fetchDepartments();
+        await cargarAulas();
         closeModal();
 
         // Limpiar el formulario
@@ -615,5 +619,14 @@ const removeImage = () => {
         fileInput.value.value = '';
     }
 };
+
+function validateCapacity(event) {
+    const value = event.target.value;
+    // Only allow numbers up to 150
+    const regex = /^(?:1[0-4][0-9]|150|[1-9]?[0-9])$/;
+    if (!regex.test(value)) {
+        form.value.capacidad = Math.min(Number(value), 150);
+    }
+}
 
 </script>
