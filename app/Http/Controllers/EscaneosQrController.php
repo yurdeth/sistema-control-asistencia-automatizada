@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\escaneos_qr;
+use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -159,8 +160,6 @@ class EscaneosQrController extends Controller {
     }
 
     public function getByClassroom($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         // Esta mierda es para validar los roles y autorizar el acceso; no borrar
         if (!Auth::check()) {
             return response()->json([
@@ -169,7 +168,16 @@ class EscaneosQrController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -202,8 +210,6 @@ class EscaneosQrController extends Controller {
     }
 
     public function getByUser($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -211,7 +217,16 @@ class EscaneosQrController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -244,7 +259,7 @@ class EscaneosQrController extends Controller {
     }
 
     public function getBySession($id): JsonResponse {
-        $user_rol = $this->getUserRole();
+        $user_rol = $this->getUserRoleId();
 
         if (!Auth::check()) {
             return response()->json([
@@ -253,7 +268,16 @@ class EscaneosQrController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -286,7 +310,7 @@ class EscaneosQrController extends Controller {
     }
 
     public function getByType($tipo): JsonResponse {
-        $user_rol = $this->getUserRole();
+        $user_rol = $this->getUserRoleId();
 
         if (!Auth::check()) {
             return response()->json([
@@ -295,7 +319,16 @@ class EscaneosQrController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -328,7 +361,7 @@ class EscaneosQrController extends Controller {
     }
 
     public function getByResult($resultado): JsonResponse {
-        $user_rol = $this->getUserRole();
+        $user_rol = $this->getUserRoleId();
 
         if (!Auth::check()) {
             return response()->json([
@@ -337,7 +370,16 @@ class EscaneosQrController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -370,7 +412,7 @@ class EscaneosQrController extends Controller {
     }
 
     public function getRecentFailed(): JsonResponse {
-        $user_rol = $this->getUserRole();
+        $user_rol = $this->getUserRoleId();
 
         if (!Auth::check()) {
             return response()->json([
@@ -379,7 +421,16 @@ class EscaneosQrController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -414,7 +465,7 @@ class EscaneosQrController extends Controller {
     }
 
     public function getByDateRange(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
+        $user_rol = $this->getUserRoleId();
 
         if (!Auth::check()) {
             return response()->json([
@@ -423,7 +474,16 @@ class EscaneosQrController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -468,11 +528,19 @@ class EscaneosQrController extends Controller {
         }
     }
 
-    private function getUserRole() {
+    private function getUserRoleId() {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
             ->where('users.id', Auth::id())
             ->value('usuario_roles.rol_id');
+    }
+
+    private function getUserRoleName(): string|null {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->where('users.id', Auth::id())
+            ->value('roles.nombre');
     }
 
     private function sanitizeInput($input): string {
