@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
-class CarrerasController extends Controller
-{
+class CarrerasController extends Controller {
     /**
      * Obtener todas las carreras
      */
-    public function index(): JsonResponse
-    {
+    public function index(): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -44,8 +42,7 @@ class CarrerasController extends Controller
     /**
      * Obtener carreras por departamento
      */
-    public function getByDepartamento($departamentoId): JsonResponse
-    {
+    public function getByDepartamento($departamentoId): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
