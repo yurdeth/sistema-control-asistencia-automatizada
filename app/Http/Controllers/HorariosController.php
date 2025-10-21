@@ -2,22 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\aulas;
 use App\Models\grupos;
 use App\Models\horarios;
+use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class HorariosController extends Controller {
 
     public function index(): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -25,8 +22,10 @@ class HorariosController extends Controller {
             ], 401);
         }
 
+        $user_rolName = $this->getUserRoleName();
+
         try {
-            if ($user_rol == 5) {
+            if ($user_rolName == RolesEnum::DOCENTE->value) {
                 $horarios = Cache::remember('horarios_index', 60, function () {
                     return (new horarios())->getHorariosByProfessor();
                 });
@@ -36,7 +35,7 @@ class HorariosController extends Controller {
                 });
             }
 
-            if(!$horarios || $horarios->isEmpty()) {
+            if (!$horarios || $horarios->isEmpty()) {
                 return response()->json([
                     'message' => 'No se encontraron horarios',
                     'data' => []
@@ -63,12 +62,20 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6 && Auth::user()->id != $id) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos) && Auth::user()->id != $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -103,11 +110,13 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
 
-        $rolesPermitidos = [2, 3]; // Académico, Jefe de Departamento
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -188,6 +197,10 @@ class HorariosController extends Controller {
         }
     }
 
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
+    }
+
     public function edit(Request $request, $id): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -196,11 +209,13 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
 
-        $rolesPermitidos = [2, 3]; // Académico, Jefe de Departamento
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -298,11 +313,13 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
 
-        $rolesPermitidos = [2, 3]; // Académico, Jefe de Departamento
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -346,12 +363,20 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -387,12 +412,20 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -429,12 +462,20 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -473,12 +514,20 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -519,7 +568,7 @@ class HorariosController extends Controller {
                 'success' => true,
                 'data' => $conflictos
             ], 200);
-        } catch (Exception $e){
+        } catch (Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener los conflictos de horario',
                 'success' => false,
@@ -536,12 +585,20 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -554,7 +611,7 @@ class HorariosController extends Controller {
                 return (new horarios())->getHorariosByRango($request->hora_inicio, $request->hora_fin);
             });
 
-            if(!$horarios || $horarios->isEmpty()) {
+            if (!$horarios || $horarios->isEmpty()) {
                 return response()->json([
                     'message' => 'No se encontraron horarios en el rango especificado',
                     'success' => false
@@ -575,14 +632,11 @@ class HorariosController extends Controller {
         }
     }
 
-    private function getUserRole() {
+    private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
             ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
-    }
-
-    private function sanitizeInput($input): string {
-        return htmlspecialchars(strip_tags(trim($input)));
+            ->value('roles.nombre');
     }
 }
