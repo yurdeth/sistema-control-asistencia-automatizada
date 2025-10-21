@@ -22,6 +22,16 @@ class AuthController extends Controller {
                 'departamento_id' => null,
                 'estado' => 'activo',
                 'ultimo_acceso' => Carbon::now(),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+
+            DB::table('usuario_roles')->insert([
+                'usuario_id' => $randomUser->id,
+                'rol_id' => 7,
+                'asignado_por_id' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]);
 
             $randomUser->save();
