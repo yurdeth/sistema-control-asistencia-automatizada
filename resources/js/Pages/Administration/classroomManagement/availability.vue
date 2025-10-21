@@ -2,10 +2,12 @@
     <Head title="Disponibilidad" />
 
     <!-- Loader mientras verifica -->
-    <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
-        <div class="text-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
-            <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+    <div v-if="!isAuthenticated">
+        <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
+                <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+            </div>
         </div>
     </div>
 
@@ -313,6 +315,7 @@
     const sectores = ref([]);
     const reservas = ref([]);
     const cargando = ref(false);
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
 
     //Parte donde se trabaja el filtrado de las aulas
     const aulasFiltradas = computed( () =>{

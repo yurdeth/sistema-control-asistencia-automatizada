@@ -1,10 +1,12 @@
 <template>
     <Head title="Docentes" />
 
-    <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
-        <div class="text-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
-            <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+    <div v-if="!isAuthenticated">
+        <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
+                <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+            </div>
         </div>
     </div>
 
@@ -210,7 +212,7 @@
                     <p class="text-sm text-blue-800 mb-3">
                         <strong>Nota:</strong> Deja estos campos vacíos si no deseas cambiar la contraseña
                     </p>
-                    
+
                     <div class="mb-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Nueva Contraseña (opcional)
@@ -225,7 +227,7 @@
                             {{ formErrors.password[0] }}
                         </p>
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Confirmar Nueva Contraseña
@@ -363,6 +365,7 @@
     const loading = ref(false);
     const error = ref(null);
     const allDocentes = ref([]);
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
 
     // Configuración de axios
     const API_URL = 'http://127.0.0.1:8000/api';
@@ -435,11 +438,11 @@
 
     const openEditModal = async (docente) => {
         console.log('Abriendo modal para editar:', docente);
-        
+
         resetForm();
         isEditMode.value = true;
         currentDocenteId.value = docente.id;
-        
+
         // Determinar si es departamento o carrera
         let tipoAsignacion = '';
         if (docente.departamento_id) {
@@ -447,7 +450,7 @@
         } else if (docente.carrera_id) {
             tipoAsignacion = 'carrera';
         }
-        
+
         formData.value = {
             nombre_completo: docente.nombre_completo || '',
             email: docente.email || '',
@@ -459,9 +462,9 @@
             carrera_id: docente.carrera_id || '',
             estado: docente.estado || 'activo'
         };
-        
+
         console.log('Form data cargado:', formData.value);
-        
+
         await fetchDepartamentosYCarreras();
         showModal.value = true;
     };
@@ -547,11 +550,11 @@
         try {
             loading.value = true;
             console.log('Eliminando docente ID:', id);
-            
+
             const response = await axios.delete(`${API_URL}/users/delete/${id}`, getAuthHeaders());
-            
+
             console.log('Respuesta eliminación:', response.data);
-            
+
             if (response.data.success) {
                 alert('Docente eliminado exitosamente');
                 await fetchDocentes();
@@ -635,7 +638,7 @@
 
             departamentos.value = depResponse.data.data || depResponse.data || [];
             carreras.value = carResponse.data.data || carResponse.data || [];
-            
+
             console.log('Departamentos procesados:', departamentos.value);
             console.log('Carreras procesadas:', carreras.value);
         } catch (err) {
@@ -645,8 +648,8 @@
         }
     }
 
-    const handleExcelUpload = (event) => { 
-        console.log('Subir Excel', event.target.files[0]); 
+    const handleExcelUpload = (event) => {
+        console.log('Subir Excel', event.target.files[0]);
     };
 
     onMounted(async () => {
