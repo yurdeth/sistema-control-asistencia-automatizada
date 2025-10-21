@@ -40,6 +40,9 @@ Route::get('/login', function () {
 Route::post('/login', [AuthController::class, "login"])->name('login.post');
 Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
 
+Route::get('/classrooms/get/all', [AulasController::class, 'index'])->name('aulas.index.guest');
+Route::get('/classrooms/get/{id}', [AulasController::class, 'show'])->name('aulas.show.guest');
+
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
     Route::get('/verify-token', [AuthController::class, 'verifyToken']);
@@ -305,7 +308,3 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/careers/get/by-departamento/{departamentoId}', [CarrerasController::class, 'getByDepartamento'])->name('carreras.by.departamento');
 });
 
-Route::middleware([GuestAuthMiddleware::class, 'throttle:600,1'])->group(function () {
-    Route::get('/classrooms/get/all', [AulasController::class, 'index'])->name('aulas.index.guest');
-    Route::get('/classrooms/get/{id}', [AulasController::class, 'show'])->name('aulas.show.guest');
-});
