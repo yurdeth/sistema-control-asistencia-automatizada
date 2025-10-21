@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\aulas;
 use App\Models\AulaFoto;
+use App\Models\aulas;
 use App\Models\AulaVideo;
 use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class AulasController extends Controller {
     public function index(): JsonResponse {
@@ -172,128 +170,6 @@ class AulasController extends Controller {
         ], 200);
     }
 
-    public function store(Request $request): JsonResponse {
-    if (!Auth::check()) {
-        return response()->json([
-            'message' => 'Acceso no autorizado',
-            'success' => false
-        ], 401);
-    }
-
-    $user_rolName = $this->getUserRoleName();
-    if ($user_rolName != RolesEnum::ROOT->value) {
-        return response()->json([
-            'message' => 'Acceso no autorizado',
-            'success' => false
-        ], 403);
-    }
-
-    $request->merge([
-        'codigo' => $this->sanitizeInput($request->codigo),
-        'nombre' => $this->sanitizeInput($request->nombre),
-        'capacidad_pupitres' => (int)$request->capacidad_pupitres,
-        'ubicacion' => $this->sanitizeInput($request->ubicacion),
-        'estado' => $this->sanitizeInput($request->estado),
-        'indicaciones' => $request->indicaciones ? $this->sanitizeInput($request->indicaciones) : null,
-        'latitud' => $request->latitud,
-        'longitud' => $request->longitud,
-    ]);
-
-    $rules = [
-        'codigo' => 'required|string|max:50|unique:aulas,codigo',
-        'nombre' => 'required|string|max:100',
-        'capacidad_pupitres' => 'required|integer|min:1',
-        'ubicacion' => 'required|string|max:255',
-        'indicaciones' => 'nullable|string',
-        'latitud' => 'nullable|numeric|between:-90,90',
-        'longitud' => 'nullable|numeric|between:-180,180',
-        'estado' => 'required|in:disponible,ocupada,mantenimiento,inactiva',
-        'fotos.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-        'videos.*' => 'nullable|url'
-    ];
-
-    $messages = [
-        'codigo.required' => 'El campo código es obligatorio.',
-        'codigo.string' => 'El campo código debe ser una cadena de texto.',
-        'codigo.max' => 'El campo código no debe exceder los 50 caracteres.',
-        'codigo.unique' => 'El código ya está en uso.',
-        'nombre.required' => 'El campo nombre es obligatorio.',
-        'nombre.string' => 'El campo nombre debe ser una cadena de texto.',
-        'nombre.max' => 'El campo nombre no debe exceder los 100 caracteres.',
-        'capacidad_pupitres.required' => 'El campo capacidad de pupitres es obligatorio.',
-        'capacidad_pupitres.integer' => 'El campo capacidad de pupitres debe ser un número entero.',
-        'capacidad_pupitres.min' => 'El campo capacidad de pupitres debe ser al menos 1.',
-        'ubicacion.required' => 'El campo ubicación es obligatorio.',
-        'ubicacion.string' => 'El campo ubicación debe ser una cadena de texto.',
-        'ubicacion.max' => 'El campo ubicación no debe exceder los 255 caracteres.',
-        'indicaciones.string' => 'El campo indicaciones debe ser una cadena de texto.',
-        'latitud.numeric' => 'El campo latitud debe ser un número.',
-        'latitud.between' => 'El campo latitud debe estar entre -90 y 90.',
-        'longitud.numeric' => 'El campo longitud debe ser un número.',
-        'longitud.between' => 'El campo longitud debe estar entre -180 y 180.',
-        'estado.required' => 'El campo estado es obligatorio.',
-        'estado.in' => 'El campo estado debe ser uno de los siguientes valores: disponible, ocupada, mantenimiento, inactiva.',
-        'fotos.*.image' => 'Cada archivo debe ser una imagen.',
-        'fotos.*.mimes' => 'Las imágenes deben ser de tipo: jpeg, png, jpg, webp.',
-        'fotos.*.max' => 'Cada imagen no debe exceder los 5MB.',
-        'videos.*.url' => 'Cada video debe ser una URL válida.'
-    ];
-
-    try {
-        $validation = $request->validate($rules, $messages);
-
-        DB::beginTransaction();
-
-        //genera el uuid
-        $validation['qr_code'] = \Illuminate\Support\Str::uuid()->toString();
-
-        $aula = aulas::create($validation);
-
-        // Guardar fotos si existen
-        if ($request->hasFile('fotos')) {
-            foreach ($request->file('fotos') as $foto) {
-                $ruta = $foto->store('aulas', 'public');
-                AulaFoto::create([
-                    'aula_id' => $aula->id,
-                    'ruta' => $ruta
-                ]);
-            }
-        }
-
-        // Guardar videos si existen
-        if ($request->has('videos')) {
-            foreach ($request->videos as $video_url) {
-                if (!empty($video_url)) {
-                    AulaVideo::create([
-                        'aula_id' => $aula->id,
-                        'url' => $video_url
-                    ]);
-                }
-            }
-        }
-
-        DB::commit();
-
-        // Cargar relaciones para la respuesta
-        $aula->load('fotos', 'videos');
-
-        return response()->json([
-            'message' => 'Aula creada exitosamente con código QR único',
-            'success' => true,
-            'data' => $aula
-        ], 201);
-
-    } catch (Exception $e) {
-        DB::rollBack();
-
-        return response()->json([
-            'message' => 'Error al crear el aula',
-            'success' => false,
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
-
     public function edit(Request $request, $id): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -303,7 +179,6 @@ class AulasController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
-
         if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -428,6 +303,142 @@ class AulasController extends Controller {
         }
 
     }
+
+    private function getUserRoleName(): string|null {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->where('users.id', Auth::id())
+            ->value('roles.nombre');
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
+    }
+
+    public function store(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+
+        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        $request->merge([
+            'codigo' => $this->sanitizeInput($request->codigo),
+            'nombre' => $this->sanitizeInput($request->nombre),
+            'capacidad_pupitres' => (int)$request->capacidad_pupitres,
+            'ubicacion' => $this->sanitizeInput($request->ubicacion),
+            'estado' => $this->sanitizeInput($request->estado),
+            'indicaciones' => $request->indicaciones ? $this->sanitizeInput($request->indicaciones) : null,
+            'latitud' => $request->latitud,
+            'longitud' => $request->longitud,
+        ]);
+
+        $rules = [
+            'codigo' => 'required|string|max:50|unique:aulas,codigo',
+            'nombre' => 'required|string|max:100',
+            'capacidad_pupitres' => 'required|integer|min:1',
+            'ubicacion' => 'required|string|max:255',
+            'indicaciones' => 'nullable|string',
+            'latitud' => 'nullable|numeric|between:-90,90',
+            'longitud' => 'nullable|numeric|between:-180,180',
+            'estado' => 'required|in:disponible,ocupada,mantenimiento,inactiva',
+            'fotos.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'videos.*' => 'nullable|url'
+        ];
+
+        $messages = [
+            'codigo.required' => 'El campo código es obligatorio.',
+            'codigo.string' => 'El campo código debe ser una cadena de texto.',
+            'codigo.max' => 'El campo código no debe exceder los 50 caracteres.',
+            'codigo.unique' => 'El código ya está en uso.',
+            'nombre.required' => 'El campo nombre es obligatorio.',
+            'nombre.string' => 'El campo nombre debe ser una cadena de texto.',
+            'nombre.max' => 'El campo nombre no debe exceder los 100 caracteres.',
+            'capacidad_pupitres.required' => 'El campo capacidad de pupitres es obligatorio.',
+            'capacidad_pupitres.integer' => 'El campo capacidad de pupitres debe ser un número entero.',
+            'capacidad_pupitres.min' => 'El campo capacidad de pupitres debe ser al menos 1.',
+            'ubicacion.required' => 'El campo ubicación es obligatorio.',
+            'ubicacion.string' => 'El campo ubicación debe ser una cadena de texto.',
+            'ubicacion.max' => 'El campo ubicación no debe exceder los 255 caracteres.',
+            'indicaciones.string' => 'El campo indicaciones debe ser una cadena de texto.',
+            'latitud.numeric' => 'El campo latitud debe ser un número.',
+            'latitud.between' => 'El campo latitud debe estar entre -90 y 90.',
+            'longitud.numeric' => 'El campo longitud debe ser un número.',
+            'longitud.between' => 'El campo longitud debe estar entre -180 y 180.',
+            'estado.required' => 'El campo estado es obligatorio.',
+            'estado.in' => 'El campo estado debe ser uno de los siguientes valores: disponible, ocupada, mantenimiento, inactiva.',
+            'fotos.*.image' => 'Cada archivo debe ser una imagen.',
+            'fotos.*.mimes' => 'Las imágenes deben ser de tipo: jpeg, png, jpg, webp.',
+            'fotos.*.max' => 'Cada imagen no debe exceder los 5MB.',
+            'videos.*.url' => 'Cada video debe ser una URL válida.'
+        ];
+
+        try {
+            $validation = $request->validate($rules, $messages);
+
+            DB::beginTransaction();
+
+            //genera el uuid
+            $validation['qr_code'] = \Illuminate\Support\Str::uuid()->toString();
+
+            $aula = aulas::create($validation);
+
+            // Guardar fotos si existen
+            if ($request->hasFile('fotos')) {
+                foreach ($request->file('fotos') as $foto) {
+                    $ruta = $foto->store('aulas', 'public');
+                    AulaFoto::create([
+                        'aula_id' => $aula->id,
+                        'ruta' => $ruta
+                    ]);
+                }
+            }
+
+            // Guardar videos si existen
+            if ($request->has('videos')) {
+                foreach ($request->videos as $video_url) {
+                    if (!empty($video_url)) {
+                        AulaVideo::create([
+                            'aula_id' => $aula->id,
+                            'url' => $video_url
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            // Cargar relaciones para la respuesta
+            $aula->load('fotos', 'videos');
+
+            return response()->json([
+                'message' => 'Aula creada exitosamente con código QR único',
+                'success' => true,
+                'data' => $aula
+            ], 201);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Error al crear el aula',
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function destroy($id): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -552,13 +563,6 @@ class AulasController extends Controller {
     }
 
     public function getClassroomsByMinCapacity($capacidad): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
         try {
             $capacidad = (int)$capacidad;
 
@@ -594,13 +598,6 @@ class AulasController extends Controller {
     }
 
     public function getAvailableClassrooms(): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
         try {
             $aulas = aulas::where('estado', 'disponible')->get();
 
@@ -627,13 +624,6 @@ class AulasController extends Controller {
     }
 
     public function getClassroomsByLocation($ubicacion): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
         try {
             $ubicacion = $this->sanitizeInput($ubicacion);
 
@@ -662,29 +652,81 @@ class AulasController extends Controller {
     }
 
     public function getClassroomByQrCode($qr_code): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
         try {
             $qr_code = $this->sanitizeInput($qr_code);
 
-            $aula = aulas::where('qr_code', $qr_code)->first();
 
-            if (!$aula) {
+            $aula_model = aulas::where('qr_code', $qr_code)->first();
+
+            if (!$aula_model) {
                 return response()->json([
                     'message' => 'Aula no encontrada con el QR code especificado',
                     'success' => false
                 ], 404);
             }
 
+
+            $aulas_con_recursos = (new aulas())->getAllById($aula_model->id);
+
+
+            $aula_data = null;
+            foreach ($aulas_con_recursos as $aula_recurso) {
+                if (!$aula_data) {
+                    $aula_data = [
+                        'id' => $aula_recurso->aula_id,
+                        'codigo' => $aula_recurso->codigo_aula,
+                        'nombre' => $aula_recurso->nombre_aula,
+                        'capacidad_pupitres' => $aula_recurso->capacidad_pupitres,
+                        'ubicacion' => $aula_recurso->ubicacion_aula,
+                        'qr_code' => $aula_recurso->qr_code,
+                        'estado' => $aula_recurso->estado_aula,
+                        'created_at' => $aula_recurso->created_at,
+                        'updated_at' => $aula_recurso->updated_at,
+                        'recursos' => []
+                    ];
+                }
+                if ($aula_recurso->recurso_tipo_nombre) {
+                    $aula_data['recursos'][] = [
+                        'nombre' => $aula_recurso->recurso_tipo_nombre,
+                        'cantidad' => $aula_recurso->recurso_cantidad,
+                        'estado' => $aula_recurso->estado_recurso,
+                        'observaciones_recurso' => $aula_recurso->observaciones_recurso,
+                        'aula_recurso_id' => $aula_recurso->aula_id
+                    ];
+                }
+            }
+
+
+            if (!$aula_data) {
+                $aula_data = $aula_model->toArray();
+                $aula_data['recursos'] = [];
+            }
+
+            $storage_url = env('APP_URL') . '/storage';
+
+            // Agregar indicaciones, coordenadas, fotos y videos
+            $aula_data['indicaciones'] = $aula_model->indicaciones;
+            $aula_data['latitud'] = $aula_model->latitud;
+            $aula_data['longitud'] = $aula_model->longitud;
+
+            $aula_data['fotos'] = $aula_model->fotos->map(function ($foto) use ($storage_url) {
+                return [
+                    'id' => $foto->id,
+                    'url' => $storage_url . '/' . $foto->ruta
+                ];
+            })->toArray();
+
+            $aula_data['videos'] = $aula_model->videos->map(function ($video) {
+                return [
+                    'id' => $video->id,
+                    'url' => $video->url
+                ];
+            })->toArray();
+
             return response()->json([
                 'message' => 'Aula obtenida exitosamente',
                 'success' => true,
-                'data' => $aula
+                'data' => $aula_data
             ], 200);
 
         } catch (Exception $e) {
@@ -697,16 +739,15 @@ class AulasController extends Controller {
     }
 
     public function changeClassroomStatus(Request $request, $id): JsonResponse {
-        if (!Auth::check()) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
         try {
-            $user_rolName = $this->getUserRoleName();
+            if (!Auth::check()) {
+                return response()->json([
+                    'message' => 'Acceso no autorizado',
+                    'success' => false
+                ], 401);
+            }
 
+            $user_rolName = $this->getUserRoleName();
             if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
                 return response()->json([
                     'message' => 'Acceso no autorizado',
@@ -760,6 +801,13 @@ class AulasController extends Controller {
         }
     }
 
+    private function getUserRoleId() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
     public function getClassroomStatistics(Request $request, $id): JsonResponse {
         try {
             if (!Auth::check()) {
@@ -769,12 +817,13 @@ class AulasController extends Controller {
                 ], 401);
             }
 
-            $user_rolName = $this->getUserRoleName();
-            if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
+            $user_rol = $this->getUserRoleId();
+            // Permitir para Administrador académico
+            if ($user_rol != 2) {
                 return response()->json([
                     'message' => 'Acceso no autorizado',
                     'success' => false
-                ], 403);
+                ], 401);
             }
 
             $aula = aulas::find($id);
@@ -893,24 +942,5 @@ class AulasController extends Controller {
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    private function getUserRoleById() {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
-    }
-
-    private function getUserRoleName(): string|null {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
-            ->where('users.id', Auth::id())
-            ->value('roles.nombre');
-    }
-
-    private function sanitizeInput($input): string {
-        return htmlspecialchars(strip_tags(trim($input)));
     }
 }
