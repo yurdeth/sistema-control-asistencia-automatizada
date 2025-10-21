@@ -224,6 +224,17 @@ class UserController extends Controller {
                 ], 422);
             }
 
+            $user_rol_id = (int) $this->getUserRoleId();
+
+            if ($request->rol_id <= $user_rol_id){
+                if ($user_rolName != RolesEnum::ROOT->value) {
+                    return response()->json([
+                        'message' => 'No tiene permiso para asignar este rol',
+                        'success' => false
+                    ], 403);
+                }
+            }
+
             DB::beginTransaction();
 
             $validatedData = $validator->validated();
@@ -307,8 +318,6 @@ class UserController extends Controller {
         $user_rol = $this->getUserRoleId();
         $user = (new User())->getUserBasedOnMyUserRole($user_rol, $id);
 
-        Log::info($user);
-
         if (!$user || $user->isEmpty()) {
             return response()->json([
                 'message' => 'Usuario no encontrado',
@@ -345,6 +354,17 @@ class UserController extends Controller {
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 403);
+        }
+
+        $user_rol_id = (int) $this->getUserRoleId();
+
+        if ($request->rol_id <= $user_rol_id){
+            if ($user_rolName != RolesEnum::ROOT->value) {
+                return response()->json([
+                    'message' => 'No tiene permiso para asignar este rol',
+                    'success' => false
+                ], 403);
+            }
         }
 
         $dataToMerge = [];
