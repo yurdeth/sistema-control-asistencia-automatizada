@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\aulas;
 use App\Models\AulaFoto;
 use App\Models\AulaVideo;
+use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -179,13 +180,12 @@ class AulasController extends Controller {
         ], 401);
     }
 
-    $user_rol = $this->getUserRole();
-
-    if ($user_rol != 1) {
+    $user_rolName = $this->getUserRoleName();
+    if ($user_rolName != RolesEnum::ROOT->value) {
         return response()->json([
             'message' => 'Acceso no autorizado',
             'success' => false
-        ], 401);
+        ], 403);
     }
 
     $request->merge([
@@ -302,13 +302,13 @@ class AulasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Solo permitir para Administrador académico
-        if ($user_rol != 2) {
+        $user_rolName = $this->getUserRoleName();
+
+        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
@@ -436,13 +436,12 @@ class AulasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Solo permitir para Administrador académico
-        if ($user_rol != 2) {
+        $user_rolName = $this->getUserRoleName();
+        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -553,6 +552,13 @@ class AulasController extends Controller {
     }
 
     public function getClassroomsByMinCapacity($capacidad): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $capacidad = (int)$capacidad;
 
@@ -588,6 +594,13 @@ class AulasController extends Controller {
     }
 
     public function getAvailableClassrooms(): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $aulas = aulas::where('estado', 'disponible')->get();
 
@@ -614,6 +627,13 @@ class AulasController extends Controller {
     }
 
     public function getClassroomsByLocation($ubicacion): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $ubicacion = $this->sanitizeInput($ubicacion);
 
@@ -642,6 +662,13 @@ class AulasController extends Controller {
     }
 
     public function getClassroomByQrCode($qr_code): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
         try {
             $qr_code = $this->sanitizeInput($qr_code);
 
@@ -670,21 +697,21 @@ class AulasController extends Controller {
     }
 
     public function changeClassroomStatus(Request $request, $id): JsonResponse {
-        try {
-            if (!Auth::check()) {
-                return response()->json([
-                    'message' => 'Acceso no autorizado',
-                    'success' => false
-                ], 401);
-            }
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-            $user_rol = $this->getUserRole();
-            // Solo permitir para Administrador académico
-            if ($user_rol != 2) {
+        try {
+            $user_rolName = $this->getUserRoleName();
+
+            if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
                 return response()->json([
                     'message' => 'Acceso no autorizado',
                     'success' => false
-                ], 401);
+                ], 403);
             }
 
             $request->merge([
@@ -742,13 +769,12 @@ class AulasController extends Controller {
                 ], 401);
             }
 
-            $user_rol = $this->getUserRole();
-            // Permitir para Administrador académico
-            if ($user_rol != 2) {
+            $user_rolName = $this->getUserRoleName();
+            if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
                 return response()->json([
                     'message' => 'Acceso no autorizado',
                     'success' => false
-                ], 401);
+                ], 403);
             }
 
             $aula = aulas::find($id);
@@ -869,11 +895,19 @@ class AulasController extends Controller {
         }
     }
 
-    private function getUserRole() {
+    private function getUserRoleById() {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
             ->where('users.id', Auth::id())
             ->value('usuario_roles.rol_id');
+    }
+
+    private function getUserRoleName(): string|null {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->where('users.id', Auth::id())
+            ->value('roles.nombre');
     }
 
     private function sanitizeInput($input): string {
