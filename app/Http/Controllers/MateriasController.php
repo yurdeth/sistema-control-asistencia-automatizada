@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\materias;
+use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -59,13 +60,18 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Solo permitir a administradores, académicos y jefes de departamento
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
@@ -123,6 +129,10 @@ class MateriasController extends Controller {
         }
     }
 
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
+    }
+
     /**
      * Display the specified resource.
      */
@@ -169,12 +179,18 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
@@ -269,12 +285,18 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -313,13 +335,19 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Solo permitir a administradores, académicos, jefes de departamento y coordinadores de carrera
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -354,13 +382,19 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Solo permitir a administradores, académicos, jefes de departamento y coordinadores de carrera
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -387,14 +421,11 @@ class MateriasController extends Controller {
         }
     }
 
-    private function getUserRole() {
+    private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
             ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
-    }
-
-    private function sanitizeInput($input): string {
-        return htmlspecialchars(strip_tags(trim($input)));
+            ->value('roles.nombre');
     }
 }

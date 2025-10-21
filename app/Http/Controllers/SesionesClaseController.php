@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\sesiones_clase;
+use App\RolesEnum;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -14,8 +15,6 @@ use Illuminate\Support\Facades\Validator;
 
 class SesionesClaseController extends Controller {
     public function index(): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -23,7 +22,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -48,8 +56,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function show($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -57,7 +63,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -80,8 +95,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function store(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -89,7 +102,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -147,8 +169,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function edit(Request $request, $id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -156,7 +176,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -219,8 +248,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function destroy($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -228,7 +255,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -255,8 +291,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function getByGroup($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -264,7 +298,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -292,8 +335,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function getBySchedule($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -301,7 +342,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -332,8 +382,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function getByStatus($estado): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -341,7 +389,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -374,8 +431,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function startSession(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -383,7 +438,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -452,8 +516,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function finishSession(Request $request, $id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -461,7 +523,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -505,8 +576,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function getTodayByProfessor($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -514,7 +583,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -551,8 +629,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function getByDate($fecha): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -560,7 +636,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -605,8 +690,6 @@ class SesionesClaseController extends Controller {
     }
 
     public function changeStatus(Request $request, $id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -614,7 +697,16 @@ class SesionesClaseController extends Controller {
             ], 401);
         }
 
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -663,11 +755,12 @@ class SesionesClaseController extends Controller {
         }
     }
 
-    private function getUserRole() {
+    private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
             ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
+            ->value('roles.nombre');
     }
 
     private function sanitizeInput($input): string {
