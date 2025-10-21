@@ -13,25 +13,50 @@ use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller {
     public function loginAsGuest(): JsonResponse {
-        $user = User::where('email', env('GUEST_EMAIL'))->first();
+        try {
+            $guestApiKey = env('GUEST_API_KEY');
 
-        if (!$user) {
+            if (!$guestApiKey) {
+                return response()->json([
+                    'message' => 'Configuración de invitado no disponible',
+                    'success' => false
+                ], 500);
+            }
+
+            // Verificar que el usuario guest existe y está activo
+            $user = User::where('email', env('GUEST_EMAIL'))->first();
+
+            if (!$user || $user->estado !== 'activo') {
+                return response()->json([
+                    'message' => 'Usuario invitado no disponible',
+                    'success' => false
+                ], 403);
+            }
+
+            // Actualizar último acceso
+            $user->ultimo_acceso = Carbon::now();
+            $user->save();
+
             return response()->json([
-                'message' => 'Usuario invitado no encontrado',
+                'success' => true,
+                'message' => 'Acceso como invitado otorgado',
+                'api_key' => $guestApiKey,
+                'user' => [
+                    'id' => $user->id,
+                    'nombre_completo' => $user->nombre_completo,
+                    'email' => $user->email,
+                ],
+                'instructions' => 'Use el header X-Guest-Key en sus peticiones a las rutas permitidas',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error en login de invitado', [
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json([
+                'message' => 'Error en el servidor',
                 'success' => false
-            ], 404);
+            ], 500);
         }
-
-        // Token estático desde .env
-        $token = env('GUEST_TOKEN');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Acceso como invitado concedido',
-            'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer'
-        ]);
     }
 
     public function login(Request $request): JsonResponse {
@@ -156,17 +181,6 @@ class AuthController extends Controller {
             ], 500);
         }
     }
-
-    /*private function sendWelcomeMail(Request $request, User $user){
-        $details = [
-            'subject' => 'Bienvenido a Minerva RV Lab, '. $user->name . '.',
-            'name' => 'Minerva RV Lab',
-            'email' => $user->email,
-            'message' => 'Es un gusto tenerte con nosotros'
-        ];
-
-        Mail::to($user->email)->send(new ContactFormMail($details));
-    }*/
 
     public function verifyToken(Request $request): JsonResponse {
         try {

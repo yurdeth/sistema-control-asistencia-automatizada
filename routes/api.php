@@ -23,6 +23,7 @@ use App\Http\Controllers\TiposNotificacionController;
 use App\Http\Controllers\NotificacionesController;
 use App\Http\Controllers\EstadisticasAulasDiariasController;
 use App\Http\Controllers\ConfiguracionSistemaController;
+use App\Http\Middleware\GuestAuthMiddleware;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CarrerasController;
@@ -37,7 +38,6 @@ Route::get('/login', function () {
 })->name('login.get');
 
 Route::post('/login', [AuthController::class, "login"])->name('login.post');
-//Route::post('/login-web', [AuthController::class, "loginWeb"])->name('login.post.web');
 Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
 
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
@@ -303,4 +303,9 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
 
     Route::get('/careers/get/all', [CarrerasController::class, 'index'])->name('carreras.index');
     Route::get('/careers/get/by-departamento/{departamentoId}', [CarrerasController::class, 'getByDepartamento'])->name('carreras.by.departamento');
+});
+
+Route::middleware([GuestAuthMiddleware::class, 'throttle:600,1'])->group(function () {
+    Route::get('/classrooms/get/all', [AulasController::class, 'index'])->name('aulas.index.guest');
+    Route::get('/classrooms/get/{id}', [AulasController::class, 'show'])->name('aulas.show.guest');
 });
