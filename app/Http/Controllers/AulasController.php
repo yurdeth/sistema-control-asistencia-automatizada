@@ -641,33 +641,92 @@ class AulasController extends Controller {
         }
     }
 
-    public function getClassroomByQrCode($qr_code): JsonResponse {
-        try {
-            $qr_code = $this->sanitizeInput($qr_code);
-
-            $aula = aulas::where('qr_code', $qr_code)->first();
-
-            if (!$aula) {
-                return response()->json([
-                    'message' => 'Aula no encontrada con el QR code especificado',
-                    'success' => false
-                ], 404);
+            public function getClassroomByQrCode($qr_code): JsonResponse {
+                try {
+                    $qr_code = $this->sanitizeInput($qr_code);
+        
+                    
+                    $aula_model = aulas::where('qr_code', $qr_code)->first();
+        
+                    if (!$aula_model) {
+                        return response()->json([
+                            'message' => 'Aula no encontrada con el QR code especificado',
+                            'success' => false
+                        ], 404);
+                    }
+        
+                    
+                    $aulas_con_recursos = (new aulas())->getAllById($aula_model->id);
+        
+                    
+                    $aula_data = null;
+                    foreach ($aulas_con_recursos as $aula_recurso) {
+                        if (!$aula_data) {
+                            $aula_data = [
+                                'id' => $aula_recurso->aula_id,
+                                'codigo' => $aula_recurso->codigo_aula,
+                                'nombre' => $aula_recurso->nombre_aula,
+                                'capacidad_pupitres' => $aula_recurso->capacidad_pupitres,
+                                'ubicacion' => $aula_recurso->ubicacion_aula,
+                                'qr_code' => $aula_recurso->qr_code,
+                                'estado' => $aula_recurso->estado_aula,
+                                'created_at' => $aula_recurso->created_at,
+                                'updated_at' => $aula_recurso->updated_at,
+                                'recursos' => []
+                            ];
+                        }
+                        if ($aula_recurso->recurso_tipo_nombre) {
+                            $aula_data['recursos'][] = [
+                                'nombre' => $aula_recurso->recurso_tipo_nombre,
+                                'cantidad' => $aula_recurso->recurso_cantidad,
+                                'estado' => $aula_recurso->estado_recurso,
+                                'observaciones_recurso' => $aula_recurso->observaciones_recurso,
+                                'aula_recurso_id' => $aula_recurso->aula_id
+                            ];
+                        }
+                    }
+        
+                    
+                    if (!$aula_data) {
+                         $aula_data = $aula_model->toArray();
+                         $aula_data['recursos'] = [];
+                    }
+        
+                    $storage_url = env('APP_URL') . '/storage';
+        
+                    // Agregar indicaciones, coordenadas, fotos y videos
+                    $aula_data['indicaciones'] = $aula_model->indicaciones;
+                    $aula_data['latitud'] = $aula_model->latitud;
+                    $aula_data['longitud'] = $aula_model->longitud;
+        
+                    $aula_data['fotos'] = $aula_model->fotos->map(function ($foto) use ($storage_url) {
+                        return [
+                            'id' => $foto->id,
+                            'url' => $storage_url . '/' . $foto->ruta
+                        ];
+                    })->toArray();
+        
+                    $aula_data['videos'] = $aula_model->videos->map(function ($video) {
+                        return [
+                            'id' => $video->id,
+                            'url' => $video->url
+                        ];
+                    })->toArray();
+        
+                    return response()->json([
+                        'message' => 'Aula obtenida exitosamente',
+                        'success' => true,
+                        'data' => $aula_data
+                    ], 200);
+        
+                } catch (Exception $e) {
+                    return response()->json([
+                        'message' => 'Error al obtener el aula',
+                        'success' => false,
+                        'error' => $e->getMessage()
+                    ], 500);
+                }
             }
-
-            return response()->json([
-                'message' => 'Aula obtenida exitosamente',
-                'success' => true,
-                'data' => $aula
-            ], 200);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Error al obtener el aula',
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
 
     public function changeClassroomStatus(Request $request, $id): JsonResponse {
         try {
