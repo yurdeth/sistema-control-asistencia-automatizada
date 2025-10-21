@@ -16,12 +16,12 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class AulasController extends Controller {
     public function index(): JsonResponse {
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
 
         $aulas = (new aulas())->getAll();
 
@@ -98,12 +98,12 @@ class AulasController extends Controller {
     }
 
     public function show($id): JsonResponse {
-        /*if (!Auth::check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }*/
+        }
 
         $aulas = (new aulas())->getAllById($id);
 
