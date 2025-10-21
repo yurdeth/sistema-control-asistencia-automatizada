@@ -23,6 +23,9 @@ class aulas extends Model {
         'nombre',
         'capacidad_pupitres',
         'ubicacion',
+        'indicaciones',
+        'latitud',
+        'longitud',
         'qr_code',
         'estado'
     ];
@@ -71,6 +74,22 @@ class aulas extends Model {
     public function getAllById($id) {
         return $this->getAll()
             ->where('aula_id', $id);
+    }
+
+    /**
+     * Relación con AulaFoto (hasMany)
+     */
+    public function fotos()
+    {
+        return $this->hasMany(AulaFoto::class, 'aula_id');
+    }
+
+    /**
+     * Relación con AulaVideo (hasMany)
+     */
+    public function videos()
+    {
+        return $this->hasMany(AulaVideo::class, 'aula_id');
     }
 
 }

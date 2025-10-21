@@ -14,7 +14,10 @@ return new class extends Migration {
             $table->string('codigo', 50)->unique();
             $table->string('nombre', 100);
             $table->integer('capacidad_pupitres');
-            $table->string('ubicacion', 255);
+            $table->text('ubicacion');
+            $table->text('indicaciones')->nullable();
+            $table->decimal('latitud', 10, 8)->nullable();
+            $table->decimal('longitud', 11, 8)->nullable();
             $table->text('qr_code');
             $table->enum('estado', ['disponible', 'ocupada', 'mantenimiento', 'inactiva'])->default('disponible');
             $table->timestamps();
