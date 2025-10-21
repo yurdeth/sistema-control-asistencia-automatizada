@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\aula_recursos;
+use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -87,12 +88,20 @@ class AulaRecursosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
@@ -167,12 +176,20 @@ class AulaRecursosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
@@ -257,12 +274,20 @@ class AulaRecursosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -293,7 +318,6 @@ class AulaRecursosController extends Controller {
             ], 500);
         }
     }
-
 
     public function getResourcesByClassroom($aula_id): JsonResponse {
         if (!Auth::check()) {
@@ -326,7 +350,6 @@ class AulaRecursosController extends Controller {
             ], 500);
         }
     }
-
 
     public function getClassroomsByResource($recurso_tipo_id): JsonResponse {
         if (!Auth::check()) {
@@ -483,12 +506,20 @@ class AulaRecursosController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -549,11 +580,12 @@ class AulaRecursosController extends Controller {
         }
     }
 
-    private function getUserRole() {
+    private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
             ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
+            ->value('roles.nombre');
     }
 
     private function sanitizeInput($input): string {
