@@ -341,6 +341,7 @@ class MateriasController extends Controller {
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
             RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -388,6 +389,7 @@ class MateriasController extends Controller {
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
             RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {

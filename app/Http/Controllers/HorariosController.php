@@ -62,22 +62,6 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rolName = $this->getUserRoleName();
-        $rolesPermitidos = [
-            RolesEnum::ROOT->value,
-            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-            RolesEnum::JEFE_DEPARTAMENTO->value,
-            RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
-        ];
-
-        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos) && Auth::user()->id != $id) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 403);
-        }
-
         try {
             $horario = (new horarios())->getHorariosById($id)->first();
 
