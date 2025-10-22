@@ -26,14 +26,6 @@ class materias extends Model {
         'estado'
     ];
 
-    public function getSubjectsByDepartment(int $department_id): Collection {
-        return DB::table('materias')
-            ->join('departamentos', 'materias.departamento_id', '=', 'departamentos.id')
-            ->select('materias.*', 'departamentos.nombre as departamento_nombre')
-            ->where('departamento_id', $department_id)
-            ->get();
-    }
-
     public function getSubjectsByStatus(string $estado): Collection {
         return DB::table('materias')
             ->join('departamentos', 'materias.departamento_id', '=', 'departamentos.id')
@@ -42,21 +34,47 @@ class materias extends Model {
             ->get();
     }
 
+    public function getSubjectsByCareerId(int $career_id): Collection {
+        return DB::table('materias')
+            ->join('carreras', 'materias.carrera_id', '=', 'carreras.id')
+            ->select(
+                'materias.id as id_materia',
+                'materias.codigo as codigo_materia',
+                'materias.nombre as nombre_materia',
+                'materias.carrera_id',
+                'carreras.nombre as nombre_carrera'
+            )
+            ->where('carreras.id', $career_id)
+            ->get();
+    }
+
     public function getSubjectsByUserId(int $user_id): Collection {
         return DB::table('materias')
-            ->join('users_materias', 'materias.id', '=', 'users_materias.materia_id')
-            ->join('users', 'users_materias.user_id', '=', 'users.id')
-            ->select('materias.*')
+            ->join('carreras', 'materias.carrera_id', '=', 'carreras.id')
+            ->join('users', 'carreras.id', '=', 'users.carrera_id')
+            ->select(
+                'materias.id as id_materia',
+                'materias.codigo as codigo_materia',
+                'materias.nombre as nombre_materia',
+                'materias.carrera_id',
+                'carreras.nombre as nombre_carrera'
+            )
             ->where('users.id', $user_id)
             ->get();
     }
 
     public function getMySubjects(): Collection {
         return DB::table('materias')
-            ->join('users_materias', 'materias.id', '=', 'users_materias.materia_id')
-            ->join('users', 'users_materias.user_id', '=', 'users.id')
-            ->select('materias.*')
-            ->where('users.id', Auth::user()->id)
+            ->join('carreras', 'materias.carrera_id', '=', 'carreras.id')
+            ->join('users', 'carreras.id', '=', 'users.carrera_id')
+            ->select(
+                'materias.id as id_materia',
+                'materias.codigo as codigo_materia',
+                'materias.nombre as nombre_materia',
+                'materias.carrera_id',
+                'carreras.nombre as nombre_carrera'
+            )
+            ->where('users.id', Auth::id())
             ->get();
     }
 }

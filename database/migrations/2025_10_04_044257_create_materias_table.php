@@ -14,9 +14,9 @@ return new class extends Migration {
             $table->string('codigo', 50)->unique();
             $table->string('nombre', 150);
             $table->string('descripcion', 255)->nullable();
-            $table->foreignId('departamento_id')
+            $table->foreignId('carrera_id')
                 ->references('id')
-                ->on('departamentos')
+                ->on('carreras')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->enum('estado', ['activa', 'inactiva'])->default('activa');

@@ -88,8 +88,10 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/subjects/new', [MateriasController::class, 'store'])->name('materias.store');
     Route::patch('/subjects/edit/{id}', [MateriasController::class, 'edit'])->name('materias.edit');
     Route::delete('/subjects/delete/{id}', [MateriasController::class, 'destroy'])->name('materias.delete');
-    Route::get('/subjects/get/department/{id}', [MateriasController::class, 'getMateriasByDepartment'])->name('materias.getByDepartment');
+    Route::get('/subjects/get/by-career/{id}', [MateriasController::class, 'getMateriasByCareerId'])->name('materias.getByCareer');
     Route::get('/subjects/get/status/{estado}', [MateriasController::class, 'getMateriasByStatus'])->name('materias.getByStatus');
+    Route::get('/subjects/get/user/{id}', [MateriasController::class, 'getSubjectsByUserId'])->name('materias.getByUser');
+    Route::get('/subjects/get/my/all', [MateriasController::class, 'getMySubjects'])->name('materias.getMySubjects');
 
     //************************************ MANAGE GROUPS ************************************//
     Route::get('/groups/get/all', [GruposController::class, 'index'])->name('grupos.index');
@@ -301,6 +303,12 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/system-config/get/category/{categoria}', [ConfiguracionSistemaController::class, 'getByCategory'])->name('systemConfig.getByCategory');
     Route::get('/system-config/get/modifiable/all', [ConfiguracionSistemaController::class, 'getModifiable'])->name('systemConfig.getModifiable');
 
+    //************************************ MANAGE CARREERS ************************************//
     Route::get('/careers/get/all', [CarrerasController::class, 'index'])->name('carreras.index');
-    Route::get('/careers/get/by-departamento/{departamentoId}', [CarrerasController::class, 'getByDepartamento'])->name('carreras.by.departamento');
+    Route::get('/careers/get/{id}', [CarrerasController::class, 'show'])->name('carreras.show');
+    Route::post('/careers/new', [CarrerasController::class, 'store'])->name('carreras.store');
+    Route::patch('/careers/edit/{id}', [CarrerasController::class, 'update'])->name('carreras.edit');
+    Route::delete('/careers/delete/{id}', [CarrerasController::class, 'destroy'])->name('carreras.delete');
+    Route::get('/careers/get/by-departament/{departamentoId}', [CarrerasController::class, 'getByDepartamento'])->name('carreras.by.departamento');
+    Route::get('/careers/get/status/{estado}', [CarrerasController::class, 'getCareersByStatus'])->name('carreras.by.status');
 });
