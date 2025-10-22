@@ -348,7 +348,7 @@ class AulasController extends Controller {
             'codigo' => 'required|string|max:50|unique:aulas,codigo',
             'nombre' => 'required|string|max:100',
             'capacidad_pupitres' => 'required|integer|min:1',
-            'ubicacion' => 'required|string|max:255',
+            'ubicacion' => 'required|string',
             'indicaciones' => 'nullable|string',
             'latitud' => 'nullable|numeric|between:-90,90',
             'longitud' => 'nullable|numeric|between:-180,180',
