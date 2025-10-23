@@ -42,6 +42,12 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
         ]);
     });
 
+    Route::get('/estudiantes', function () {
+        return Inertia::render('Administration/General/students', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
     Route::get('/disponibilidad', function () {
         return Inertia::render('Administration/classroomManagement/availability', [
             'mustCheckAuth' => true

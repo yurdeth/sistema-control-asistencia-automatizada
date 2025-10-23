@@ -193,7 +193,7 @@ onMounted(() => {
                 },
                 {
                     label: "Estudiantes.",
-                    href: "#",
+                    href: "/estudiantes",
                     icon: "fa-solid fa-user",
                 }
             ]
