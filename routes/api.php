@@ -311,4 +311,6 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::delete('/careers/delete/{id}', [CarrerasController::class, 'destroy'])->name('carreras.delete');
     Route::get('/careers/get/by-departament/{departamentoId}', [CarrerasController::class, 'getByDepartamento'])->name('carreras.by.departamento');
     Route::get('/careers/get/status/{estado}', [CarrerasController::class, 'getCareersByStatus'])->name('carreras.by.status');
+    Route::post('/careers/disable/{id}', [CarrerasController::class, 'disableCareer'])->name('carreras.disable');
+    Route::post('/careers/enable/{id}', [CarrerasController::class, 'enableCareer'])->name('carreras.enable');
 });

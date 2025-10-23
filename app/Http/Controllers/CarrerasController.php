@@ -383,6 +383,108 @@ class CarrerasController extends Controller {
         }
     }
 
+    public function disableCareer(int $carrer_id): JsonResponse {
+        if(!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $career = DB::table('carreras')->where('id', $carrer_id)->lockForUpdate()->first();
+            if (!$career) {
+                return response()->json([
+                    'message' => 'Carrera no encontrada',
+                    'success' => false
+                ], 404);
+            }
+
+            DB::table('carreras')->where('id', $carrer_id)->update([
+                'estado' => 'inactiva',
+                'updated_at' => now(),
+            ]);
+
+            Cache::forget('carreras_all');
+
+            return response()->json([
+                'message' => 'Carrera deshabilitada exitosamente',
+                'success' => true,
+                'data' => (new carreras())->getAllCarreras()
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al deshabilitar la carrera',
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function enableCareer(int $carrer_id): JsonResponse {
+        if(!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $career = DB::table('carreras')->where('id', $carrer_id)->lockForUpdate()->first();
+            if (!$career) {
+                return response()->json([
+                    'message' => 'Carrera no encontrada',
+                    'success' => false
+                ], 404);
+            }
+
+            DB::table('carreras')->where('id', $carrer_id)->update([
+                'estado' => 'activa',
+                'updated_at' => now(),
+            ]);
+
+            Cache::forget('carreras_all');
+
+            return response()->json([
+                'message' => 'Carrera habilitada exitosamente',
+                'success' => true,
+                'data' => (new carreras())->getAllCarreras()
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al habilitar la carrera',
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
