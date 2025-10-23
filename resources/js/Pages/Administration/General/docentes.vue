@@ -70,7 +70,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 text-center align-middle">
-                                <tr v-for="docente in docentesFiltrados" :key="docente.id" class="hover:bg-gray-50 transition-colors">
+                                <tr v-for="docente in paginatedDocentes" :key="docente.id" class="hover:bg-gray-50 transition-colors">
                                     <td class="px-6 py-4 text-sm text-gray-900">{{ docente.id }}</td>
                                     <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ docente.nombre_completo }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-600">{{ docente.email }}</td>
@@ -98,6 +98,30 @@
                                 </tr>
                             </tbody>
                         </table>
+
+                        <div class="flex justify-center items-center space-x-2 p-4 border-t border-gray-200">
+                            <button
+                                @click="prevPage"
+                                :disabled="currentPage === 1"
+                                class="p-2 border rounded-lg transition-colors"
+                                :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }">
+                                <i class="fas fa-chevron-left"></i> </button>
+
+                            <button
+                                @click="goToPage(currentPage)"
+                                class="px-4 py-2 border rounded-lg font-bold text-white transition-colors"
+                                :style="{ background: '#d93f3f' }">
+                                {{ currentPage }}
+                            </button>
+
+                            <button
+                                @click="nextPage"
+                                :disabled="currentPage === totalPages"
+                                class="p-2 border rounded-lg transition-colors"
+                                :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }">
+                                <i class="fas fa-chevron-right"></i> </button>
+                        </div>
+
                     </div>
                 </div>
 
@@ -367,6 +391,10 @@
     const allDocentes = ref([]);
     const isAuthenticated = localStorage.getItem('isAuthenticated');
 
+    // Paginación
+    const currentPage = ref(1);
+    const perPage = ref(5); // Número de registros por página
+
     // Configuración de axios
     const API_URL = 'http://127.0.0.1:8000/api';
     const getAuthHeaders = () => ({
@@ -410,6 +438,22 @@
             docente.nombre_completo.toLowerCase().includes(term) ||
             docente.email.toLowerCase().includes(term)
         );
+    });
+
+    // Paginación
+    const totalPages = computed(() => {
+        return Math.ceil(docentesFiltrados.value.length / perPage.value);
+    });
+
+    const paginatedDocentes = computed(() => {
+        const start = (currentPage.value - 1) * perPage.value;
+        const end = start + perPage.value;
+        return docentesFiltrados.value.slice(start, end);
+    });
+
+    // Observa los docentes filtrados o el término de búsqueda para resetear a la página 1
+    watch(docentesFiltrados, () => {
+        currentPage.value = 1;
     });
 
     // Funciones del Modal
@@ -481,68 +525,63 @@
 
     // Funciones CRUD
     const submitForm = async () => {
-  formErrors.value = {};
-  submitting.value = true;
+        formErrors.value = {};
+        submitting.value = true;
 
-  try {
-    const toIntOrNull = (v) =>
-      v === '' || v === null || v === undefined ? null : Number(v);
+        try {
+            const toIntOrNull = (v) =>
+                v === '' || v === null || v === undefined ? null : Number(v);
 
-    const payload = {
-      nombre_completo: formData.value.nombre_completo,
-      email: formData.value.email,
-      telefono: formData.value.telefono,
-      rol_id: 5, // Siempre docente
-      estado: formData.value.estado,
-      departamento_id:
-        formData.value.tipo_asignacion === 'departamento'
-          ? toIntOrNull(formData.value.departamento_id)
-          : null,
-      carrera_id:
-        formData.value.tipo_asignacion === 'carrera'
-          ? toIntOrNull(formData.value.carrera_id)
-          : null,
+            const payload = {
+                nombre_completo: formData.value.nombre_completo,
+                email: formData.value.email,
+                telefono: formData.value.telefono,
+                rol_id: 5, // Siempre docente
+                estado: formData.value.estado,
+                departamento_id: formData.value.tipo_asignacion === 'departamento'
+                    ? toIntOrNull(formData.value.departamento_id) : null,
+                carrera_id: formData.value.tipo_asignacion === 'carrera'
+                    ? toIntOrNull(formData.value.carrera_id) : null,
+            };
+
+            if (!isEditMode.value) {
+                payload.password = formData.value.password;
+                payload.password_confirmation = formData.value.password_confirmation;
+            }
+
+            console.log("📦 Payload enviado:", JSON.stringify(payload, null, 2));
+
+            const url = isEditMode.value
+                ? `${API_URL}/users/edit/${currentDocenteId.value}` : `${API_URL}/users/new`;
+
+            const response = isEditMode.value
+                ? await axios.patch(url, payload, getAuthHeaders())
+                : await axios.post(url, payload, getAuthHeaders());
+
+            if (response.data.success) {
+                closeModal();
+                await fetchDocentes();
+                alert(
+                    isEditMode.value
+                      ? "Docente actualizado exitosamente"
+                      : "Docente creado exitosamente"
+                );
+            }
+        } catch (err) {
+            console.error("❌ Error al guardar docente:", err);
+
+            const data = err.response?.data || {};
+
+            if (data.errors) {
+              formErrors.value = data.errors; // errores de validación
+            } else {
+              formErrors.value.general =
+                data.message || data.error || "Error al guardar el docente";
+            }
+        } finally {
+            submitting.value = false;
+        }
     };
-
-    if (!isEditMode.value) {
-      payload.password = formData.value.password;
-      payload.password_confirmation = formData.value.password_confirmation;
-    }
-
-    console.log("📦 Payload enviado:", JSON.stringify(payload, null, 2));
-
-    const url = isEditMode.value
-      ? `${API_URL}/users/edit/${currentDocenteId.value}`
-      : `${API_URL}/users/new`;
-
-    const response = isEditMode.value
-      ? await axios.patch(url, payload, getAuthHeaders())
-      : await axios.post(url, payload, getAuthHeaders());
-
-    if (response.data.success) {
-      closeModal();
-      await fetchDocentes();
-      alert(
-        isEditMode.value
-          ? "Docente actualizado exitosamente"
-          : "Docente creado exitosamente"
-      );
-    }
-  } catch (err) {
-    console.error("❌ Error al guardar docente:", err);
-
-    const data = err.response?.data || {};
-    if (data.errors) {
-      formErrors.value = data.errors; // errores de validación
-    } else {
-      formErrors.value.general =
-        data.message || data.error || "Error al guardar el docente";
-    }
-  } finally {
-    submitting.value = false;
-  }
-};
-
 
     const deleteItem = async (id) => {
         if (!confirm('¿Está seguro de eliminar este docente? Esta acción no se puede deshacer.')) return;
@@ -567,64 +606,82 @@
         }
     };
 
+    // Paginación
+    const prevPage = () => {
+        if (currentPage.value > 1) {
+            currentPage.value--;
+        }
+    };
+
+    const nextPage = () => {
+        if (currentPage.value < totalPages.value) {
+            currentPage.value++;
+        }
+    };
+
+    const goToPage = (page) => {
+        if (page >= 1 && page <= totalPages.value) {
+            currentPage.value = page;
+        }
+    };
+
     // Cargar datos
-   async function fetchDocentes() {
-  loading.value = true;
-  error.value = null;
+    async function fetchDocentes() {
+        loading.value = true;
+        error.value = null;
 
-  try {
-    const res = await axios.get(`${API_URL}/users/get/all`, getAuthHeaders());
+        try {
+            const res = await axios.get(`${API_URL}/users/get/all`, getAuthHeaders());
 
-    // res.data.data puede ser un array o un objeto indexado; soporta ambos
-    const payload = res.data?.data;
-    const raw = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
+            // res.data.data puede ser un array o un objeto indexado; soporta ambos
+            const payload = res.data?.data;
+            const raw = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
 
-    // Filtrar solo Docentes (rol_id = 5) considerando distintas estructuras
-    const docentes = raw.filter(user => {
-      // 1) rol_id directo
-      if (user.rol_id === 5) return true;
+            // Filtrar solo Docentes (rol_id = 5) considerando distintas estructuras
+            const docentes = raw.filter(user => {
+                // 1) rol_id directo
+                if (user.rol_id === 5) return true;
 
-      // 2) roles: [{id, nombre}] o [{rol_id, ...}]
-      if (Array.isArray(user.roles) && user.roles.some(r => (r.id ?? r.rol_id) === 5)) return true;
+                // 2) roles: [{id, nombre}] o [{rol_id, ...}]
+                if (Array.isArray(user.roles) && user.roles.some(r => (r.id ?? r.rol_id) === 5)) return true;
 
-      // 3) usuario_roles: [{rol_id, ...}]
-      if (Array.isArray(user.usuario_roles) && user.usuario_roles.some(r => r.rol_id === 5)) return true;
+                // 3) usuario_roles: [{rol_id, ...}]
+                if (Array.isArray(user.usuario_roles) && user.usuario_roles.some(r => r.rol_id === 5)) return true;
 
-      return false;
-    });
+                return false;
+            });
 
-    allDocentes.value = docentes.map(docente => ({
-      id: docente.id ?? 'N/A',
-      nombre_completo: docente.nombre_completo ?? docente.name ?? 'Unknown',
-      email: docente.email ?? 'N/A',
-      telefono: docente.telefono ?? docente.phone ?? 'N/A',
-      estado: docente.estado ?? docente.status ?? 'N/A',
-      departamento_id: docente.departamento_id ?? null,
-      carrera_id: docente.carrera_id ?? null,
-    }));
+            allDocentes.value = docentes.map(docente => ({
+                id: docente.id ?? 'N/A',
+                nombre_completo: docente.nombre_completo ?? docente.name ?? 'Unknown',
+                email: docente.email ?? 'N/A',
+                telefono: docente.telefono ?? docente.phone ?? 'N/A',
+                estado: docente.estado ?? docente.status ?? 'N/A',
+                departamento_id: docente.departamento_id ?? null,
+                carrera_id: docente.carrera_id ?? null,
+            }));
 
-    // Limpia cualquier error previo si todo fue bien
-    error.value = null;
+            // Limpia cualquier error previo si todo fue bien
+            error.value = null;
 
-  } catch (err) {
-    const status = err.response?.status;
+        } catch (err) {
+            const status = err.response?.status;
 
-    if (status === 404) {
-      // Backend usa 404 para "no hay usuarios" → trátalo como lista vacía, sin error
-      allDocentes.value = [];
-      error.value = null;
-    } else if (status === 401 || status === 403) {
-      error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
-      allDocentes.value = [];
-    } else {
-      error.value = err.response?.data?.message || 'Error al cargar los docentes';
-      allDocentes.value = [];
+            if (status === 404) {
+              // Backend usa 404 para "no hay usuarios" → trátalo como lista vacía, sin error
+              allDocentes.value = [];
+              error.value = null;
+            } else if (status === 401 || status === 403) {
+              error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
+              allDocentes.value = [];
+            } else {
+              error.value = err.response?.data?.message || 'Error al cargar los docentes';
+              allDocentes.value = [];
+            }
+        } finally {
+            loading.value = false;
+        }
     }
-  } finally {
-    loading.value = false;
-  }
-}
-
 
     async function fetchDepartamentosYCarreras() {
         try {
