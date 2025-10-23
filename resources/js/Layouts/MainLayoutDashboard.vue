@@ -204,20 +204,15 @@ onMounted(() => {
             icon: "fa-solid fa-folder-open",
             items: [
                 {
-                    label: "Aulas Fuera de Servicio",
-                    href: "#",
+                    label: "Gestión de reportes",
+                    href: "/informes",
                     icon: "fa-solid fa-file",
                 },
                 {
-                    label: "Asignaciones Recurrentes",
+                    label: "Incidencias",
                     href: "#",
-                    icon: "fa-solid fa-file",
+                    icon: "fa-solid fa-triangle-exclamation",
                 },
-                {
-                    label: "Exportar reportes",
-                    href: "#",
-                    icon: "fa-solid fa-file-import",
-                }
             ]
         }
     ];
