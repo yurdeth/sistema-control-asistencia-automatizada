@@ -15,11 +15,10 @@ class DatabaseSeeder extends Seeder {
         $this->call(DepartamentosSeeder::class);
         $this->call(CarrerasSeeder::class);
 
-        // Seeder de aulas desde JSON con descarga de imágenes de Firebase
-        $this->call(AulasSeeder::class);
-
-        // Seeder antiguo de aulas (comentado - descomenta si prefieres usar este)
-        // $this->call(InsercionAulas::class);
+//        $this->call(AulasSeeder::class);
+        $this->call(AulasTableSeeder::class);
+        $this->call(AulasFotosSeeder::class);
+        $this->call(AulasVideosSeeder::class);
 
         $this->call(RolesSeeder::class);
         $this->call(RecursosTipoSeeder::class);

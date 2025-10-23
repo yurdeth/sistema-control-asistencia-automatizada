@@ -1,0 +1,2662 @@
+[
+  {
+    "id": 1,
+    "aula_id": 1,
+    "ruta": "aulas/BYhVOyzoZOJ10t16.webp",
+    "created_at": "2025-10-23 10:02:56",
+    "updated_at": "2025-10-23 10:02:56"
+  },
+  {
+    "id": 2,
+    "aula_id": 1,
+    "ruta": "aulas/pOPnyYPJkQdJdUUj.webp",
+    "created_at": "2025-10-23 10:02:56",
+    "updated_at": "2025-10-23 10:02:56"
+  },
+  {
+    "id": 3,
+    "aula_id": 1,
+    "ruta": "aulas/PcxhnDHPyheqUlmk.webp",
+    "created_at": "2025-10-23 10:02:57",
+    "updated_at": "2025-10-23 10:02:57"
+  },
+  {
+    "id": 4,
+    "aula_id": 1,
+    "ruta": "aulas/2ysEilKjIVMO6RWH.webp",
+    "created_at": "2025-10-23 10:02:57",
+    "updated_at": "2025-10-23 10:02:57"
+  },
+  {
+    "id": 5,
+    "aula_id": 1,
+    "ruta": "aulas/22iGimdHev6U1Esa.webp",
+    "created_at": "2025-10-23 10:02:58",
+    "updated_at": "2025-10-23 10:02:58"
+  },
+  {
+    "id": 6,
+    "aula_id": 1,
+    "ruta": "aulas/eCaFtPby2vvRTNJX.webp",
+    "created_at": "2025-10-23 10:02:58",
+    "updated_at": "2025-10-23 10:02:58"
+  },
+  {
+    "id": 7,
+    "aula_id": 1,
+    "ruta": "aulas/j5mS3Lj9ajr7iE5d.webp",
+    "created_at": "2025-10-23 10:02:59",
+    "updated_at": "2025-10-23 10:02:59"
+  },
+  {
+    "id": 8,
+    "aula_id": 1,
+    "ruta": "aulas/ZO3x9BgZTCGExzbP.webp",
+    "created_at": "2025-10-23 10:02:59",
+    "updated_at": "2025-10-23 10:02:59"
+  },
+  {
+    "id": 9,
+    "aula_id": 2,
+    "ruta": "aulas/yg6c5WaP6lGxCjLm.webp",
+    "created_at": "2025-10-23 10:02:59",
+    "updated_at": "2025-10-23 10:02:59"
+  },
+  {
+    "id": 10,
+    "aula_id": 2,
+    "ruta": "aulas/O9R87FVx7bqMTW0C.webp",
+    "created_at": "2025-10-23 10:03:00",
+    "updated_at": "2025-10-23 10:03:00"
+  },
+  {
+    "id": 11,
+    "aula_id": 2,
+    "ruta": "aulas/PbPzhxvDBi1inL4s.webp",
+    "created_at": "2025-10-23 10:03:00",
+    "updated_at": "2025-10-23 10:03:00"
+  },
+  {
+    "id": 12,
+    "aula_id": 2,
+    "ruta": "aulas/LPml5zcRj1eLmsaT.webp",
+    "created_at": "2025-10-23 10:03:01",
+    "updated_at": "2025-10-23 10:03:01"
+  },
+  {
+    "id": 13,
+    "aula_id": 3,
+    "ruta": "aulas/IfJh6U7Cpe9ZzZrV.webp",
+    "created_at": "2025-10-23 10:03:01",
+    "updated_at": "2025-10-23 10:03:01"
+  },
+  {
+    "id": 14,
+    "aula_id": 3,
+    "ruta": "aulas/wF4ZLPq32qqGRDgb.webp",
+    "created_at": "2025-10-23 10:03:02",
+    "updated_at": "2025-10-23 10:03:02"
+  },
+  {
+    "id": 15,
+    "aula_id": 3,
+    "ruta": "aulas/uALVtC2IrdZbee51.webp",
+    "created_at": "2025-10-23 10:03:02",
+    "updated_at": "2025-10-23 10:03:02"
+  },
+  {
+    "id": 16,
+    "aula_id": 3,
+    "ruta": "aulas/bhGOCUNwmkG0IDKa.webp",
+    "created_at": "2025-10-23 10:03:03",
+    "updated_at": "2025-10-23 10:03:03"
+  },
+  {
+    "id": 17,
+    "aula_id": 4,
+    "ruta": "aulas/paQihUAFNAnuGjeL.webp",
+    "created_at": "2025-10-23 10:03:03",
+    "updated_at": "2025-10-23 10:03:03"
+  },
+  {
+    "id": 18,
+    "aula_id": 4,
+    "ruta": "aulas/1zJ8U51S4hEvoayc.webp",
+    "created_at": "2025-10-23 10:03:03",
+    "updated_at": "2025-10-23 10:03:03"
+  },
+  {
+    "id": 19,
+    "aula_id": 4,
+    "ruta": "aulas/8By8n2aHe0mjletg.webp",
+    "created_at": "2025-10-23 10:03:04",
+    "updated_at": "2025-10-23 10:03:04"
+  },
+  {
+    "id": 20,
+    "aula_id": 4,
+    "ruta": "aulas/eRW2gM7f32yDpcQC.webp",
+    "created_at": "2025-10-23 10:03:04",
+    "updated_at": "2025-10-23 10:03:04"
+  },
+  {
+    "id": 21,
+    "aula_id": 4,
+    "ruta": "aulas/KKAwGUVhZPsOjsPY.webp",
+    "created_at": "2025-10-23 10:03:05",
+    "updated_at": "2025-10-23 10:03:05"
+  },
+  {
+    "id": 22,
+    "aula_id": 5,
+    "ruta": "aulas/eMYJeJxRDfbBlm8L.webp",
+    "created_at": "2025-10-23 10:03:05",
+    "updated_at": "2025-10-23 10:03:05"
+  },
+  {
+    "id": 23,
+    "aula_id": 5,
+    "ruta": "aulas/5BU6kq2ZNKhezuGS.webp",
+    "created_at": "2025-10-23 10:03:06",
+    "updated_at": "2025-10-23 10:03:06"
+  },
+  {
+    "id": 24,
+    "aula_id": 5,
+    "ruta": "aulas/nTCkKhK7qVASVXSt.webp",
+    "created_at": "2025-10-23 10:03:06",
+    "updated_at": "2025-10-23 10:03:06"
+  },
+  {
+    "id": 25,
+    "aula_id": 5,
+    "ruta": "aulas/rK8awR7w5NvvnHap.webp",
+    "created_at": "2025-10-23 10:03:06",
+    "updated_at": "2025-10-23 10:03:06"
+  },
+  {
+    "id": 26,
+    "aula_id": 5,
+    "ruta": "aulas/zVCRBRq1yLndoF4s.webp",
+    "created_at": "2025-10-23 10:03:07",
+    "updated_at": "2025-10-23 10:03:07"
+  },
+  {
+    "id": 27,
+    "aula_id": 5,
+    "ruta": "aulas/VKCpPz4wRzVrH9e2.webp",
+    "created_at": "2025-10-23 10:03:07",
+    "updated_at": "2025-10-23 10:03:07"
+  },
+  {
+    "id": 28,
+    "aula_id": 6,
+    "ruta": "aulas/kYQShNiGpTzQ3Kxt.webp",
+    "created_at": "2025-10-23 10:03:08",
+    "updated_at": "2025-10-23 10:03:08"
+  },
+  {
+    "id": 29,
+    "aula_id": 7,
+    "ruta": "aulas/E5RsZzwNDXlJZAzQ.webp",
+    "created_at": "2025-10-23 10:03:08",
+    "updated_at": "2025-10-23 10:03:08"
+  },
+  {
+    "id": 30,
+    "aula_id": 7,
+    "ruta": "aulas/pcuI2ZoxcPM8wcx1.webp",
+    "created_at": "2025-10-23 10:03:09",
+    "updated_at": "2025-10-23 10:03:09"
+  },
+  {
+    "id": 31,
+    "aula_id": 8,
+    "ruta": "aulas/p9YIqcHAuBY8tLor.webp",
+    "created_at": "2025-10-23 10:03:09",
+    "updated_at": "2025-10-23 10:03:09"
+  },
+  {
+    "id": 32,
+    "aula_id": 8,
+    "ruta": "aulas/ZJqY3uHhrMNU29HP.webp",
+    "created_at": "2025-10-23 10:03:09",
+    "updated_at": "2025-10-23 10:03:09"
+  },
+  {
+    "id": 33,
+    "aula_id": 9,
+    "ruta": "aulas/opAwd3RSgcgEgamM.webp",
+    "created_at": "2025-10-23 10:03:10",
+    "updated_at": "2025-10-23 10:03:10"
+  },
+  {
+    "id": 34,
+    "aula_id": 10,
+    "ruta": "aulas/EaggMvHI3XtyptBk.webp",
+    "created_at": "2025-10-23 10:03:10",
+    "updated_at": "2025-10-23 10:03:10"
+  },
+  {
+    "id": 35,
+    "aula_id": 10,
+    "ruta": "aulas/g2XQ9LwGojTg5DDn.webp",
+    "created_at": "2025-10-23 10:03:11",
+    "updated_at": "2025-10-23 10:03:11"
+  },
+  {
+    "id": 36,
+    "aula_id": 11,
+    "ruta": "aulas/8AHrMdENQpw4CX4l.webp",
+    "created_at": "2025-10-23 10:03:11",
+    "updated_at": "2025-10-23 10:03:11"
+  },
+  {
+    "id": 37,
+    "aula_id": 11,
+    "ruta": "aulas/HxDWPFUcU3rIxZco.webp",
+    "created_at": "2025-10-23 10:03:11",
+    "updated_at": "2025-10-23 10:03:11"
+  },
+  {
+    "id": 38,
+    "aula_id": 12,
+    "ruta": "aulas/GmobzE0AITDN4cCQ.webp",
+    "created_at": "2025-10-23 10:03:12",
+    "updated_at": "2025-10-23 10:03:12"
+  },
+  {
+    "id": 39,
+    "aula_id": 12,
+    "ruta": "aulas/60IlUNZEUw25Sv0F.webp",
+    "created_at": "2025-10-23 10:03:12",
+    "updated_at": "2025-10-23 10:03:12"
+  },
+  {
+    "id": 40,
+    "aula_id": 13,
+    "ruta": "aulas/TsyQ9TpeefL3JrPO.webp",
+    "created_at": "2025-10-23 10:03:13",
+    "updated_at": "2025-10-23 10:03:13"
+  },
+  {
+    "id": 41,
+    "aula_id": 13,
+    "ruta": "aulas/tucnDMnzpcsDwCv7.webp",
+    "created_at": "2025-10-23 10:03:13",
+    "updated_at": "2025-10-23 10:03:13"
+  },
+  {
+    "id": 42,
+    "aula_id": 14,
+    "ruta": "aulas/JcLLFD0YQqJ6LiwY.webp",
+    "created_at": "2025-10-23 10:03:13",
+    "updated_at": "2025-10-23 10:03:13"
+  },
+  {
+    "id": 43,
+    "aula_id": 14,
+    "ruta": "aulas/vUVI2N7G45NKuVH3.webp",
+    "created_at": "2025-10-23 10:03:14",
+    "updated_at": "2025-10-23 10:03:14"
+  },
+  {
+    "id": 44,
+    "aula_id": 14,
+    "ruta": "aulas/Mmoe8U5ndANjqDGL.webp",
+    "created_at": "2025-10-23 10:03:14",
+    "updated_at": "2025-10-23 10:03:14"
+  },
+  {
+    "id": 45,
+    "aula_id": 14,
+    "ruta": "aulas/BVpGvsZUfs9nAgUZ.webp",
+    "created_at": "2025-10-23 10:03:15",
+    "updated_at": "2025-10-23 10:03:15"
+  },
+  {
+    "id": 46,
+    "aula_id": 14,
+    "ruta": "aulas/WOIs7dAO7GmGZwa3.webp",
+    "created_at": "2025-10-23 10:03:15",
+    "updated_at": "2025-10-23 10:03:15"
+  },
+  {
+    "id": 47,
+    "aula_id": 14,
+    "ruta": "aulas/j8kl64qLrTom3tzK.webp",
+    "created_at": "2025-10-23 10:03:16",
+    "updated_at": "2025-10-23 10:03:16"
+  },
+  {
+    "id": 48,
+    "aula_id": 14,
+    "ruta": "aulas/Tq24ZUne2wmIgiZp.webp",
+    "created_at": "2025-10-23 10:03:16",
+    "updated_at": "2025-10-23 10:03:16"
+  },
+  {
+    "id": 49,
+    "aula_id": 15,
+    "ruta": "aulas/83TiSJR5Jnj7PVgM.webp",
+    "created_at": "2025-10-23 10:03:17",
+    "updated_at": "2025-10-23 10:03:17"
+  },
+  {
+    "id": 50,
+    "aula_id": 15,
+    "ruta": "aulas/VLVBKLi4853kpB7z.webp",
+    "created_at": "2025-10-23 10:03:17",
+    "updated_at": "2025-10-23 10:03:17"
+  },
+  {
+    "id": 51,
+    "aula_id": 15,
+    "ruta": "aulas/IB14g2LOALMdlyjs.webp",
+    "created_at": "2025-10-23 10:03:17",
+    "updated_at": "2025-10-23 10:03:17"
+  },
+  {
+    "id": 52,
+    "aula_id": 15,
+    "ruta": "aulas/a3WN12sfJJmp7lRd.webp",
+    "created_at": "2025-10-23 10:03:18",
+    "updated_at": "2025-10-23 10:03:18"
+  },
+  {
+    "id": 53,
+    "aula_id": 15,
+    "ruta": "aulas/YSpj4UbtsiV6IAl2.webp",
+    "created_at": "2025-10-23 10:03:18",
+    "updated_at": "2025-10-23 10:03:18"
+  },
+  {
+    "id": 54,
+    "aula_id": 16,
+    "ruta": "aulas/Bc4Ctmk1rXAYltat.webp",
+    "created_at": "2025-10-23 10:03:19",
+    "updated_at": "2025-10-23 10:03:19"
+  },
+  {
+    "id": 55,
+    "aula_id": 17,
+    "ruta": "aulas/kJgDP8lsYUNuAQUo.webp",
+    "created_at": "2025-10-23 10:03:19",
+    "updated_at": "2025-10-23 10:03:19"
+  },
+  {
+    "id": 56,
+    "aula_id": 17,
+    "ruta": "aulas/5BpmyCxULWhffqWn.webp",
+    "created_at": "2025-10-23 10:03:20",
+    "updated_at": "2025-10-23 10:03:20"
+  },
+  {
+    "id": 57,
+    "aula_id": 17,
+    "ruta": "aulas/LgGm2MVJkilzjGOX.webp",
+    "created_at": "2025-10-23 10:03:20",
+    "updated_at": "2025-10-23 10:03:20"
+  },
+  {
+    "id": 58,
+    "aula_id": 18,
+    "ruta": "aulas/mkfwUUnV6cG8WF8Q.webp",
+    "created_at": "2025-10-23 10:03:20",
+    "updated_at": "2025-10-23 10:03:20"
+  },
+  {
+    "id": 59,
+    "aula_id": 18,
+    "ruta": "aulas/J4yzQghRcRcZtYlG.webp",
+    "created_at": "2025-10-23 10:03:21",
+    "updated_at": "2025-10-23 10:03:21"
+  },
+  {
+    "id": 60,
+    "aula_id": 18,
+    "ruta": "aulas/eXHLNeGrsorolgF6.webp",
+    "created_at": "2025-10-23 10:03:21",
+    "updated_at": "2025-10-23 10:03:21"
+  },
+  {
+    "id": 61,
+    "aula_id": 18,
+    "ruta": "aulas/iHhzTM8tHm2pnot9.webp",
+    "created_at": "2025-10-23 10:03:22",
+    "updated_at": "2025-10-23 10:03:22"
+  },
+  {
+    "id": 62,
+    "aula_id": 18,
+    "ruta": "aulas/zfXcsR72giPiWcy1.webp",
+    "created_at": "2025-10-23 10:03:22",
+    "updated_at": "2025-10-23 10:03:22"
+  },
+  {
+    "id": 63,
+    "aula_id": 19,
+    "ruta": "aulas/94Vjn2LJaEgoo5TD.webp",
+    "created_at": "2025-10-23 10:03:23",
+    "updated_at": "2025-10-23 10:03:23"
+  },
+  {
+    "id": 64,
+    "aula_id": 19,
+    "ruta": "aulas/VH3PSbqI1HIn08b4.webp",
+    "created_at": "2025-10-23 10:03:23",
+    "updated_at": "2025-10-23 10:03:23"
+  },
+  {
+    "id": 65,
+    "aula_id": 19,
+    "ruta": "aulas/i7RcwAlv6fzB0AMH.webp",
+    "created_at": "2025-10-23 10:03:23",
+    "updated_at": "2025-10-23 10:03:23"
+  },
+  {
+    "id": 66,
+    "aula_id": 20,
+    "ruta": "aulas/t3TDuuSnah9WqbSA.webp",
+    "created_at": "2025-10-23 10:03:24",
+    "updated_at": "2025-10-23 10:03:24"
+  },
+  {
+    "id": 67,
+    "aula_id": 21,
+    "ruta": "aulas/qQnPmgcekrZZNWJR.webp",
+    "created_at": "2025-10-23 10:03:24",
+    "updated_at": "2025-10-23 10:03:24"
+  },
+  {
+    "id": 68,
+    "aula_id": 22,
+    "ruta": "aulas/fffYfZUJP6wCm1y1.webp",
+    "created_at": "2025-10-23 10:03:24",
+    "updated_at": "2025-10-23 10:03:24"
+  },
+  {
+    "id": 69,
+    "aula_id": 22,
+    "ruta": "aulas/VUkdIthk9tDVaECL.webp",
+    "created_at": "2025-10-23 10:03:25",
+    "updated_at": "2025-10-23 10:03:25"
+  },
+  {
+    "id": 70,
+    "aula_id": 22,
+    "ruta": "aulas/hVFwQZ78g2xSFMNn.webp",
+    "created_at": "2025-10-23 10:03:25",
+    "updated_at": "2025-10-23 10:03:25"
+  },
+  {
+    "id": 71,
+    "aula_id": 22,
+    "ruta": "aulas/a4RagUn1kgTmsShx.webp",
+    "created_at": "2025-10-23 10:03:26",
+    "updated_at": "2025-10-23 10:03:26"
+  },
+  {
+    "id": 72,
+    "aula_id": 22,
+    "ruta": "aulas/todQ1tjimvUF9Tbh.webp",
+    "created_at": "2025-10-23 10:03:26",
+    "updated_at": "2025-10-23 10:03:26"
+  },
+  {
+    "id": 73,
+    "aula_id": 23,
+    "ruta": "aulas/uu9PiDR2w8sXwJNL.webp",
+    "created_at": "2025-10-23 10:03:27",
+    "updated_at": "2025-10-23 10:03:27"
+  },
+  {
+    "id": 74,
+    "aula_id": 23,
+    "ruta": "aulas/ZmLAy0Ejih928KpK.webp",
+    "created_at": "2025-10-23 10:03:27",
+    "updated_at": "2025-10-23 10:03:27"
+  },
+  {
+    "id": 75,
+    "aula_id": 23,
+    "ruta": "aulas/xbPrd0bgZ05Yuv9g.webp",
+    "created_at": "2025-10-23 10:03:27",
+    "updated_at": "2025-10-23 10:03:27"
+  },
+  {
+    "id": 76,
+    "aula_id": 23,
+    "ruta": "aulas/Cm5C5vLBEiBVXn2W.webp",
+    "created_at": "2025-10-23 10:03:28",
+    "updated_at": "2025-10-23 10:03:28"
+  },
+  {
+    "id": 77,
+    "aula_id": 23,
+    "ruta": "aulas/N978Ixna9hQkHttf.webp",
+    "created_at": "2025-10-23 10:03:28",
+    "updated_at": "2025-10-23 10:03:28"
+  },
+  {
+    "id": 78,
+    "aula_id": 24,
+    "ruta": "aulas/85MDAJLFvdr1h55H.webp",
+    "created_at": "2025-10-23 10:03:29",
+    "updated_at": "2025-10-23 10:03:29"
+  },
+  {
+    "id": 79,
+    "aula_id": 24,
+    "ruta": "aulas/R4IAyF8CQwwjZmlF.webp",
+    "created_at": "2025-10-23 10:03:29",
+    "updated_at": "2025-10-23 10:03:29"
+  },
+  {
+    "id": 80,
+    "aula_id": 24,
+    "ruta": "aulas/1yXv2YpKwcp2XgCA.webp",
+    "created_at": "2025-10-23 10:03:29",
+    "updated_at": "2025-10-23 10:03:29"
+  },
+  {
+    "id": 81,
+    "aula_id": 24,
+    "ruta": "aulas/2XGiotZ2qiQVZ8I6.webp",
+    "created_at": "2025-10-23 10:03:30",
+    "updated_at": "2025-10-23 10:03:30"
+  },
+  {
+    "id": 82,
+    "aula_id": 24,
+    "ruta": "aulas/1scu3inTKAVERxgd.webp",
+    "created_at": "2025-10-23 10:03:30",
+    "updated_at": "2025-10-23 10:03:30"
+  },
+  {
+    "id": 83,
+    "aula_id": 25,
+    "ruta": "aulas/a9pDyy8VK5CUuZHD.webp",
+    "created_at": "2025-10-23 10:03:30",
+    "updated_at": "2025-10-23 10:03:30"
+  },
+  {
+    "id": 84,
+    "aula_id": 25,
+    "ruta": "aulas/bthHcjBgxiNEgDpg.webp",
+    "created_at": "2025-10-23 10:03:31",
+    "updated_at": "2025-10-23 10:03:31"
+  },
+  {
+    "id": 85,
+    "aula_id": 25,
+    "ruta": "aulas/yUFSu7hXgnrSQNBw.webp",
+    "created_at": "2025-10-23 10:03:31",
+    "updated_at": "2025-10-23 10:03:31"
+  },
+  {
+    "id": 86,
+    "aula_id": 25,
+    "ruta": "aulas/p0GKysjDdUGJe69C.webp",
+    "created_at": "2025-10-23 10:03:32",
+    "updated_at": "2025-10-23 10:03:32"
+  },
+  {
+    "id": 87,
+    "aula_id": 25,
+    "ruta": "aulas/5UVhMp8EBVJSKCdq.webp",
+    "created_at": "2025-10-23 10:03:32",
+    "updated_at": "2025-10-23 10:03:32"
+  },
+  {
+    "id": 88,
+    "aula_id": 26,
+    "ruta": "aulas/s8IFmNcuL5ile3LD.webp",
+    "created_at": "2025-10-23 10:03:32",
+    "updated_at": "2025-10-23 10:03:32"
+  },
+  {
+    "id": 89,
+    "aula_id": 26,
+    "ruta": "aulas/zJCXGB2tFcA1bdDC.webp",
+    "created_at": "2025-10-23 10:03:33",
+    "updated_at": "2025-10-23 10:03:33"
+  },
+  {
+    "id": 90,
+    "aula_id": 26,
+    "ruta": "aulas/jrjLkhWlFtqh5UoM.webp",
+    "created_at": "2025-10-23 10:03:33",
+    "updated_at": "2025-10-23 10:03:33"
+  },
+  {
+    "id": 91,
+    "aula_id": 26,
+    "ruta": "aulas/OPBLiag2Qp8dDA6N.webp",
+    "created_at": "2025-10-23 10:03:33",
+    "updated_at": "2025-10-23 10:03:33"
+  },
+  {
+    "id": 92,
+    "aula_id": 26,
+    "ruta": "aulas/16iyRqSEPkLec9yj.webp",
+    "created_at": "2025-10-23 10:03:34",
+    "updated_at": "2025-10-23 10:03:34"
+  },
+  {
+    "id": 93,
+    "aula_id": 27,
+    "ruta": "aulas/2GNHut5Bp4PiV1up.webp",
+    "created_at": "2025-10-23 10:03:34",
+    "updated_at": "2025-10-23 10:03:34"
+  },
+  {
+    "id": 94,
+    "aula_id": 27,
+    "ruta": "aulas/2ZSKLKYjJv6k4y48.webp",
+    "created_at": "2025-10-23 10:03:35",
+    "updated_at": "2025-10-23 10:03:35"
+  },
+  {
+    "id": 95,
+    "aula_id": 27,
+    "ruta": "aulas/s2PmmcK8l4TMgDcW.webp",
+    "created_at": "2025-10-23 10:03:35",
+    "updated_at": "2025-10-23 10:03:35"
+  },
+  {
+    "id": 96,
+    "aula_id": 27,
+    "ruta": "aulas/zugcdlCVCZbO0wjB.webp",
+    "created_at": "2025-10-23 10:03:36",
+    "updated_at": "2025-10-23 10:03:36"
+  },
+  {
+    "id": 97,
+    "aula_id": 27,
+    "ruta": "aulas/9q97e2VoLIKi3gsE.webp",
+    "created_at": "2025-10-23 10:03:36",
+    "updated_at": "2025-10-23 10:03:36"
+  },
+  {
+    "id": 98,
+    "aula_id": 28,
+    "ruta": "aulas/y9PXG3GF86sFIAlc.webp",
+    "created_at": "2025-10-23 10:03:36",
+    "updated_at": "2025-10-23 10:03:36"
+  },
+  {
+    "id": 99,
+    "aula_id": 28,
+    "ruta": "aulas/1mziUjsp8GN9chDj.webp",
+    "created_at": "2025-10-23 10:03:37",
+    "updated_at": "2025-10-23 10:03:37"
+  },
+  {
+    "id": 100,
+    "aula_id": 28,
+    "ruta": "aulas/a6IQ21RSpLu88kcm.webp",
+    "created_at": "2025-10-23 10:03:37",
+    "updated_at": "2025-10-23 10:03:37"
+  },
+  {
+    "id": 101,
+    "aula_id": 28,
+    "ruta": "aulas/GLs4sFdZDw2Xt8Rg.webp",
+    "created_at": "2025-10-23 10:03:37",
+    "updated_at": "2025-10-23 10:03:37"
+  },
+  {
+    "id": 102,
+    "aula_id": 28,
+    "ruta": "aulas/2yLbRypl49eMfdrA.webp",
+    "created_at": "2025-10-23 10:03:38",
+    "updated_at": "2025-10-23 10:03:38"
+  },
+  {
+    "id": 103,
+    "aula_id": 29,
+    "ruta": "aulas/KEu2EoiVv2kC5PXy.webp",
+    "created_at": "2025-10-23 10:03:38",
+    "updated_at": "2025-10-23 10:03:38"
+  },
+  {
+    "id": 104,
+    "aula_id": 29,
+    "ruta": "aulas/VY5a2lALfHY6jnW4.webp",
+    "created_at": "2025-10-23 10:03:39",
+    "updated_at": "2025-10-23 10:03:39"
+  },
+  {
+    "id": 105,
+    "aula_id": 29,
+    "ruta": "aulas/FuiREAnGIhxBqjDf.webp",
+    "created_at": "2025-10-23 10:03:39",
+    "updated_at": "2025-10-23 10:03:39"
+  },
+  {
+    "id": 106,
+    "aula_id": 29,
+    "ruta": "aulas/aD1o2QZpOfeO5f4P.webp",
+    "created_at": "2025-10-23 10:03:39",
+    "updated_at": "2025-10-23 10:03:39"
+  },
+  {
+    "id": 107,
+    "aula_id": 29,
+    "ruta": "aulas/bRxhNbdZ7z9c4hSp.webp",
+    "created_at": "2025-10-23 10:03:40",
+    "updated_at": "2025-10-23 10:03:40"
+  },
+  {
+    "id": 108,
+    "aula_id": 30,
+    "ruta": "aulas/sifm5j9WZT9aD6n4.webp",
+    "created_at": "2025-10-23 10:03:40",
+    "updated_at": "2025-10-23 10:03:40"
+  },
+  {
+    "id": 109,
+    "aula_id": 30,
+    "ruta": "aulas/sl51098yYLGih8Ce.webp",
+    "created_at": "2025-10-23 10:03:41",
+    "updated_at": "2025-10-23 10:03:41"
+  },
+  {
+    "id": 110,
+    "aula_id": 30,
+    "ruta": "aulas/3lwLd54DHBON8Dyf.webp",
+    "created_at": "2025-10-23 10:03:41",
+    "updated_at": "2025-10-23 10:03:41"
+  },
+  {
+    "id": 111,
+    "aula_id": 30,
+    "ruta": "aulas/7heDo2w7EPy06YMK.webp",
+    "created_at": "2025-10-23 10:03:41",
+    "updated_at": "2025-10-23 10:03:41"
+  },
+  {
+    "id": 112,
+    "aula_id": 30,
+    "ruta": "aulas/quKIr1vJ2ZhaCPFJ.webp",
+    "created_at": "2025-10-23 10:03:42",
+    "updated_at": "2025-10-23 10:03:42"
+  },
+  {
+    "id": 113,
+    "aula_id": 30,
+    "ruta": "aulas/kb47YWXGrXV0cwBG.webp",
+    "created_at": "2025-10-23 10:03:42",
+    "updated_at": "2025-10-23 10:03:42"
+  },
+  {
+    "id": 114,
+    "aula_id": 31,
+    "ruta": "aulas/yRPW9VKlBuzTSsgU.webp",
+    "created_at": "2025-10-23 10:03:42",
+    "updated_at": "2025-10-23 10:03:42"
+  },
+  {
+    "id": 115,
+    "aula_id": 31,
+    "ruta": "aulas/OrSDOsHHIxoXa8QS.webp",
+    "created_at": "2025-10-23 10:03:43",
+    "updated_at": "2025-10-23 10:03:43"
+  },
+  {
+    "id": 116,
+    "aula_id": 31,
+    "ruta": "aulas/3OkVteAm3mJqwVke.webp",
+    "created_at": "2025-10-23 10:03:43",
+    "updated_at": "2025-10-23 10:03:43"
+  },
+  {
+    "id": 117,
+    "aula_id": 31,
+    "ruta": "aulas/QlFgF9wkF5yyW1Ig.webp",
+    "created_at": "2025-10-23 10:03:43",
+    "updated_at": "2025-10-23 10:03:43"
+  },
+  {
+    "id": 118,
+    "aula_id": 31,
+    "ruta": "aulas/RQ8DMGvH7GIMBkRn.webp",
+    "created_at": "2025-10-23 10:03:44",
+    "updated_at": "2025-10-23 10:03:44"
+  },
+  {
+    "id": 119,
+    "aula_id": 32,
+    "ruta": "aulas/b5s1NhoHh6cAoa6p.webp",
+    "created_at": "2025-10-23 10:03:44",
+    "updated_at": "2025-10-23 10:03:44"
+  },
+  {
+    "id": 120,
+    "aula_id": 32,
+    "ruta": "aulas/5qJzKfNpDvHqFbh2.webp",
+    "created_at": "2025-10-23 10:03:45",
+    "updated_at": "2025-10-23 10:03:45"
+  },
+  {
+    "id": 121,
+    "aula_id": 32,
+    "ruta": "aulas/q965YSLCzM1VMOX9.webp",
+    "created_at": "2025-10-23 10:03:45",
+    "updated_at": "2025-10-23 10:03:45"
+  },
+  {
+    "id": 122,
+    "aula_id": 33,
+    "ruta": "aulas/NcnbueIVGPN7Kq4x.webp",
+    "created_at": "2025-10-23 10:03:45",
+    "updated_at": "2025-10-23 10:03:45"
+  },
+  {
+    "id": 123,
+    "aula_id": 33,
+    "ruta": "aulas/c7Fq8IW2zppJtnLn.webp",
+    "created_at": "2025-10-23 10:03:46",
+    "updated_at": "2025-10-23 10:03:46"
+  },
+  {
+    "id": 124,
+    "aula_id": 33,
+    "ruta": "aulas/GAFK56mzvVBjXffc.webp",
+    "created_at": "2025-10-23 10:03:46",
+    "updated_at": "2025-10-23 10:03:46"
+  },
+  {
+    "id": 125,
+    "aula_id": 33,
+    "ruta": "aulas/EVai2Ngya6KlXPmv.webp",
+    "created_at": "2025-10-23 10:03:46",
+    "updated_at": "2025-10-23 10:03:46"
+  },
+  {
+    "id": 126,
+    "aula_id": 33,
+    "ruta": "aulas/zyVZJ0UnLcFQfByf.webp",
+    "created_at": "2025-10-23 10:03:47",
+    "updated_at": "2025-10-23 10:03:47"
+  },
+  {
+    "id": 127,
+    "aula_id": 34,
+    "ruta": "aulas/tNVyVPxzgMCUFGLN.webp",
+    "created_at": "2025-10-23 10:03:47",
+    "updated_at": "2025-10-23 10:03:47"
+  },
+  {
+    "id": 128,
+    "aula_id": 34,
+    "ruta": "aulas/NbmN9yPUOu9LOz5D.webp",
+    "created_at": "2025-10-23 10:03:48",
+    "updated_at": "2025-10-23 10:03:48"
+  },
+  {
+    "id": 129,
+    "aula_id": 34,
+    "ruta": "aulas/n4exsPd5LOtte1VN.webp",
+    "created_at": "2025-10-23 10:03:48",
+    "updated_at": "2025-10-23 10:03:48"
+  },
+  {
+    "id": 130,
+    "aula_id": 34,
+    "ruta": "aulas/z563c0XLZYPPFoMA.webp",
+    "created_at": "2025-10-23 10:03:48",
+    "updated_at": "2025-10-23 10:03:48"
+  },
+  {
+    "id": 131,
+    "aula_id": 34,
+    "ruta": "aulas/ibR8ZbKa9Jm9k3CO.webp",
+    "created_at": "2025-10-23 10:03:49",
+    "updated_at": "2025-10-23 10:03:49"
+  },
+  {
+    "id": 132,
+    "aula_id": 35,
+    "ruta": "aulas/WQ4LEfleXOiCV5Yu.webp",
+    "created_at": "2025-10-23 10:03:49",
+    "updated_at": "2025-10-23 10:03:49"
+  },
+  {
+    "id": 133,
+    "aula_id": 35,
+    "ruta": "aulas/Qd0dGPv0ZPx8yyOz.webp",
+    "created_at": "2025-10-23 10:03:49",
+    "updated_at": "2025-10-23 10:03:49"
+  },
+  {
+    "id": 134,
+    "aula_id": 35,
+    "ruta": "aulas/We8A0t3QT0APVgkg.webp",
+    "created_at": "2025-10-23 10:03:50",
+    "updated_at": "2025-10-23 10:03:50"
+  },
+  {
+    "id": 135,
+    "aula_id": 35,
+    "ruta": "aulas/f8ScxOojs4IvmNZl.webp",
+    "created_at": "2025-10-23 10:03:50",
+    "updated_at": "2025-10-23 10:03:50"
+  },
+  {
+    "id": 136,
+    "aula_id": 35,
+    "ruta": "aulas/ddXXWgzWYRRE8TWg.webp",
+    "created_at": "2025-10-23 10:03:51",
+    "updated_at": "2025-10-23 10:03:51"
+  },
+  {
+    "id": 137,
+    "aula_id": 36,
+    "ruta": "aulas/VKw5bdakJOgLMUPU.webp",
+    "created_at": "2025-10-23 10:03:51",
+    "updated_at": "2025-10-23 10:03:51"
+  },
+  {
+    "id": 138,
+    "aula_id": 36,
+    "ruta": "aulas/AqLQqjS8ZAvXMwHT.webp",
+    "created_at": "2025-10-23 10:03:51",
+    "updated_at": "2025-10-23 10:03:51"
+  },
+  {
+    "id": 139,
+    "aula_id": 37,
+    "ruta": "aulas/fnSq9CvbDYYP37B2.webp",
+    "created_at": "2025-10-23 10:03:52",
+    "updated_at": "2025-10-23 10:03:52"
+  },
+  {
+    "id": 140,
+    "aula_id": 38,
+    "ruta": "aulas/xfbpy85kBOhD0fOR.webp",
+    "created_at": "2025-10-23 10:03:52",
+    "updated_at": "2025-10-23 10:03:52"
+  },
+  {
+    "id": 141,
+    "aula_id": 39,
+    "ruta": "aulas/zxzctAM0hB0eUo7h.webp",
+    "created_at": "2025-10-23 10:03:53",
+    "updated_at": "2025-10-23 10:03:53"
+  },
+  {
+    "id": 142,
+    "aula_id": 39,
+    "ruta": "aulas/9OlKGCBPO36nTqHJ.webp",
+    "created_at": "2025-10-23 10:03:53",
+    "updated_at": "2025-10-23 10:03:53"
+  },
+  {
+    "id": 143,
+    "aula_id": 39,
+    "ruta": "aulas/v56EmxpkAlW092US.webp",
+    "created_at": "2025-10-23 10:03:53",
+    "updated_at": "2025-10-23 10:03:53"
+  },
+  {
+    "id": 144,
+    "aula_id": 39,
+    "ruta": "aulas/LGVh6uD7MuaCpn4s.webp",
+    "created_at": "2025-10-23 10:03:54",
+    "updated_at": "2025-10-23 10:03:54"
+  },
+  {
+    "id": 145,
+    "aula_id": 40,
+    "ruta": "aulas/R3YcO1cQqWN4it8K.webp",
+    "created_at": "2025-10-23 10:03:54",
+    "updated_at": "2025-10-23 10:03:54"
+  },
+  {
+    "id": 146,
+    "aula_id": 40,
+    "ruta": "aulas/oHEN6GN68hFwsAPX.webp",
+    "created_at": "2025-10-23 10:03:55",
+    "updated_at": "2025-10-23 10:03:55"
+  },
+  {
+    "id": 147,
+    "aula_id": 40,
+    "ruta": "aulas/9LFJNonTuKcU86ty.webp",
+    "created_at": "2025-10-23 10:03:55",
+    "updated_at": "2025-10-23 10:03:55"
+  },
+  {
+    "id": 148,
+    "aula_id": 40,
+    "ruta": "aulas/bEhWoQXTNkIPSty1.webp",
+    "created_at": "2025-10-23 10:03:55",
+    "updated_at": "2025-10-23 10:03:55"
+  },
+  {
+    "id": 149,
+    "aula_id": 41,
+    "ruta": "aulas/ZfIoZH3p8BPK8vK8.webp",
+    "created_at": "2025-10-23 10:03:56",
+    "updated_at": "2025-10-23 10:03:56"
+  },
+  {
+    "id": 150,
+    "aula_id": 41,
+    "ruta": "aulas/SQJWFxQ8bDx9tajs.webp",
+    "created_at": "2025-10-23 10:03:56",
+    "updated_at": "2025-10-23 10:03:56"
+  },
+  {
+    "id": 151,
+    "aula_id": 41,
+    "ruta": "aulas/WzifDTHrSr5Bx6ET.webp",
+    "created_at": "2025-10-23 10:03:56",
+    "updated_at": "2025-10-23 10:03:56"
+  },
+  {
+    "id": 152,
+    "aula_id": 42,
+    "ruta": "aulas/ovkJpa42k0kFmIqR.webp",
+    "created_at": "2025-10-23 10:03:57",
+    "updated_at": "2025-10-23 10:03:57"
+  },
+  {
+    "id": 153,
+    "aula_id": 42,
+    "ruta": "aulas/1NHS7fpfykmR4LEe.webp",
+    "created_at": "2025-10-23 10:03:57",
+    "updated_at": "2025-10-23 10:03:57"
+  },
+  {
+    "id": 154,
+    "aula_id": 43,
+    "ruta": "aulas/MzCqkN1qdoPKmC1I.webp",
+    "created_at": "2025-10-23 10:03:57",
+    "updated_at": "2025-10-23 10:03:57"
+  },
+  {
+    "id": 155,
+    "aula_id": 43,
+    "ruta": "aulas/stv38afFpySWb7C2.webp",
+    "created_at": "2025-10-23 10:03:58",
+    "updated_at": "2025-10-23 10:03:58"
+  },
+  {
+    "id": 156,
+    "aula_id": 43,
+    "ruta": "aulas/qjPs50rENWCq4Mfp.webp",
+    "created_at": "2025-10-23 10:03:58",
+    "updated_at": "2025-10-23 10:03:58"
+  },
+  {
+    "id": 157,
+    "aula_id": 44,
+    "ruta": "aulas/oh1tDNOkyvipHEbh.webp",
+    "created_at": "2025-10-23 10:03:59",
+    "updated_at": "2025-10-23 10:03:59"
+  },
+  {
+    "id": 158,
+    "aula_id": 45,
+    "ruta": "aulas/uGEXdfOL1f8XtExI.webp",
+    "created_at": "2025-10-23 10:03:59",
+    "updated_at": "2025-10-23 10:03:59"
+  },
+  {
+    "id": 159,
+    "aula_id": 45,
+    "ruta": "aulas/bVmbr1rR98eyWC1T.webp",
+    "created_at": "2025-10-23 10:03:59",
+    "updated_at": "2025-10-23 10:03:59"
+  },
+  {
+    "id": 160,
+    "aula_id": 45,
+    "ruta": "aulas/QaR07zSnGUMgyp03.webp",
+    "created_at": "2025-10-23 10:04:00",
+    "updated_at": "2025-10-23 10:04:00"
+  },
+  {
+    "id": 161,
+    "aula_id": 45,
+    "ruta": "aulas/yMlw8eiH1qCm3ZyN.webp",
+    "created_at": "2025-10-23 10:04:00",
+    "updated_at": "2025-10-23 10:04:00"
+  },
+  {
+    "id": 162,
+    "aula_id": 46,
+    "ruta": "aulas/gzfwXYo7GLe00pik.webp",
+    "created_at": "2025-10-23 10:04:01",
+    "updated_at": "2025-10-23 10:04:01"
+  },
+  {
+    "id": 163,
+    "aula_id": 47,
+    "ruta": "aulas/5f2UsI0VEAFRhrcQ.webp",
+    "created_at": "2025-10-23 10:04:01",
+    "updated_at": "2025-10-23 10:04:01"
+  },
+  {
+    "id": 164,
+    "aula_id": 47,
+    "ruta": "aulas/bgsViqChxUngdgdW.webp",
+    "created_at": "2025-10-23 10:04:01",
+    "updated_at": "2025-10-23 10:04:01"
+  },
+  {
+    "id": 165,
+    "aula_id": 47,
+    "ruta": "aulas/hsaiyTBekrlcdAF7.webp",
+    "created_at": "2025-10-23 10:04:02",
+    "updated_at": "2025-10-23 10:04:02"
+  },
+  {
+    "id": 166,
+    "aula_id": 47,
+    "ruta": "aulas/qMqi8HLVTzXycYXh.webp",
+    "created_at": "2025-10-23 10:04:02",
+    "updated_at": "2025-10-23 10:04:02"
+  },
+  {
+    "id": 167,
+    "aula_id": 48,
+    "ruta": "aulas/cjAmSGgbW5ysKVO9.webp",
+    "created_at": "2025-10-23 10:04:02",
+    "updated_at": "2025-10-23 10:04:02"
+  },
+  {
+    "id": 168,
+    "aula_id": 48,
+    "ruta": "aulas/Wh4ZM34qOnnlWGSo.webp",
+    "created_at": "2025-10-23 10:04:03",
+    "updated_at": "2025-10-23 10:04:03"
+  },
+  {
+    "id": 169,
+    "aula_id": 48,
+    "ruta": "aulas/HbG5rfRGjzfknQrI.webp",
+    "created_at": "2025-10-23 10:04:03",
+    "updated_at": "2025-10-23 10:04:03"
+  },
+  {
+    "id": 170,
+    "aula_id": 48,
+    "ruta": "aulas/LdhGJoVk4T5z1FBB.webp",
+    "created_at": "2025-10-23 10:04:04",
+    "updated_at": "2025-10-23 10:04:04"
+  },
+  {
+    "id": 171,
+    "aula_id": 48,
+    "ruta": "aulas/6CffTWYy0OD3PAIC.webp",
+    "created_at": "2025-10-23 10:04:04",
+    "updated_at": "2025-10-23 10:04:04"
+  },
+  {
+    "id": 172,
+    "aula_id": 49,
+    "ruta": "aulas/5amwevGKRKmEMPUf.webp",
+    "created_at": "2025-10-23 10:04:04",
+    "updated_at": "2025-10-23 10:04:04"
+  },
+  {
+    "id": 173,
+    "aula_id": 49,
+    "ruta": "aulas/fuwoH9cN734wZ2N8.webp",
+    "created_at": "2025-10-23 10:04:05",
+    "updated_at": "2025-10-23 10:04:05"
+  },
+  {
+    "id": 174,
+    "aula_id": 49,
+    "ruta": "aulas/qAtVMiOTChNc1c2f.webp",
+    "created_at": "2025-10-23 10:04:05",
+    "updated_at": "2025-10-23 10:04:05"
+  },
+  {
+    "id": 175,
+    "aula_id": 49,
+    "ruta": "aulas/7BMTnTdKdILlqWeI.webp",
+    "created_at": "2025-10-23 10:04:06",
+    "updated_at": "2025-10-23 10:04:06"
+  },
+  {
+    "id": 176,
+    "aula_id": 49,
+    "ruta": "aulas/vLpQaZgJzbbboWLG.webp",
+    "created_at": "2025-10-23 10:04:06",
+    "updated_at": "2025-10-23 10:04:06"
+  },
+  {
+    "id": 177,
+    "aula_id": 50,
+    "ruta": "aulas/KkzZw52ehUj55XDv.webp",
+    "created_at": "2025-10-23 10:04:06",
+    "updated_at": "2025-10-23 10:04:06"
+  },
+  {
+    "id": 178,
+    "aula_id": 50,
+    "ruta": "aulas/KT9YgZJex2AjD0bQ.webp",
+    "created_at": "2025-10-23 10:04:07",
+    "updated_at": "2025-10-23 10:04:07"
+  },
+  {
+    "id": 179,
+    "aula_id": 50,
+    "ruta": "aulas/kfN8Cj1P8DJNYdFz.webp",
+    "created_at": "2025-10-23 10:04:07",
+    "updated_at": "2025-10-23 10:04:07"
+  },
+  {
+    "id": 180,
+    "aula_id": 50,
+    "ruta": "aulas/b57D3yGGnI4VAVg3.webp",
+    "created_at": "2025-10-23 10:04:07",
+    "updated_at": "2025-10-23 10:04:07"
+  },
+  {
+    "id": 181,
+    "aula_id": 50,
+    "ruta": "aulas/WdI8EieHaOXA8ycY.webp",
+    "created_at": "2025-10-23 10:04:08",
+    "updated_at": "2025-10-23 10:04:08"
+  },
+  {
+    "id": 182,
+    "aula_id": 51,
+    "ruta": "aulas/ULRwt1hvxVX6CDXK.webp",
+    "created_at": "2025-10-23 10:04:08",
+    "updated_at": "2025-10-23 10:04:08"
+  },
+  {
+    "id": 183,
+    "aula_id": 51,
+    "ruta": "aulas/Io8zq8VBY3tO3ly7.webp",
+    "created_at": "2025-10-23 10:04:09",
+    "updated_at": "2025-10-23 10:04:09"
+  },
+  {
+    "id": 184,
+    "aula_id": 51,
+    "ruta": "aulas/kEfVGNc4KTg7OViI.webp",
+    "created_at": "2025-10-23 10:04:09",
+    "updated_at": "2025-10-23 10:04:09"
+  },
+  {
+    "id": 185,
+    "aula_id": 51,
+    "ruta": "aulas/s0OKkz6ZwlgSsmHJ.webp",
+    "created_at": "2025-10-23 10:04:09",
+    "updated_at": "2025-10-23 10:04:09"
+  },
+  {
+    "id": 186,
+    "aula_id": 52,
+    "ruta": "aulas/3ZXRiGp7bFCHbMZc.webp",
+    "created_at": "2025-10-23 10:04:10",
+    "updated_at": "2025-10-23 10:04:10"
+  },
+  {
+    "id": 187,
+    "aula_id": 52,
+    "ruta": "aulas/mOKL30FqVD8W5499.webp",
+    "created_at": "2025-10-23 10:04:10",
+    "updated_at": "2025-10-23 10:04:10"
+  },
+  {
+    "id": 188,
+    "aula_id": 52,
+    "ruta": "aulas/kUcnzfqOoiFcM4Ld.webp",
+    "created_at": "2025-10-23 10:04:10",
+    "updated_at": "2025-10-23 10:04:10"
+  },
+  {
+    "id": 189,
+    "aula_id": 52,
+    "ruta": "aulas/ki06cMAtJZwU9u0r.webp",
+    "created_at": "2025-10-23 10:04:11",
+    "updated_at": "2025-10-23 10:04:11"
+  },
+  {
+    "id": 190,
+    "aula_id": 53,
+    "ruta": "aulas/TnsKtGYFvVwH18F4.webp",
+    "created_at": "2025-10-23 10:04:11",
+    "updated_at": "2025-10-23 10:04:11"
+  },
+  {
+    "id": 191,
+    "aula_id": 53,
+    "ruta": "aulas/jyQqhUFzRGSNGH4X.webp",
+    "created_at": "2025-10-23 10:04:12",
+    "updated_at": "2025-10-23 10:04:12"
+  },
+  {
+    "id": 192,
+    "aula_id": 53,
+    "ruta": "aulas/998i3zEJ4Sj67DxX.webp",
+    "created_at": "2025-10-23 10:04:12",
+    "updated_at": "2025-10-23 10:04:12"
+  },
+  {
+    "id": 193,
+    "aula_id": 53,
+    "ruta": "aulas/cySVMmeBiBMfFveH.webp",
+    "created_at": "2025-10-23 10:04:12",
+    "updated_at": "2025-10-23 10:04:12"
+  },
+  {
+    "id": 194,
+    "aula_id": 53,
+    "ruta": "aulas/yX6jLNhVruXMLN1K.webp",
+    "created_at": "2025-10-23 10:04:13",
+    "updated_at": "2025-10-23 10:04:13"
+  },
+  {
+    "id": 195,
+    "aula_id": 54,
+    "ruta": "aulas/x8wMiBgQ8OGgDvuN.webp",
+    "created_at": "2025-10-23 10:04:13",
+    "updated_at": "2025-10-23 10:04:13"
+  },
+  {
+    "id": 196,
+    "aula_id": 54,
+    "ruta": "aulas/2dPGaGSkDlbxa26T.webp",
+    "created_at": "2025-10-23 10:04:13",
+    "updated_at": "2025-10-23 10:04:13"
+  },
+  {
+    "id": 197,
+    "aula_id": 54,
+    "ruta": "aulas/q0uG6B89cpzHQ1U7.webp",
+    "created_at": "2025-10-23 10:04:14",
+    "updated_at": "2025-10-23 10:04:14"
+  },
+  {
+    "id": 198,
+    "aula_id": 54,
+    "ruta": "aulas/BhN9Ri1QQfG1KFb4.webp",
+    "created_at": "2025-10-23 10:04:14",
+    "updated_at": "2025-10-23 10:04:14"
+  },
+  {
+    "id": 199,
+    "aula_id": 55,
+    "ruta": "aulas/zh8QQwmXVsg1Jgg5.webp",
+    "created_at": "2025-10-23 10:04:15",
+    "updated_at": "2025-10-23 10:04:15"
+  },
+  {
+    "id": 200,
+    "aula_id": 55,
+    "ruta": "aulas/XM6KepnBqeF2C6MP.webp",
+    "created_at": "2025-10-23 10:04:15",
+    "updated_at": "2025-10-23 10:04:15"
+  },
+  {
+    "id": 201,
+    "aula_id": 56,
+    "ruta": "aulas/9eMD4yLYWNgbcd0t.webp",
+    "created_at": "2025-10-23 10:04:15",
+    "updated_at": "2025-10-23 10:04:15"
+  },
+  {
+    "id": 202,
+    "aula_id": 56,
+    "ruta": "aulas/swSe7M2VfuXVkp3T.webp",
+    "created_at": "2025-10-23 10:04:16",
+    "updated_at": "2025-10-23 10:04:16"
+  },
+  {
+    "id": 203,
+    "aula_id": 57,
+    "ruta": "aulas/QDGv1jgg4pODazSL.webp",
+    "created_at": "2025-10-23 10:04:16",
+    "updated_at": "2025-10-23 10:04:16"
+  },
+  {
+    "id": 204,
+    "aula_id": 57,
+    "ruta": "aulas/kYB6GQeEc1cwSe4u.webp",
+    "created_at": "2025-10-23 10:04:17",
+    "updated_at": "2025-10-23 10:04:17"
+  },
+  {
+    "id": 205,
+    "aula_id": 58,
+    "ruta": "aulas/mfjN6LOFuMNmkmXa.webp",
+    "created_at": "2025-10-23 10:04:17",
+    "updated_at": "2025-10-23 10:04:17"
+  },
+  {
+    "id": 206,
+    "aula_id": 59,
+    "ruta": "aulas/4fOBcJD8eLkrKGbK.webp",
+    "created_at": "2025-10-23 10:04:17",
+    "updated_at": "2025-10-23 10:04:17"
+  },
+  {
+    "id": 207,
+    "aula_id": 60,
+    "ruta": "aulas/rEcbm6MZfnG6FqP3.webp",
+    "created_at": "2025-10-23 10:04:18",
+    "updated_at": "2025-10-23 10:04:18"
+  },
+  {
+    "id": 208,
+    "aula_id": 60,
+    "ruta": "aulas/lRXaKRvfaeI7ftKt.webp",
+    "created_at": "2025-10-23 10:04:18",
+    "updated_at": "2025-10-23 10:04:18"
+  },
+  {
+    "id": 209,
+    "aula_id": 60,
+    "ruta": "aulas/HKdJ2hOiKUpydWWy.webp",
+    "created_at": "2025-10-23 10:04:19",
+    "updated_at": "2025-10-23 10:04:19"
+  },
+  {
+    "id": 210,
+    "aula_id": 61,
+    "ruta": "aulas/jlZkGYwFmFLhCjpk.webp",
+    "created_at": "2025-10-23 10:04:19",
+    "updated_at": "2025-10-23 10:04:19"
+  },
+  {
+    "id": 211,
+    "aula_id": 61,
+    "ruta": "aulas/Y0VB8PChdy8T0UBq.webp",
+    "created_at": "2025-10-23 10:04:19",
+    "updated_at": "2025-10-23 10:04:19"
+  },
+  {
+    "id": 212,
+    "aula_id": 61,
+    "ruta": "aulas/Wpgl3OMjqpRjbFdS.webp",
+    "created_at": "2025-10-23 10:04:20",
+    "updated_at": "2025-10-23 10:04:20"
+  },
+  {
+    "id": 213,
+    "aula_id": 62,
+    "ruta": "aulas/JMqvirdLK8uSARDQ.webp",
+    "created_at": "2025-10-23 10:04:20",
+    "updated_at": "2025-10-23 10:04:20"
+  },
+  {
+    "id": 214,
+    "aula_id": 62,
+    "ruta": "aulas/fADj2RFDVWRgEnbw.webp",
+    "created_at": "2025-10-23 10:04:21",
+    "updated_at": "2025-10-23 10:04:21"
+  },
+  {
+    "id": 215,
+    "aula_id": 62,
+    "ruta": "aulas/if31KoiBZ6DVP80A.webp",
+    "created_at": "2025-10-23 10:04:21",
+    "updated_at": "2025-10-23 10:04:21"
+  },
+  {
+    "id": 216,
+    "aula_id": 63,
+    "ruta": "aulas/TQlZqz1q5LkJUJI3.webp",
+    "created_at": "2025-10-23 10:04:21",
+    "updated_at": "2025-10-23 10:04:21"
+  },
+  {
+    "id": 217,
+    "aula_id": 63,
+    "ruta": "aulas/rW6J4QJSgPn0doR1.webp",
+    "created_at": "2025-10-23 10:04:22",
+    "updated_at": "2025-10-23 10:04:22"
+  },
+  {
+    "id": 218,
+    "aula_id": 63,
+    "ruta": "aulas/iI8babqRBHbVrfA2.webp",
+    "created_at": "2025-10-23 10:04:22",
+    "updated_at": "2025-10-23 10:04:22"
+  },
+  {
+    "id": 219,
+    "aula_id": 63,
+    "ruta": "aulas/3BcpmsgZ7epa6GM4.webp",
+    "created_at": "2025-10-23 10:04:22",
+    "updated_at": "2025-10-23 10:04:22"
+  },
+  {
+    "id": 220,
+    "aula_id": 64,
+    "ruta": "aulas/E8jlK2eM1w1hJFI0.webp",
+    "created_at": "2025-10-23 10:04:23",
+    "updated_at": "2025-10-23 10:04:23"
+  },
+  {
+    "id": 221,
+    "aula_id": 64,
+    "ruta": "aulas/3xoG0C2tliZa7xrK.webp",
+    "created_at": "2025-10-23 10:04:23",
+    "updated_at": "2025-10-23 10:04:23"
+  },
+  {
+    "id": 222,
+    "aula_id": 65,
+    "ruta": "aulas/ztscU7VKPZt7VoxX.webp",
+    "created_at": "2025-10-23 10:04:23",
+    "updated_at": "2025-10-23 10:04:23"
+  },
+  {
+    "id": 223,
+    "aula_id": 65,
+    "ruta": "aulas/kQCFsuzPBeOmaYwX.webp",
+    "created_at": "2025-10-23 10:04:24",
+    "updated_at": "2025-10-23 10:04:24"
+  },
+  {
+    "id": 224,
+    "aula_id": 66,
+    "ruta": "aulas/z5TUxvomxQ5B9LXv.webp",
+    "created_at": "2025-10-23 10:04:24",
+    "updated_at": "2025-10-23 10:04:24"
+  },
+  {
+    "id": 225,
+    "aula_id": 66,
+    "ruta": "aulas/ifY1f2bneKWF5lIj.webp",
+    "created_at": "2025-10-23 10:04:25",
+    "updated_at": "2025-10-23 10:04:25"
+  },
+  {
+    "id": 226,
+    "aula_id": 67,
+    "ruta": "aulas/jdJLx4EkPnCt4IKM.webp",
+    "created_at": "2025-10-23 10:04:25",
+    "updated_at": "2025-10-23 10:04:25"
+  },
+  {
+    "id": 227,
+    "aula_id": 67,
+    "ruta": "aulas/PmrdTR4qebpKgpPn.webp",
+    "created_at": "2025-10-23 10:04:25",
+    "updated_at": "2025-10-23 10:04:25"
+  },
+  {
+    "id": 228,
+    "aula_id": 68,
+    "ruta": "aulas/OrEFT0F79tk4ymFY.webp",
+    "created_at": "2025-10-23 10:04:26",
+    "updated_at": "2025-10-23 10:04:26"
+  },
+  {
+    "id": 229,
+    "aula_id": 68,
+    "ruta": "aulas/bFFejrk7OA5Pkyfj.webp",
+    "created_at": "2025-10-23 10:04:26",
+    "updated_at": "2025-10-23 10:04:26"
+  },
+  {
+    "id": 230,
+    "aula_id": 68,
+    "ruta": "aulas/30VJ2tZFSUCMFsYo.webp",
+    "created_at": "2025-10-23 10:04:27",
+    "updated_at": "2025-10-23 10:04:27"
+  },
+  {
+    "id": 231,
+    "aula_id": 68,
+    "ruta": "aulas/M0nOJC3aUHsJtA63.webp",
+    "created_at": "2025-10-23 10:04:27",
+    "updated_at": "2025-10-23 10:04:27"
+  },
+  {
+    "id": 232,
+    "aula_id": 69,
+    "ruta": "aulas/Xk9q6lY79LK0XaaJ.webp",
+    "created_at": "2025-10-23 10:04:27",
+    "updated_at": "2025-10-23 10:04:27"
+  },
+  {
+    "id": 233,
+    "aula_id": 69,
+    "ruta": "aulas/csahYd0ljWPnNC2h.webp",
+    "created_at": "2025-10-23 10:04:28",
+    "updated_at": "2025-10-23 10:04:28"
+  },
+  {
+    "id": 234,
+    "aula_id": 70,
+    "ruta": "aulas/YprkPbKxJoX42KMZ.webp",
+    "created_at": "2025-10-23 10:04:28",
+    "updated_at": "2025-10-23 10:04:28"
+  },
+  {
+    "id": 235,
+    "aula_id": 70,
+    "ruta": "aulas/yG85zQ6gAOztWvSF.webp",
+    "created_at": "2025-10-23 10:04:29",
+    "updated_at": "2025-10-23 10:04:29"
+  },
+  {
+    "id": 236,
+    "aula_id": 71,
+    "ruta": "aulas/xPeqkpB2ng9CX0XE.webp",
+    "created_at": "2025-10-23 10:04:29",
+    "updated_at": "2025-10-23 10:04:29"
+  },
+  {
+    "id": 237,
+    "aula_id": 72,
+    "ruta": "aulas/DTZ8gDZOtFFK6TuC.webp",
+    "created_at": "2025-10-23 10:04:29",
+    "updated_at": "2025-10-23 10:04:29"
+  },
+  {
+    "id": 238,
+    "aula_id": 72,
+    "ruta": "aulas/GincNSwpDPoTEmJC.webp",
+    "created_at": "2025-10-23 10:04:30",
+    "updated_at": "2025-10-23 10:04:30"
+  },
+  {
+    "id": 239,
+    "aula_id": 72,
+    "ruta": "aulas/yvK9o85R9ORqD823.webp",
+    "created_at": "2025-10-23 10:04:30",
+    "updated_at": "2025-10-23 10:04:30"
+  },
+  {
+    "id": 240,
+    "aula_id": 73,
+    "ruta": "aulas/vWPRDIVIEx9Vq3YW.webp",
+    "created_at": "2025-10-23 10:04:30",
+    "updated_at": "2025-10-23 10:04:30"
+  },
+  {
+    "id": 241,
+    "aula_id": 73,
+    "ruta": "aulas/Mt5xmgPofYsQqH4S.webp",
+    "created_at": "2025-10-23 10:04:31",
+    "updated_at": "2025-10-23 10:04:31"
+  },
+  {
+    "id": 242,
+    "aula_id": 73,
+    "ruta": "aulas/tLTUGsuhv6xmLPDW.webp",
+    "created_at": "2025-10-23 10:04:31",
+    "updated_at": "2025-10-23 10:04:31"
+  },
+  {
+    "id": 243,
+    "aula_id": 73,
+    "ruta": "aulas/7n2IVFPPY2L0JX6Y.webp",
+    "created_at": "2025-10-23 10:04:31",
+    "updated_at": "2025-10-23 10:04:31"
+  },
+  {
+    "id": 244,
+    "aula_id": 74,
+    "ruta": "aulas/FQVq4HhHPk8by0hq.webp",
+    "created_at": "2025-10-23 10:04:32",
+    "updated_at": "2025-10-23 10:04:32"
+  },
+  {
+    "id": 245,
+    "aula_id": 74,
+    "ruta": "aulas/LQl0F0v8PtuVF9WA.webp",
+    "created_at": "2025-10-23 10:04:32",
+    "updated_at": "2025-10-23 10:04:32"
+  },
+  {
+    "id": 246,
+    "aula_id": 75,
+    "ruta": "aulas/jeFKuYSM4ikBbhiS.webp",
+    "created_at": "2025-10-23 10:04:33",
+    "updated_at": "2025-10-23 10:04:33"
+  },
+  {
+    "id": 247,
+    "aula_id": 75,
+    "ruta": "aulas/CQUjQESFbxn517Qg.webp",
+    "created_at": "2025-10-23 10:04:33",
+    "updated_at": "2025-10-23 10:04:33"
+  },
+  {
+    "id": 248,
+    "aula_id": 75,
+    "ruta": "aulas/ez8ZErO00vsCWhG4.webp",
+    "created_at": "2025-10-23 10:04:33",
+    "updated_at": "2025-10-23 10:04:33"
+  },
+  {
+    "id": 249,
+    "aula_id": 75,
+    "ruta": "aulas/YQ1nBn9MJHn2zwyG.webp",
+    "created_at": "2025-10-23 10:04:34",
+    "updated_at": "2025-10-23 10:04:34"
+  },
+  {
+    "id": 250,
+    "aula_id": 76,
+    "ruta": "aulas/ZyGXN2vt0hOAkP8M.webp",
+    "created_at": "2025-10-23 10:04:34",
+    "updated_at": "2025-10-23 10:04:34"
+  },
+  {
+    "id": 251,
+    "aula_id": 77,
+    "ruta": "aulas/4pwuhTJyen6QZ6O5.webp",
+    "created_at": "2025-10-23 10:04:34",
+    "updated_at": "2025-10-23 10:04:34"
+  },
+  {
+    "id": 252,
+    "aula_id": 77,
+    "ruta": "aulas/9vek6vnvMtFubhUC.webp",
+    "created_at": "2025-10-23 10:04:35",
+    "updated_at": "2025-10-23 10:04:35"
+  },
+  {
+    "id": 253,
+    "aula_id": 77,
+    "ruta": "aulas/RP4GmjlBkgViOjDS.webp",
+    "created_at": "2025-10-23 10:04:35",
+    "updated_at": "2025-10-23 10:04:35"
+  },
+  {
+    "id": 254,
+    "aula_id": 77,
+    "ruta": "aulas/Ye32BKmnVDkljthM.webp",
+    "created_at": "2025-10-23 10:04:36",
+    "updated_at": "2025-10-23 10:04:36"
+  },
+  {
+    "id": 255,
+    "aula_id": 77,
+    "ruta": "aulas/Qr8f6VG4R0pFnW7P.webp",
+    "created_at": "2025-10-23 10:04:36",
+    "updated_at": "2025-10-23 10:04:36"
+  },
+  {
+    "id": 256,
+    "aula_id": 78,
+    "ruta": "aulas/6iPLi8ai1BtEfW4f.webp",
+    "created_at": "2025-10-23 10:04:36",
+    "updated_at": "2025-10-23 10:04:36"
+  },
+  {
+    "id": 257,
+    "aula_id": 78,
+    "ruta": "aulas/ByNxqz5cQvBmq2Nn.webp",
+    "created_at": "2025-10-23 10:04:37",
+    "updated_at": "2025-10-23 10:04:37"
+  },
+  {
+    "id": 258,
+    "aula_id": 78,
+    "ruta": "aulas/ArZIGygtYyDl4uk5.webp",
+    "created_at": "2025-10-23 10:04:37",
+    "updated_at": "2025-10-23 10:04:37"
+  },
+  {
+    "id": 259,
+    "aula_id": 79,
+    "ruta": "aulas/xLn9YYMnmBdKY5gL.webp",
+    "created_at": "2025-10-23 10:04:38",
+    "updated_at": "2025-10-23 10:04:38"
+  },
+  {
+    "id": 260,
+    "aula_id": 80,
+    "ruta": "aulas/bM3hHF2w62PskM5a.webp",
+    "created_at": "2025-10-23 10:04:38",
+    "updated_at": "2025-10-23 10:04:38"
+  },
+  {
+    "id": 261,
+    "aula_id": 81,
+    "ruta": "aulas/jAdMrJuW5PygUdgH.webp",
+    "created_at": "2025-10-23 10:04:39",
+    "updated_at": "2025-10-23 10:04:39"
+  },
+  {
+    "id": 262,
+    "aula_id": 81,
+    "ruta": "aulas/zR8gXrCKSKYhPARK.webp",
+    "created_at": "2025-10-23 10:04:39",
+    "updated_at": "2025-10-23 10:04:39"
+  },
+  {
+    "id": 263,
+    "aula_id": 81,
+    "ruta": "aulas/L3u6o64uvQ0XqyAb.webp",
+    "created_at": "2025-10-23 10:04:39",
+    "updated_at": "2025-10-23 10:04:39"
+  },
+  {
+    "id": 264,
+    "aula_id": 82,
+    "ruta": "aulas/aDEwVrw8XYvs0zck.webp",
+    "created_at": "2025-10-23 10:04:40",
+    "updated_at": "2025-10-23 10:04:40"
+  },
+  {
+    "id": 265,
+    "aula_id": 82,
+    "ruta": "aulas/yzHNUcxs6jmudnyh.webp",
+    "created_at": "2025-10-23 10:04:40",
+    "updated_at": "2025-10-23 10:04:40"
+  },
+  {
+    "id": 266,
+    "aula_id": 82,
+    "ruta": "aulas/MjdXYodZXxg1kSOG.webp",
+    "created_at": "2025-10-23 10:04:41",
+    "updated_at": "2025-10-23 10:04:41"
+  },
+  {
+    "id": 267,
+    "aula_id": 82,
+    "ruta": "aulas/wvUHZkLZhPR2BUje.webp",
+    "created_at": "2025-10-23 10:04:41",
+    "updated_at": "2025-10-23 10:04:41"
+  },
+  {
+    "id": 268,
+    "aula_id": 83,
+    "ruta": "aulas/a6erADv1b36mGeCO.webp",
+    "created_at": "2025-10-23 10:04:41",
+    "updated_at": "2025-10-23 10:04:41"
+  },
+  {
+    "id": 269,
+    "aula_id": 84,
+    "ruta": "aulas/uBEy8dBIuvYBU5bW.webp",
+    "created_at": "2025-10-23 10:04:42",
+    "updated_at": "2025-10-23 10:04:42"
+  },
+  {
+    "id": 270,
+    "aula_id": 84,
+    "ruta": "aulas/PjkRBcmVAS5g5Wv3.webp",
+    "created_at": "2025-10-23 10:04:42",
+    "updated_at": "2025-10-23 10:04:42"
+  },
+  {
+    "id": 271,
+    "aula_id": 85,
+    "ruta": "aulas/I4oMPrCO6WowckW8.webp",
+    "created_at": "2025-10-23 10:04:43",
+    "updated_at": "2025-10-23 10:04:43"
+  },
+  {
+    "id": 272,
+    "aula_id": 85,
+    "ruta": "aulas/oFtSOLUtJF1XVFZG.webp",
+    "created_at": "2025-10-23 10:04:43",
+    "updated_at": "2025-10-23 10:04:43"
+  },
+  {
+    "id": 273,
+    "aula_id": 86,
+    "ruta": "aulas/iww41sfY6dm1Hpyl.webp",
+    "created_at": "2025-10-23 10:04:44",
+    "updated_at": "2025-10-23 10:04:44"
+  },
+  {
+    "id": 274,
+    "aula_id": 86,
+    "ruta": "aulas/iG9AiOeJQYIi92ti.webp",
+    "created_at": "2025-10-23 10:04:44",
+    "updated_at": "2025-10-23 10:04:44"
+  },
+  {
+    "id": 275,
+    "aula_id": 86,
+    "ruta": "aulas/DCWZuFnY4j1gD9qj.webp",
+    "created_at": "2025-10-23 10:04:44",
+    "updated_at": "2025-10-23 10:04:44"
+  },
+  {
+    "id": 276,
+    "aula_id": 86,
+    "ruta": "aulas/ms5SwCirQgxQ4IvM.webp",
+    "created_at": "2025-10-23 10:04:45",
+    "updated_at": "2025-10-23 10:04:45"
+  },
+  {
+    "id": 277,
+    "aula_id": 86,
+    "ruta": "aulas/zY6p6pobdw0sCYDP.webp",
+    "created_at": "2025-10-23 10:04:45",
+    "updated_at": "2025-10-23 10:04:45"
+  },
+  {
+    "id": 278,
+    "aula_id": 86,
+    "ruta": "aulas/qswRM0T787Ga0Fo3.webp",
+    "created_at": "2025-10-23 10:04:46",
+    "updated_at": "2025-10-23 10:04:46"
+  },
+  {
+    "id": 279,
+    "aula_id": 86,
+    "ruta": "aulas/qg59nIRMtyV2kjPT.webp",
+    "created_at": "2025-10-23 10:04:46",
+    "updated_at": "2025-10-23 10:04:46"
+  },
+  {
+    "id": 280,
+    "aula_id": 87,
+    "ruta": "aulas/LLq4cpB1UJFSDQCz.webp",
+    "created_at": "2025-10-23 10:04:47",
+    "updated_at": "2025-10-23 10:04:47"
+  },
+  {
+    "id": 281,
+    "aula_id": 87,
+    "ruta": "aulas/YFTr7kef2ZJSw7jr.webp",
+    "created_at": "2025-10-23 10:04:47",
+    "updated_at": "2025-10-23 10:04:47"
+  },
+  {
+    "id": 282,
+    "aula_id": 87,
+    "ruta": "aulas/pcA4EiwLLp8tKRE3.webp",
+    "created_at": "2025-10-23 10:04:47",
+    "updated_at": "2025-10-23 10:04:47"
+  },
+  {
+    "id": 283,
+    "aula_id": 87,
+    "ruta": "aulas/dQtemrT0rIeYs3LK.webp",
+    "created_at": "2025-10-23 10:04:48",
+    "updated_at": "2025-10-23 10:04:48"
+  },
+  {
+    "id": 284,
+    "aula_id": 87,
+    "ruta": "aulas/SLUikBbFPLIFSVLH.webp",
+    "created_at": "2025-10-23 10:04:48",
+    "updated_at": "2025-10-23 10:04:48"
+  },
+  {
+    "id": 285,
+    "aula_id": 87,
+    "ruta": "aulas/uHegu7AD3ccJHxm6.webp",
+    "created_at": "2025-10-23 10:04:49",
+    "updated_at": "2025-10-23 10:04:49"
+  },
+  {
+    "id": 286,
+    "aula_id": 87,
+    "ruta": "aulas/1swxaiuuXOjhoI3F.webp",
+    "created_at": "2025-10-23 10:04:49",
+    "updated_at": "2025-10-23 10:04:49"
+  },
+  {
+    "id": 287,
+    "aula_id": 87,
+    "ruta": "aulas/H4T2aY9wmxeAiGx6.webp",
+    "created_at": "2025-10-23 10:04:49",
+    "updated_at": "2025-10-23 10:04:49"
+  },
+  {
+    "id": 288,
+    "aula_id": 87,
+    "ruta": "aulas/Nkl3MZV5gnbkZTyk.webp",
+    "created_at": "2025-10-23 10:04:50",
+    "updated_at": "2025-10-23 10:04:50"
+  },
+  {
+    "id": 289,
+    "aula_id": 88,
+    "ruta": "aulas/1YSIZUUFNbbsz8i2.webp",
+    "created_at": "2025-10-23 10:04:50",
+    "updated_at": "2025-10-23 10:04:50"
+  },
+  {
+    "id": 290,
+    "aula_id": 88,
+    "ruta": "aulas/tTa541BlXOrGIRWX.webp",
+    "created_at": "2025-10-23 10:04:50",
+    "updated_at": "2025-10-23 10:04:50"
+  },
+  {
+    "id": 291,
+    "aula_id": 88,
+    "ruta": "aulas/K68InyPViUKaaMbo.webp",
+    "created_at": "2025-10-23 10:04:51",
+    "updated_at": "2025-10-23 10:04:51"
+  },
+  {
+    "id": 292,
+    "aula_id": 88,
+    "ruta": "aulas/vJtRkKSfGbmBkG1P.webp",
+    "created_at": "2025-10-23 10:04:51",
+    "updated_at": "2025-10-23 10:04:51"
+  },
+  {
+    "id": 293,
+    "aula_id": 88,
+    "ruta": "aulas/YS4pxYNUEbTNln52.webp",
+    "created_at": "2025-10-23 10:04:52",
+    "updated_at": "2025-10-23 10:04:52"
+  },
+  {
+    "id": 294,
+    "aula_id": 88,
+    "ruta": "aulas/LiHovlRSTSvja9W2.webp",
+    "created_at": "2025-10-23 10:04:52",
+    "updated_at": "2025-10-23 10:04:52"
+  },
+  {
+    "id": 295,
+    "aula_id": 88,
+    "ruta": "aulas/2xgy6TibIqCUZEnU.webp",
+    "created_at": "2025-10-23 10:04:53",
+    "updated_at": "2025-10-23 10:04:53"
+  },
+  {
+    "id": 296,
+    "aula_id": 88,
+    "ruta": "aulas/hfiSyn8rR95hImQq.webp",
+    "created_at": "2025-10-23 10:04:53",
+    "updated_at": "2025-10-23 10:04:53"
+  },
+  {
+    "id": 297,
+    "aula_id": 89,
+    "ruta": "aulas/Db5WsMJK9cJLuyvq.webp",
+    "created_at": "2025-10-23 10:04:53",
+    "updated_at": "2025-10-23 10:04:53"
+  },
+  {
+    "id": 298,
+    "aula_id": 90,
+    "ruta": "aulas/PvU3uc1z93LaadTT.webp",
+    "created_at": "2025-10-23 10:04:54",
+    "updated_at": "2025-10-23 10:04:54"
+  },
+  {
+    "id": 299,
+    "aula_id": 91,
+    "ruta": "aulas/UAAhNmBF69WOZ5ZQ.webp",
+    "created_at": "2025-10-23 10:04:54",
+    "updated_at": "2025-10-23 10:04:54"
+  },
+  {
+    "id": 300,
+    "aula_id": 91,
+    "ruta": "aulas/sIKgkE5pZ3ne90OY.webp",
+    "created_at": "2025-10-23 10:04:54",
+    "updated_at": "2025-10-23 10:04:54"
+  },
+  {
+    "id": 301,
+    "aula_id": 91,
+    "ruta": "aulas/s43OLMaBdeaWvZoU.webp",
+    "created_at": "2025-10-23 10:04:55",
+    "updated_at": "2025-10-23 10:04:55"
+  },
+  {
+    "id": 302,
+    "aula_id": 91,
+    "ruta": "aulas/GrukZ6fDbrAdgbXD.webp",
+    "created_at": "2025-10-23 10:04:55",
+    "updated_at": "2025-10-23 10:04:55"
+  },
+  {
+    "id": 303,
+    "aula_id": 91,
+    "ruta": "aulas/eOFS4HGBwtVN3tH0.webp",
+    "created_at": "2025-10-23 10:04:56",
+    "updated_at": "2025-10-23 10:04:56"
+  },
+  {
+    "id": 304,
+    "aula_id": 91,
+    "ruta": "aulas/nkGxgUFUc0zXaJrI.webp",
+    "created_at": "2025-10-23 10:04:56",
+    "updated_at": "2025-10-23 10:04:56"
+  },
+  {
+    "id": 305,
+    "aula_id": 91,
+    "ruta": "aulas/gKKTxVKYn0rLOsOx.webp",
+    "created_at": "2025-10-23 10:04:56",
+    "updated_at": "2025-10-23 10:04:56"
+  },
+  {
+    "id": 306,
+    "aula_id": 92,
+    "ruta": "aulas/MdUXIiZkc1DPPplF.webp",
+    "created_at": "2025-10-23 10:04:57",
+    "updated_at": "2025-10-23 10:04:57"
+  },
+  {
+    "id": 307,
+    "aula_id": 92,
+    "ruta": "aulas/iXHt5n4HxZM4MtYZ.webp",
+    "created_at": "2025-10-23 10:04:57",
+    "updated_at": "2025-10-23 10:04:57"
+  },
+  {
+    "id": 308,
+    "aula_id": 92,
+    "ruta": "aulas/ITIxRsq8k1ihmU95.webp",
+    "created_at": "2025-10-23 10:04:58",
+    "updated_at": "2025-10-23 10:04:58"
+  },
+  {
+    "id": 309,
+    "aula_id": 92,
+    "ruta": "aulas/DHDYaSLBgnLnzyVx.webp",
+    "created_at": "2025-10-23 10:04:58",
+    "updated_at": "2025-10-23 10:04:58"
+  },
+  {
+    "id": 310,
+    "aula_id": 92,
+    "ruta": "aulas/TI2d9gFMlMRlKd9y.webp",
+    "created_at": "2025-10-23 10:04:58",
+    "updated_at": "2025-10-23 10:04:58"
+  },
+  {
+    "id": 311,
+    "aula_id": 92,
+    "ruta": "aulas/tfbx6pbA9nDjOFVS.webp",
+    "created_at": "2025-10-23 10:04:59",
+    "updated_at": "2025-10-23 10:04:59"
+  },
+  {
+    "id": 312,
+    "aula_id": 92,
+    "ruta": "aulas/GWztg6Ye5ZPrLngN.webp",
+    "created_at": "2025-10-23 10:04:59",
+    "updated_at": "2025-10-23 10:04:59"
+  },
+  {
+    "id": 313,
+    "aula_id": 92,
+    "ruta": "aulas/92LPYJvdeK7m5jxb.webp",
+    "created_at": "2025-10-23 10:04:59",
+    "updated_at": "2025-10-23 10:04:59"
+  },
+  {
+    "id": 314,
+    "aula_id": 92,
+    "ruta": "aulas/di9es7HISOBCvShP.webp",
+    "created_at": "2025-10-23 10:05:00",
+    "updated_at": "2025-10-23 10:05:00"
+  },
+  {
+    "id": 315,
+    "aula_id": 92,
+    "ruta": "aulas/JUbhHb3NbPoVnm4q.webp",
+    "created_at": "2025-10-23 10:05:00",
+    "updated_at": "2025-10-23 10:05:00"
+  },
+  {
+    "id": 316,
+    "aula_id": 93,
+    "ruta": "aulas/TXIUOh9k9cd6kdv1.webp",
+    "created_at": "2025-10-23 10:05:00",
+    "updated_at": "2025-10-23 10:05:00"
+  },
+  {
+    "id": 317,
+    "aula_id": 93,
+    "ruta": "aulas/GecfctBpUiaPXMKY.webp",
+    "created_at": "2025-10-23 10:05:01",
+    "updated_at": "2025-10-23 10:05:01"
+  },
+  {
+    "id": 318,
+    "aula_id": 93,
+    "ruta": "aulas/dzZShDq8IS4mU9zu.webp",
+    "created_at": "2025-10-23 10:05:01",
+    "updated_at": "2025-10-23 10:05:01"
+  },
+  {
+    "id": 319,
+    "aula_id": 93,
+    "ruta": "aulas/gd9Yj9toGAFXbpEm.webp",
+    "created_at": "2025-10-23 10:05:02",
+    "updated_at": "2025-10-23 10:05:02"
+  },
+  {
+    "id": 320,
+    "aula_id": 93,
+    "ruta": "aulas/AGEZ4Vj3XlFKS3pL.webp",
+    "created_at": "2025-10-23 10:05:02",
+    "updated_at": "2025-10-23 10:05:02"
+  },
+  {
+    "id": 321,
+    "aula_id": 93,
+    "ruta": "aulas/AqOPkujgi0tQYLAv.webp",
+    "created_at": "2025-10-23 10:05:02",
+    "updated_at": "2025-10-23 10:05:02"
+  },
+  {
+    "id": 322,
+    "aula_id": 93,
+    "ruta": "aulas/il762dtKGDTpFrdS.webp",
+    "created_at": "2025-10-23 10:05:03",
+    "updated_at": "2025-10-23 10:05:03"
+  },
+  {
+    "id": 323,
+    "aula_id": 94,
+    "ruta": "aulas/1XGdxuIyEJXWTnOs.webp",
+    "created_at": "2025-10-23 10:05:03",
+    "updated_at": "2025-10-23 10:05:03"
+  },
+  {
+    "id": 324,
+    "aula_id": 94,
+    "ruta": "aulas/ogEWhko18CqfdpVD.webp",
+    "created_at": "2025-10-23 10:05:04",
+    "updated_at": "2025-10-23 10:05:04"
+  },
+  {
+    "id": 325,
+    "aula_id": 94,
+    "ruta": "aulas/EpB59SgNjcG1qnfR.webp",
+    "created_at": "2025-10-23 10:05:04",
+    "updated_at": "2025-10-23 10:05:04"
+  },
+  {
+    "id": 326,
+    "aula_id": 94,
+    "ruta": "aulas/T4LYd9DhcMKgiTDb.webp",
+    "created_at": "2025-10-23 10:05:04",
+    "updated_at": "2025-10-23 10:05:04"
+  },
+  {
+    "id": 327,
+    "aula_id": 95,
+    "ruta": "aulas/BeHPh3KEEnps2qIr.webp",
+    "created_at": "2025-10-23 10:05:05",
+    "updated_at": "2025-10-23 10:05:05"
+  },
+  {
+    "id": 328,
+    "aula_id": 95,
+    "ruta": "aulas/GHlPNxU6gx97zvPv.webp",
+    "created_at": "2025-10-23 10:05:05",
+    "updated_at": "2025-10-23 10:05:05"
+  },
+  {
+    "id": 329,
+    "aula_id": 95,
+    "ruta": "aulas/xZDx44HrD1mtxuEo.webp",
+    "created_at": "2025-10-23 10:05:06",
+    "updated_at": "2025-10-23 10:05:06"
+  },
+  {
+    "id": 330,
+    "aula_id": 96,
+    "ruta": "aulas/zlfHzmMd8PkMiBGN.webp",
+    "created_at": "2025-10-23 10:05:06",
+    "updated_at": "2025-10-23 10:05:06"
+  },
+  {
+    "id": 331,
+    "aula_id": 96,
+    "ruta": "aulas/0zm8G8ioMhW18NfE.webp",
+    "created_at": "2025-10-23 10:05:06",
+    "updated_at": "2025-10-23 10:05:06"
+  },
+  {
+    "id": 332,
+    "aula_id": 96,
+    "ruta": "aulas/4vw7pK5B2dw8BhDP.webp",
+    "created_at": "2025-10-23 10:05:07",
+    "updated_at": "2025-10-23 10:05:07"
+  },
+  {
+    "id": 333,
+    "aula_id": 96,
+    "ruta": "aulas/JHqzZdCu6mJklau8.webp",
+    "created_at": "2025-10-23 10:05:07",
+    "updated_at": "2025-10-23 10:05:07"
+  },
+  {
+    "id": 334,
+    "aula_id": 96,
+    "ruta": "aulas/bAX5kFzQ27EejcQ3.webp",
+    "created_at": "2025-10-23 10:05:07",
+    "updated_at": "2025-10-23 10:05:07"
+  },
+  {
+    "id": 335,
+    "aula_id": 96,
+    "ruta": "aulas/i3527VGm9fK0qJrs.webp",
+    "created_at": "2025-10-23 10:05:08",
+    "updated_at": "2025-10-23 10:05:08"
+  },
+  {
+    "id": 336,
+    "aula_id": 96,
+    "ruta": "aulas/rscvU3iMP1OUpYz0.webp",
+    "created_at": "2025-10-23 10:05:08",
+    "updated_at": "2025-10-23 10:05:08"
+  },
+  {
+    "id": 337,
+    "aula_id": 96,
+    "ruta": "aulas/kfeIQC0fU8dZqFJE.webp",
+    "created_at": "2025-10-23 10:05:09",
+    "updated_at": "2025-10-23 10:05:09"
+  },
+  {
+    "id": 338,
+    "aula_id": 97,
+    "ruta": "aulas/sFTaFr4L0C9L1m9R.webp",
+    "created_at": "2025-10-23 10:05:09",
+    "updated_at": "2025-10-23 10:05:09"
+  },
+  {
+    "id": 339,
+    "aula_id": 97,
+    "ruta": "aulas/k1H2QRNlatklMfXI.webp",
+    "created_at": "2025-10-23 10:05:09",
+    "updated_at": "2025-10-23 10:05:09"
+  },
+  {
+    "id": 340,
+    "aula_id": 97,
+    "ruta": "aulas/it1sYYaHqSVdJQOu.webp",
+    "created_at": "2025-10-23 10:05:10",
+    "updated_at": "2025-10-23 10:05:10"
+  },
+  {
+    "id": 341,
+    "aula_id": 98,
+    "ruta": "aulas/JGyvlWOvILHeYayG.webp",
+    "created_at": "2025-10-23 10:05:10",
+    "updated_at": "2025-10-23 10:05:10"
+  },
+  {
+    "id": 342,
+    "aula_id": 99,
+    "ruta": "aulas/HD1rOTKodhs8BdWM.webp",
+    "created_at": "2025-10-23 10:05:10",
+    "updated_at": "2025-10-23 10:05:10"
+  },
+  {
+    "id": 343,
+    "aula_id": 100,
+    "ruta": "aulas/9wXLTapL0mnTvfcL.webp",
+    "created_at": "2025-10-23 10:05:11",
+    "updated_at": "2025-10-23 10:05:11"
+  },
+  {
+    "id": 344,
+    "aula_id": 101,
+    "ruta": "aulas/4R3jzGxBAWgnIXos.webp",
+    "created_at": "2025-10-23 10:05:11",
+    "updated_at": "2025-10-23 10:05:11"
+  },
+  {
+    "id": 345,
+    "aula_id": 102,
+    "ruta": "aulas/I3YlfLvZ66aXC0jU.webp",
+    "created_at": "2025-10-23 10:05:12",
+    "updated_at": "2025-10-23 10:05:12"
+  },
+  {
+    "id": 346,
+    "aula_id": 102,
+    "ruta": "aulas/AIO7C5uc0OnMc0ki.webp",
+    "created_at": "2025-10-23 10:05:12",
+    "updated_at": "2025-10-23 10:05:12"
+  },
+  {
+    "id": 347,
+    "aula_id": 102,
+    "ruta": "aulas/6DHgQZFoGcvvptcU.webp",
+    "created_at": "2025-10-23 10:05:12",
+    "updated_at": "2025-10-23 10:05:12"
+  },
+  {
+    "id": 348,
+    "aula_id": 103,
+    "ruta": "aulas/2wq06dpaXjMwUoOm.webp",
+    "created_at": "2025-10-23 10:05:13",
+    "updated_at": "2025-10-23 10:05:13"
+  },
+  {
+    "id": 349,
+    "aula_id": 103,
+    "ruta": "aulas/xvBPIKKxVpeNsBqQ.webp",
+    "created_at": "2025-10-23 10:05:13",
+    "updated_at": "2025-10-23 10:05:13"
+  },
+  {
+    "id": 350,
+    "aula_id": 103,
+    "ruta": "aulas/D7ZlryaE4go4yciB.webp",
+    "created_at": "2025-10-23 10:05:14",
+    "updated_at": "2025-10-23 10:05:14"
+  },
+  {
+    "id": 351,
+    "aula_id": 103,
+    "ruta": "aulas/8USt8Kfr9XcYnK6t.webp",
+    "created_at": "2025-10-23 10:05:14",
+    "updated_at": "2025-10-23 10:05:14"
+  },
+  {
+    "id": 352,
+    "aula_id": 103,
+    "ruta": "aulas/hOuKvGKldkFNX3zi.webp",
+    "created_at": "2025-10-23 10:05:14",
+    "updated_at": "2025-10-23 10:05:14"
+  },
+  {
+    "id": 353,
+    "aula_id": 104,
+    "ruta": "aulas/wzNBxLQ5to3Q1Cih.webp",
+    "created_at": "2025-10-23 10:05:15",
+    "updated_at": "2025-10-23 10:05:15"
+  },
+  {
+    "id": 354,
+    "aula_id": 104,
+    "ruta": "aulas/596l5QAI8oBPOIbx.webp",
+    "created_at": "2025-10-23 10:05:15",
+    "updated_at": "2025-10-23 10:05:15"
+  },
+  {
+    "id": 355,
+    "aula_id": 104,
+    "ruta": "aulas/VjblqbK08N2P3yw8.webp",
+    "created_at": "2025-10-23 10:05:15",
+    "updated_at": "2025-10-23 10:05:15"
+  },
+  {
+    "id": 356,
+    "aula_id": 104,
+    "ruta": "aulas/TTLav7mYCQYoa1Gb.webp",
+    "created_at": "2025-10-23 10:05:16",
+    "updated_at": "2025-10-23 10:05:16"
+  },
+  {
+    "id": 357,
+    "aula_id": 104,
+    "ruta": "aulas/KNzvmx76ov8pkZOj.webp",
+    "created_at": "2025-10-23 10:05:16",
+    "updated_at": "2025-10-23 10:05:16"
+  },
+  {
+    "id": 358,
+    "aula_id": 104,
+    "ruta": "aulas/5pmClIa99MecGAaS.webp",
+    "created_at": "2025-10-23 10:05:17",
+    "updated_at": "2025-10-23 10:05:17"
+  },
+  {
+    "id": 359,
+    "aula_id": 104,
+    "ruta": "aulas/RWUpMvTNJw6DPjkl.webp",
+    "created_at": "2025-10-23 10:05:17",
+    "updated_at": "2025-10-23 10:05:17"
+  },
+  {
+    "id": 360,
+    "aula_id": 104,
+    "ruta": "aulas/slTrUlCtAOGJDmKy.webp",
+    "created_at": "2025-10-23 10:05:18",
+    "updated_at": "2025-10-23 10:05:18"
+  },
+  {
+    "id": 361,
+    "aula_id": 104,
+    "ruta": "aulas/dqCFBZHTIqz7Oey5.webp",
+    "created_at": "2025-10-23 10:05:18",
+    "updated_at": "2025-10-23 10:05:18"
+  },
+  {
+    "id": 362,
+    "aula_id": 104,
+    "ruta": "aulas/KqoSFyX9LqjQcPVu.webp",
+    "created_at": "2025-10-23 10:05:18",
+    "updated_at": "2025-10-23 10:05:18"
+  },
+  {
+    "id": 363,
+    "aula_id": 104,
+    "ruta": "aulas/syGKVdxnMp2ewnoy.webp",
+    "created_at": "2025-10-23 10:05:19",
+    "updated_at": "2025-10-23 10:05:19"
+  },
+  {
+    "id": 364,
+    "aula_id": 104,
+    "ruta": "aulas/4ehoLUQjon39kEvf.webp",
+    "created_at": "2025-10-23 10:05:19",
+    "updated_at": "2025-10-23 10:05:19"
+  },
+  {
+    "id": 365,
+    "aula_id": 105,
+    "ruta": "aulas/lXI1dk06e9MyFNfR.webp",
+    "created_at": "2025-10-23 10:05:20",
+    "updated_at": "2025-10-23 10:05:20"
+  },
+  {
+    "id": 366,
+    "aula_id": 105,
+    "ruta": "aulas/byjurNG2QHpH1eLe.webp",
+    "created_at": "2025-10-23 10:05:20",
+    "updated_at": "2025-10-23 10:05:20"
+  },
+  {
+    "id": 367,
+    "aula_id": 105,
+    "ruta": "aulas/xyH9Wx67ki6QIi5z.webp",
+    "created_at": "2025-10-23 10:05:20",
+    "updated_at": "2025-10-23 10:05:20"
+  },
+  {
+    "id": 368,
+    "aula_id": 105,
+    "ruta": "aulas/EoAnEWiFTVSaUCdl.webp",
+    "created_at": "2025-10-23 10:05:21",
+    "updated_at": "2025-10-23 10:05:21"
+  },
+  {
+    "id": 369,
+    "aula_id": 105,
+    "ruta": "aulas/vZrH2BtS0d1Jx3TU.webp",
+    "created_at": "2025-10-23 10:05:21",
+    "updated_at": "2025-10-23 10:05:21"
+  },
+  {
+    "id": 370,
+    "aula_id": 105,
+    "ruta": "aulas/p9I1HFea31bsrfLU.webp",
+    "created_at": "2025-10-23 10:05:22",
+    "updated_at": "2025-10-23 10:05:22"
+  },
+  {
+    "id": 371,
+    "aula_id": 105,
+    "ruta": "aulas/njV4BfADMToaote4.webp",
+    "created_at": "2025-10-23 10:05:22",
+    "updated_at": "2025-10-23 10:05:22"
+  },
+  {
+    "id": 372,
+    "aula_id": 106,
+    "ruta": "aulas/P4vj9tmEBN4OfZbY.webp",
+    "created_at": "2025-10-23 10:05:22",
+    "updated_at": "2025-10-23 10:05:22"
+  },
+  {
+    "id": 373,
+    "aula_id": 106,
+    "ruta": "aulas/NFi7iwPjoipuub7I.webp",
+    "created_at": "2025-10-23 10:05:23",
+    "updated_at": "2025-10-23 10:05:23"
+  },
+  {
+    "id": 374,
+    "aula_id": 106,
+    "ruta": "aulas/GyYZnxkeLzjIAxRc.webp",
+    "created_at": "2025-10-23 10:05:23",
+    "updated_at": "2025-10-23 10:05:23"
+  },
+  {
+    "id": 375,
+    "aula_id": 106,
+    "ruta": "aulas/85yZqBvKrXJ8MRs1.webp",
+    "created_at": "2025-10-23 10:05:24",
+    "updated_at": "2025-10-23 10:05:24"
+  },
+  {
+    "id": 376,
+    "aula_id": 106,
+    "ruta": "aulas/KvPJ3K3YNC5jzAWu.webp",
+    "created_at": "2025-10-23 10:05:24",
+    "updated_at": "2025-10-23 10:05:24"
+  },
+  {
+    "id": 377,
+    "aula_id": 106,
+    "ruta": "aulas/X8sL9YSuNkwvmLLP.webp",
+    "created_at": "2025-10-23 10:05:24",
+    "updated_at": "2025-10-23 10:05:24"
+  },
+  {
+    "id": 378,
+    "aula_id": 106,
+    "ruta": "aulas/SRTKoZ2gC8lDbUqE.webp",
+    "created_at": "2025-10-23 10:05:25",
+    "updated_at": "2025-10-23 10:05:25"
+  },
+  {
+    "id": 379,
+    "aula_id": 106,
+    "ruta": "aulas/FfrTrSIreqsn0dqu.webp",
+    "created_at": "2025-10-23 10:05:25",
+    "updated_at": "2025-10-23 10:05:25"
+  },
+  {
+    "id": 380,
+    "aula_id": 106,
+    "ruta": "aulas/HIbv54aTUf10x404.webp",
+    "created_at": "2025-10-23 10:05:26",
+    "updated_at": "2025-10-23 10:05:26"
+  }
+]

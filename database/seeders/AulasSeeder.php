@@ -14,13 +14,15 @@ class AulasSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Run the database seeds.
+     * LEGACY SEEDER - NO USAR
+     * Este seeder descargaba imágenes de Firebase (solo se ejecutó una vez)
+     * Usar: AulasTableSeeder, AulasFotosSeeder, AulasVideosSeeder
      */
     public function run(): void
     {
         $this->command->info('🚀 Iniciando importación de aulas desde JSON...');
 
-        $jsonPath = database_path('seeders/data/aulas.json');
+        $jsonPath = database_path('seeders/data/aulas_pre.json');
 
         if (!file_exists($jsonPath)) {
             $this->command->error("❌ Archivo no encontrado: {$jsonPath}");
