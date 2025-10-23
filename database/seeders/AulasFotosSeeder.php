@@ -6,13 +6,14 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use ZipArchive;
 
 class AulasFotosSeeder extends Seeder
 {
     public function run(): void
     {
         $jsonPath = database_path('seeders/data/aulas_fotos.json');
-        $compressedFile = database_path('seeders/data/imagenes_aulas.7z');
+        $zipFile = database_path('seeders/data/imagenes_aulas.zip');
         $storagePath = storage_path('app/public/aulas');
 
         if (!file_exists($jsonPath)) {
@@ -40,22 +41,17 @@ class AulasFotosSeeder extends Seeder
         }
 
         if (!$todasExisten) {
-            if (!file_exists($compressedFile)) {
-                $this->command->error("❌ imagenes_aulas.7z no encontrado");
+            if (!file_exists($zipFile)) {
+                $this->command->error("❌ imagenes_aulas.zip no encontrado");
                 return;
             }
 
             $this->command->info('📦 Descomprimiendo imágenes...');
 
-            $tempDir = storage_path('app/temp_imagenes');
-            if (!File::exists($tempDir)) {
-                File::makeDirectory($tempDir, 0755, true);
-            }
+            $zip = new ZipArchive();
 
-            exec("7z x " . escapeshellarg($compressedFile) . " -o" . escapeshellarg($tempDir) . " -y", $output, $returnCode);
-
-            if ($returnCode !== 0) {
-                $this->command->error('❌ Error al descomprimir el archivo');
+            if ($zip->open($zipFile) !== true) {
+                $this->command->error('❌ Error al abrir el archivo ZIP');
                 return;
             }
 
@@ -63,18 +59,10 @@ class AulasFotosSeeder extends Seeder
                 File::makeDirectory($storagePath, 0755, true);
             }
 
-            $archivos = File::files($tempDir);
-            foreach ($archivos as $archivo) {
-                $nombreArchivo = $archivo->getFilename();
-                $destino = $storagePath . '/' . $nombreArchivo;
+            $zip->extractTo($storagePath);
+            $zip->close();
 
-                if (!file_exists($destino)) {
-                    File::copy($archivo->getPathname(), $destino);
-                }
-            }
-
-            File::deleteDirectory($tempDir);
-            $this->command->info('✅ Imágenes copiadas al storage');
+            $this->command->info('✅ Imágenes extraídas al storage');
         } else {
             $this->command->info('✅ Imágenes ya existen en storage');
         }
