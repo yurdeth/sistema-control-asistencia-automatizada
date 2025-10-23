@@ -200,22 +200,6 @@ class NotificacionesController extends Controller {
                 ], 404);
             }
 
-            $user_rolName = $this->getUserRoleName();
-            $rolesPermitidos = [
-                RolesEnum::ROOT->value,
-                RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-                RolesEnum::JEFE_DEPARTAMENTO->value,
-                RolesEnum::COORDINADOR_CARRERAS->value,
-                RolesEnum::DOCENTE->value,
-            ];
-
-            if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos) && $notificacion->usuario_destino_id !== Auth::id()) {
-                return response()->json([
-                    'message' => 'Acceso no autorizado',
-                    'success' => false
-                ], 403);
-            }
-
             DB::beginTransaction();
 
             $notificacion->update(['estado' => 'leida']);

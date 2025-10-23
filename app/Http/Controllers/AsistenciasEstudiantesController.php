@@ -26,6 +26,8 @@ class AsistenciasEstudiantesController extends Controller {
             RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -71,6 +73,8 @@ class AsistenciasEstudiantesController extends Controller {
             RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -187,8 +191,13 @@ class AsistenciasEstudiantesController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        if ($user_rolName != RolesEnum::DOCENTE->value) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -245,8 +254,13 @@ class AsistenciasEstudiantesController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        if ($user_rolName != RolesEnum::DOCENTE->value) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false

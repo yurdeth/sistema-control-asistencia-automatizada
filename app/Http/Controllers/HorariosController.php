@@ -164,6 +164,9 @@ class HorariosController extends Controller {
             $horario = horarios::create($validation);
 
             DB::commit();
+            Cache::forget('horarios_index_all');
+            Cache::forget('horarios_index');
+            Cache::forget('horarios_grupo_');
 
             return response()->json([
                 'message' => 'Horario creado exitosamente',
@@ -273,6 +276,9 @@ class HorariosController extends Controller {
             DB::beginTransaction();
             $horario->update($validation);
             DB::commit();
+            Cache::forget('horarios_index_all');
+            Cache::forget('horarios_index');
+            Cache::forget('horarios_grupo_');
 
             return response()->json([
                 'message' => 'Horario actualizado exitosamente',
@@ -323,6 +329,9 @@ class HorariosController extends Controller {
             DB::beginTransaction();
             $horario->delete();
             DB::commit();
+            Cache::forget('horarios_index_all');
+            Cache::forget('horarios_index');
+            Cache::forget('horarios_grupo_');
 
             return response()->json([
                 'message' => 'Horario eliminado exitosamente',

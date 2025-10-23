@@ -143,7 +143,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/classroom-resources/get/resource/{id}', [AulaRecursosController::class, 'getClassroomsByResource'])->name('aulaRecursos.getByResource');
     Route::post('/classroom-resources/get/status/all', [AulaRecursosController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
     Route::patch('/classroom-resources/change-status/{id}', [AulaRecursosController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
-
+    Route::get('/classroom-resources/get/inventory/all', [AulaRecursosController::class, 'getInventory'])->name('aulaRecursos.getInventory');
 
     //************************************ MANAGE ACADEMIC TERM ************************************//
     Route::get('/academic-terms/get/all', [CiclosAcademicosController::class, 'index'])->name('academicTerms.index');

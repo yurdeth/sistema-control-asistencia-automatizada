@@ -93,8 +93,6 @@ class AulaRecursosController extends Controller {
             RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
-            RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -181,8 +179,6 @@ class AulaRecursosController extends Controller {
             RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
-            RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -279,8 +275,6 @@ class AulaRecursosController extends Controller {
             RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
-            RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -497,29 +491,12 @@ class AulaRecursosController extends Controller {
         }
     }
 
-
     public function getInventory(Request $request): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
-        }
-
-        $user_rolName = $this->getUserRoleName();
-        $rolesPermitidos = [
-            RolesEnum::ROOT->value,
-            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-            RolesEnum::JEFE_DEPARTAMENTO->value,
-            RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
-        ];
-
-        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 403);
         }
 
         try {

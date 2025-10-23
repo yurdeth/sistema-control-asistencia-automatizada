@@ -20,6 +20,22 @@ class HistorialAulasController extends Controller {
             ], 401);
         }
 
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $historial = historial_aulas::with(['aula', 'usuarioModificacion'])->get();
 
@@ -49,6 +65,22 @@ class HistorialAulasController extends Controller {
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
         }
 
         try {

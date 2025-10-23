@@ -121,7 +121,6 @@ class MantenimientosController extends Controller {
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
             RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -226,7 +225,6 @@ class MantenimientosController extends Controller {
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
             RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -349,7 +347,6 @@ class MantenimientosController extends Controller {
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
             RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
