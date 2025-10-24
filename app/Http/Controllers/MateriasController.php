@@ -78,7 +78,7 @@ class MateriasController extends Controller {
             'codigo' => $this->sanitizeInput($request->input('codigo', '')),
             'nombre' => $this->sanitizeInput($request->input('nombre', '')),
             'descripcion' => $this->sanitizeInput($request->input('descripcion', '')),
-            'departamento_id' => $this->sanitizeInput($request->input('departamento_id', '')),
+            'carrera_id' => $this->sanitizeInput($request->input('carrera_id', '')),
             'estado' => $this->sanitizeInput($request->input('estado', 'activa')),
         ]);
 
@@ -86,7 +86,7 @@ class MateriasController extends Controller {
             'codigo' => 'required|string|max:10|unique:materias,codigo',
             'nombre' => 'required|string|max:100',
             'descripcion' => 'nullable|string|max:255',
-            'departamento_id' => 'required|integer|exists:departamentos,id',
+            'carrera_id' => 'required|integer|exists:carreras,id',
             'estado' => 'required|in:activa,inactiva',
         ];
 
@@ -100,9 +100,9 @@ class MateriasController extends Controller {
             'nombre.max' => 'El nombre no debe exceder los 100 caracteres.',
             'descripcion.string' => 'La descripción debe ser una cadena de texto.',
             'descripcion.max' => 'La descripción no debe exceder los 255 caracteres.',
-            'departamento_id.required' => 'El ID del departamento es obligatorio.',
-            'departamento_id.integer' => 'El ID del departamento debe ser un número entero.',
-            'departamento_id.exists' => 'El departamento especificado no existe.',
+            'carrera_id.required' => 'El ID de la carrera es obligatorio.',
+            'carrera_id.integer' => 'El ID de la carrera debe ser un número entero.',
+            'carrera_id.exists' => 'La carrera especificada no existe.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser "activa" o "inactiva".',
         ];
@@ -197,7 +197,7 @@ class MateriasController extends Controller {
             'codigo' => $this->sanitizeInput($request->input('codigo', '')),
             'nombre' => $this->sanitizeInput($request->input('nombre', '')),
             'descripcion' => $this->sanitizeInput($request->input('descripcion', '')),
-            'departamento_id' => $this->sanitizeInput($request->input('departamento_id', '')),
+            'carrera_id' => $this->sanitizeInput($request->input('carrera_id', '')),
             'estado' => $this->sanitizeInput($request->input('estado', '')),
         ]);
 
@@ -205,7 +205,7 @@ class MateriasController extends Controller {
             'codigo' => 'sometimes|required|string|max:10|unique:materias,codigo,' . $materia_id,
             'nombre' => 'sometimes|required|string|max:100',
             'descripcion' => 'sometimes|nullable|string|max:255',
-            'departamento_id' => 'sometimes|required|integer|exists:departamentos,id',
+            'carrera_id' => 'sometimes|required|integer|exists:carreras,id',
             'estado' => 'sometimes|required|in:activa,inactiva',
         ];
 
@@ -219,9 +219,9 @@ class MateriasController extends Controller {
             'nombre.max' => 'El nombre no debe exceder los 100 caracteres.',
             'descripcion.string' => 'La descripción debe ser una cadena de texto.',
             'descripcion.max' => 'La descripción no debe exceder los 255 caracteres.',
-            'departamento_id.required' => 'El ID del departamento es obligatorio.',
-            'departamento_id.integer' => 'El ID del departamento debe ser un número entero.',
-            'departamento_id.exists' => 'El departamento especificado no existe.',
+            'carrera_id.required' => 'El ID de la carrera es obligatorio.',
+            'carrera_id.integer' => 'El ID de la carrera debe ser un número entero.',
+            'carrera_id.exists' => 'La carrera especificada no existe.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser "activa" o "inactiva".',
         ];
@@ -248,8 +248,8 @@ class MateriasController extends Controller {
             if ($request->has('descripcion')) {
                 $materia->descripcion = $validation['descripcion'];
             }
-            if ($request->has('departamento_id')) {
-                $materia->departamento_id = $validation['departamento_id'];
+            if ($request->has('carrera_id')) {
+                $materia->carrera_id = $validation['carrera_id'];
             }
             if ($request->has('estado')) {
                 $materia->estado = $validation['estado'];
