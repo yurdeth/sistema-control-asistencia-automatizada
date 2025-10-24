@@ -112,7 +112,7 @@ class MateriasController extends Controller {
 
             DB::beginTransaction();
             
-            $materias = DB::table('materias')->insert([
+            $materia = DB::table('materias')->insert([
                 'codigo' => $request->codigo,
                 'nombre' => $request->nombre,
                 'descripcion' => $request->descripcion,
@@ -125,7 +125,7 @@ class MateriasController extends Controller {
             return response()->json([
                 'message' => 'Materia creada exitosamente',
                 'success' => true,
-                'data' => 
+                'data' => $materia
             ], 201);
         } catch (Exception $e) {
             DB::rollBack();
