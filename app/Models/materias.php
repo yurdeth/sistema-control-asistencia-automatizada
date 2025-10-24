@@ -22,14 +22,14 @@ class materias extends Model {
         'codigo',
         'nombre',
         'descripcion',
-        'departamento_id',
+        'carrera_id',
         'estado'
     ];
 
     public function getSubjectsByStatus(string $estado): Collection {
         return DB::table('materias')
-            ->join('departamentos', 'materias.departamento_id', '=', 'departamentos.id')
-            ->select('materias.*', 'departamentos.nombre as departamento_nombre')
+            ->join('carreras', 'materias.carrera_id', '=', 'carreras.id')
+            ->select('materias.*', 'carreras.nombre as carrera_nombre')
             ->where('materias.estado', $estado)
             ->get();
     }
