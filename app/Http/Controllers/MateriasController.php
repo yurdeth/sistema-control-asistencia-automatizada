@@ -111,7 +111,15 @@ class MateriasController extends Controller {
             $validation = $request->validate($rules, $messages);
 
             DB::beginTransaction();
-            $materia = materias::create($validation);
+            
+            DB::table('materias')->insert([
+                'codigo' => $request->codigo,
+                'nombre' => $request->nombre,
+                'descripcion' => $request->descripcion,
+                'carrera_id' => $request->carrera_id,
+                'estado' => $request->estado                          
+            ]);
+            
             DB::commit();
 
             return response()->json([
