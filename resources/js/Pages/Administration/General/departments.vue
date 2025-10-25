@@ -1,18 +1,15 @@
 <template>
     <Head title="Departamentos"/>
 
-    <!-- Loader mientras verifica -->
-    <div v-if="!isAuthenticated">
-        <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
-            <div class="text-center">
-                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
-                <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
-            </div>
-        </div>
-    </div>
+    <Loader
+        v-if="!isAuthenticated"
+        @authenticated="handleAuthenticated"
+        message="Verificando sesión..."
+        :redirectDelay="2000"
+    />
 
     <MainLayoutDashboard>
-        <div class="p-6">
+        <div class="p-6" v-if="isAuthenticated">
             <!-- Header de la vista-->
             <div class="mb-6">
                 <h1 class="text-2xl font-bold text-gray-900 mb-1" :style="{color:colorText}">Departamentos</h1>
@@ -255,14 +252,21 @@ import {
 } from '@/Services/deparmentsService';
 import {authService} from "@/Services/authService.js";
 
-const isLoading = ref(true)
+    import Loader from '@/Components/AdministrationComponent/Loader.vue';
+
+    // Estado de autenticación
+    const isAuthenticated = ref(false);
+
+    // Maneja cuando la autenticación es exitosa
+    const handleAuthenticated = (status) => {
+        isAuthenticated.value = status;
+    };
 
 // Definimos las propiedades necesarias
 const colorText = ref('#1F2937')
 const searchTerm = ref('')
 const loading = ref(false)
 const error = ref(null)
-const isAuthenticated = localStorage.getItem('isAuthenticated');
 
 const showCarreraModal = ref(false);
 const selectedDepartment = ref(null);

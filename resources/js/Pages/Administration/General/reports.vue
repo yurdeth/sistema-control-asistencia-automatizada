@@ -1,8 +1,17 @@
 <template>
     <Head title="Informes"/>
 
+    <!-- Componente de autenticación reutilizable -->
+    <Loader
+        v-if="!isAuthenticated"
+        @authenticated="handleAuthenticated"
+        message="Verificando sesión..."
+        :redirectDelay="2000"
+    />
+
+    <!-- Dashboard solo se muestra cuando está autenticado -->
     <MainLayoutDashboard>
-        <div class="p-6">
+        <div class="p-6" v-if="isAuthenticated">
             <div>
                 <!-- Header -->
                 <div class="mb-8">
@@ -176,9 +185,19 @@
 </template>
 
 <script setup>
-    import {Head} from '@inertiajs/vue3';
+    import { Head } from '@inertiajs/vue3';
     import { ref, computed } from 'vue';
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
+    import Loader from '@/Components/AdministrationComponent/Loader.vue';
+
+    // Estado de autenticación
+    const isAuthenticated = ref(false);
+
+    // Maneja cuando la autenticación es exitosa
+    const handleAuthenticated = (status) => {
+        isAuthenticated.value = status;
+        console.log('Vista de Informes: Usuario autenticado');
+    };
 
     // Datos de informes disponibles
     const availableReports = ref([
@@ -187,37 +206,49 @@
         { id: 3, name: 'Informe de Estudiantes', category: 'Usuarios'},
     ]);
 
+    // Datos de ejemplo para los reportes
+    const reportData = {
+        1: [
+            { id: 1, Código: 'A101', Nombre: 'Aula Principal', Capacidad: 30, Edificio: 'A' },
+            { id: 2, Código: 'A102', Nombre: 'Laboratorio', Capacidad: 25, Edificio: 'A' },
+        ],
+        2: [
+            { id: 1, Nombre: 'Juan Pérez', Especialidad: 'Matemáticas', Antigüedad: '5 años' },
+            { id: 2, Nombre: 'María García', Especialidad: 'Física', Antigüedad: '3 años' },
+        ],
+    };
+
     const selectedReports = ref([]);
     const searchTerm = ref('');
     const activeReport = ref(null);
 
     // Filtra los informes según el término de búsqueda
     const filteredReports = computed(() => {
-    return availableReports.value.filter(report =>
-        report.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-        report.category.toLowerCase().includes(searchTerm.value.toLowerCase())
-    );
+        return availableReports.value.filter(report =>
+            report.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+            report.category.toLowerCase().includes(searchTerm.value.toLowerCase())
+        );
     });
 
     // Obtiene el informe activo a partir de su id
     const currentReport = computed(() => {
-    return availableReports.value.find(r => r.id === activeReport.value);
+        return availableReports.value.find(r => r.id === activeReport.value);
     });
 
-    // Datos del informe activo (depende de una variable externa llamada `reportData`)
+    // Datos del informe activo
     const currentReportData = computed(() => {
-    return reportData[activeReport.value] || [];
+        return reportData[activeReport.value] || [];
     });
 
     // Genera los encabezados de la tabla según las claves del primer registro
     const tableHeaders = computed(() => {
         if (!activeReport.value || !reportData[activeReport.value]) return [];
-            const data = reportData[activeReport.value][0];
+        const data = reportData[activeReport.value][0];
         if (!data) return [];
-            return Object.keys(data).filter(key => key !== 'id');
+        return Object.keys(data).filter(key => key !== 'id');
     });
 
-    // Alterna la selección de un informe (lo marca o desmarca)
+    // Alterna la selección de un informe
     const handleToggleReport = (reportId) => {
         const index = selectedReports.value.indexOf(reportId);
         if (index > -1) {
@@ -238,17 +269,16 @@
 
     // Activa la vista de un informe específico
     const handleViewReport = (reportId) => {
-    activeReport.value = reportId;
+        activeReport.value = reportId;
     };
 
-    // Ahorita solo Simula la descarga de informes seleccionados
+    // Simula la descarga de informes
     const handleDownloadReport = (format) => {
-    const reportNames = availableReports.value
-        .filter(r => selectedReports.value.includes(r.id))
-        .map(r => r.name)
-        .join(', ');
+        const reportNames = availableReports.value
+            .filter(r => selectedReports.value.includes(r.id))
+            .map(r => r.name)
+            .join(', ');
 
-    alert(`Descargando informes en formato ${format}:\n${reportNames}`);
-
+        alert(`Descargando informes en formato ${format}:\n${reportNames}`);
     };
 </script>

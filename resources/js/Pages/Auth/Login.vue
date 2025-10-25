@@ -184,7 +184,13 @@
                     </form>
                 </div>
             </div>
+            <Link
+            href="/"
+            class="btn-home-float">
+                <i class="fa-solid fa-house"></i>
+            </Link>
         </div>
+
 </template>
 
 <!--Estilos del login-->
@@ -401,5 +407,34 @@
         .right_panel {
             padding: 40px 30px;
         }
+    }
+
+    .btn-home-float {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        text-decoration: none;
+        color: #333;
+    }
+
+    .btn-home-float:hover {
+        background: #fff;
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-home-float svg {
+        width: 24px;
+        height: 24px;
     }
 </style>
