@@ -24,7 +24,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #5B0B0B 0%, #7a1010 100%);
             padding: 30px 20px;
             text-align: center;
             color: #ffffff;
@@ -57,24 +57,26 @@
         .button {
             display: inline-block;
             padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #5B0B0B 0%, #7a1010 100%);
             color: #ffffff;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-weight: 600;
             font-size: 16px;
             transition: transform 0.2s;
+            box-shadow: 0 4px 12px rgba(91, 11, 11, 0.3);
         }
         .button:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(91, 11, 11, 0.4);
         }
         .warning {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
+            background-color: #fff5f5;
+            border-left: 4px solid #fc8181;
             padding: 15px;
             margin: 20px 0;
-            border-radius: 4px;
-            color: #856404;
+            border-radius: 8px;
+            color: #c53030;
             font-size: 13px;
         }
         .footer {
@@ -86,7 +88,7 @@
             border-top: 1px solid #eeeeee;
         }
         .link-text {
-            color: #667eea;
+            color: #5B0B0B;
             word-break: break-all;
             font-size: 12px;
             margin-top: 15px;
