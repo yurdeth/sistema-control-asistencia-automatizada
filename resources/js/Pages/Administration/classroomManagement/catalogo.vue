@@ -35,8 +35,8 @@
 
             <!-- Mensajes -->
             <div v-if="mensaje.mostrar"
-                 :class="mensaje.tipo === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'"
-                 class="border-l-4 p-4 mb-4 rounded">
+                :class="mensaje.tipo === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'"
+                class="border-l-4 p-4 mb-4 rounded">
                 <div class="flex justify-between items-center">
                     <p class="font-medium">{{ mensaje.texto }}</p>
                     <button @click="cerrarMensaje" class="text-xl font-bold">&times;</button>
@@ -110,7 +110,7 @@
             <!-- Lista de aulas -->
             <div v-else-if="aulas.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <Card
-                    v-for="aula in aulasFiltradas"
+                    v-for="aula in aulasPaginadas"
                     :key="aula.id"
                     :aula="aula"
                 />
@@ -122,7 +122,28 @@
                 <p class="text-gray-600 text-lg">No hay aulas registradas</p>
                 <p class="text-gray-500 text-sm mt-2">Comienza agregando tu primera aula</p>
             </div>
+            <!-- Controles de paginación -->
+            <div class="flex justify-center mt-6 space-x-2">
+                <button
+                    @click="paginaActual--"
+                    :disabled="paginaActual ===1"
+                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                >
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+                <button
+                    @click="paginaActual++"
+                    :disabled="paginaActual === totalPaginas"
+                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                >
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+            <br>
         </div>
+
 
         <Modal :show="showModal" @close="closeModal" max-width="lg">
             <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
@@ -336,6 +357,19 @@ onMounted(async () => {
     await cargarAulas();
     isLoading.value = false;
 });
+
+// ======| Para la paginación |======
+const paginaActual = ref(1)
+const porPagina = ref(9)
+
+
+const totalPaginas = computed(() => Math.ceil(aulasFiltradas.value.length / porPagina.value))
+
+const aulasPaginadas = computed(() => {
+    const inicio = (paginaActual.value - 1) * porPagina.value
+    const fin = inicio + porPagina.value
+    return aulasFiltradas.value.slice(inicio, fin)
+})
 
 // ======| Filtrado dinámico de las aulas |======
 const aulasFiltradas = computed(() => {

@@ -56,7 +56,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full" :style="{ border: '1px solid #d93f3f' }">
                             <thead class="bg-gray-50 border-b-2 border-gray-200"
-                                   :style="{background: '#d93f3f', height: '40px'}">
+                                :style="{background: '#d93f3f', height: '40px'}">
                             <tr>
                                 <th class="text-white">Id</th>
                                 <th class="text-white">Nombre</th>
@@ -71,9 +71,9 @@
                                 <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                                     <div class="flex flex-col items-center gap-2">
                                         <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor"
-                                             viewBox="0 0 24 24">
+                                            viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                         <p class="text-lg font-medium">No se encontraron resultados</p>
                                         <p class="text-sm">
@@ -108,9 +108,9 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ department.estado }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900 flex justify-center items-center">{{ department.estado }}</td>
                                 <td class="px-6 py-4 text-sm">
-                                    <div class="flex gap-2">
+                                    <div class="flex gap-2 justify-center items-center">
                                         <button
                                             @click="openEditModal(department)"
                                             class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
@@ -125,6 +125,13 @@
                                             :disabled="loading"
                                         >
                                             Eliminar
+                                        </button>
+                                        <button
+                                            @click="openCarreraModal(department)"
+                                            class="text-white px-4 py-2 rounded-lg"
+                                            :style="{background:'#eb9733'}"
+                                        >
+                                            Carreras
                                         </button>
                                     </div>
                                 </td>
@@ -195,6 +202,40 @@
             </form>
         </Modal>
 
+        <!--Modal de carreras-->
+        <Modal :show="showCarreraModal" @close="showCarreraModal = false" max-width="md">
+        <div class="p-6">
+            <h2 class="text-lg font-semibold mb-4">
+                Carreras de {{ selectedDepartment?.nombre }}
+            </h2>
+
+            <div v-for="(carrera, index) in carreras" :key="carrera.id" class="mb-2 border rounded">
+                <button
+                    class="w-full text-left px-4 py-2 bg-gray-100 hover:bg-gray-200"
+                    @click="carrera.open = !carrera.open"
+                >
+                    {{ carrera.nombre }}
+                </button>
+                <div v-show="carrera.open" class="p-4 bg-white border-t">
+                    <!-- Aquí puedes poner más info de la carrera -->
+                    <p>Información de la carrera...</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4">
+                <button
+                    type="button"
+                    @click="showCarreraModal = false"
+                    class="px-4 py-2 bg-gray-300 rounded"
+                >
+                    Salir
+                </button>
+            </div>
+
+        </div>
+    </Modal>
+
+
     </MainLayoutDashboard>
 
 </template>
@@ -222,6 +263,10 @@ const searchTerm = ref('')
 const loading = ref(false)
 const error = ref(null)
 const isAuthenticated = localStorage.getItem('isAuthenticated');
+
+const showCarreraModal = ref(false);
+const selectedDepartment = ref(null);
+const carreras = ref([]);
 
 const allDepartments = ref([]);
 
@@ -376,4 +421,19 @@ async function deleteItem(id) {
         }
     }
 }
+
+// Parte donde se trabaja el modal de carreras
+function openCarreraModal(department) {
+    selectedDepartment.value = department;
+
+    // Simulación de datos
+    carreras.value = [
+        { id: 1, nombre: 'Ingeniería Civil' },
+        { id: 2, nombre: 'Ingeniería Mecánica' },
+        { id: 3, nombre: 'Arquitectura' },
+    ];
+
+    showCarreraModal.value = true;
+}
+
 </script>

@@ -19,15 +19,17 @@
                 <span class="text-sm">Capacidad: {{ aula.capacidad_pupitres }} personas</span>
             </div>
 
-            <div class="text-sm text-gray-600 mb-3">
-                <span class="font-semibold">Ubicación:</span> {{ aula.ubicacion }}
-            </div>
+<div class="text-sm text-gray-600 mb-3">
+  <span class="font-semibold">Ubicación:</span> {{ ubicacionTruncada }}
+</div>
+
+
             <hr>
 
             <!--Equipamiento / Recursos-->
             <div class="mb-3 mt-3">
                 <p class="text-xs text-gray-500 mb-2 font-semibold">Recursos del Aula:</p>
-                
+
                 <!-- Si tiene recursos -->
                 <div v-if="aula.recursos && aula.recursos.length > 0" class="flex flex-wrap gap-1">
                     <span
@@ -46,7 +48,7 @@
                         +{{ aula.recursos.length - 3 }}
                     </span>
                 </div>
-                
+
                 <!-- Si no tiene recursos -->
                 <div v-else class="text-xs text-gray-400 italic">
                     Sin recursos asignados
@@ -96,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue'
 import Modal from '../Modal.vue';
 import AulaModalContent from './AulaModalContent.vue';
 
@@ -122,12 +124,18 @@ const actualizarAula = (aulaActualizada) => {
 };
 
 // Definimos las propiedades que el componente recibe desde su componente padre
-defineProps({
+const props = defineProps({
     aula: {
         type: Object,
         required: true
     }
-});
+})
+
+const ubicacionTruncada = computed(() => {
+    const texto = props.aula.ubicacion || ''
+    const limite = 220
+    return texto.length > limite ? texto.slice(0, limite) + '...' : texto
+})
 
 const getEstadoColor = (estado) => {
     // Asignamos un color específico para cada estado del aula

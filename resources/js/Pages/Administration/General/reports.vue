@@ -2,8 +2,8 @@
     <Head title="Informes"/>
 
     <MainLayoutDashboard>
-        <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-            <div class="max-w-7xl mx-auto">
+        <div class="p-6">
+            <div>
                 <!-- Header -->
                 <div class="mb-8">
                     <h1 class="text-4xl font-bold text-slate-800 mb-2">Informes y Reportes</h1>
