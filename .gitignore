@@ -23,6 +23,9 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 .rnd
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
 
 # Project exclude paths
 /storage/app/
