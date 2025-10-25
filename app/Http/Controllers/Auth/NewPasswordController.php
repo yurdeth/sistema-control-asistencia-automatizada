@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
@@ -40,30 +44,81 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+        try {
+            $email = $request->input('email');
+            $token = $request->input('token');
+            $password = $request->input('password');
 
-                event(new PasswordReset($user));
+            // Validar que el token sea válido y no esté expirado
+            $passwordReset = DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->where('token', $token)
+                ->first();
+
+            if (!$passwordReset) {
+                throw ValidationException::withMessages([
+                    'email' => ['El token de restablecimiento es inválido.'],
+                ]);
             }
-        );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        if ($status == Password::PASSWORD_RESET) {
-            return redirect()->route('login')->with('status', __($status));
+            // Verificar que el token no haya expirado
+            $tokenAge = Carbon::now()->diffInSeconds(Carbon::parse($passwordReset->created_at));
+
+            if ($tokenAge > 3600) {
+                // Eliminar token expirado
+                DB::table('password_reset_tokens')
+                    ->where('email', $email)
+                    ->where('token', $token)
+                    ->delete();
+
+                throw ValidationException::withMessages([
+                    'email' => ['El enlace de restablecimiento ha expirado. Por favor, solicita uno nuevo.'],
+                ]);
+            }
+
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                throw ValidationException::withMessages([
+                    'email' => ['El usuario no existe.'],
+                ]);
+            }
+
+            $user->password = Hash::make($password);
+            $user->remember_token = Str::random(60);
+            $user->save();
+
+            DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->where('token', $token)
+                ->delete();
+
+            DB::table('oauth_access_tokens')
+                ->where('user_id', $user->id)
+                ->where('revoked', false)
+                ->update(['revoked' => true]);
+
+            event(new PasswordReset($user));
+
+            Log::info('Contraseña restablecida desde web', [
+                'user_id' => $user->id,
+                'email' => $email,
+                'timestamp' => Carbon::now()
+            ]);
+
+            return redirect()->route('login')->with('status', 'Tu contraseña ha sido restablecida exitosamente.');
+
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Error en reset password web', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            throw ValidationException::withMessages([
+                'email' => ['Error al restablecer la contraseña. Por favor, intenta de nuevo.'],
+            ]);
         }
-
-        throw ValidationException::withMessages([
-            'email' => [trans($status)],
-        ]);
     }
 }

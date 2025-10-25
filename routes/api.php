@@ -40,6 +40,11 @@ Route::post('/login', [AuthController::class, "login"])->name('login.post');
 //Route::post('/login-web', [AuthController::class, "loginWeb"])->name('login.post.web');
 Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
 
+// Password Reset
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot.password');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset.password');
+Route::post('/validate-reset-token', [AuthController::class, 'validateResetToken'])->name('validate.reset.token');
+
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
     Route::get('/verify-token', [AuthController::class, 'verifyToken']);

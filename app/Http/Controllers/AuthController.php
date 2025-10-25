@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ResetPasswordMail;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -9,7 +10,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller {
     public function loginAsGuest(): JsonResponse {
@@ -217,6 +221,229 @@ class AuthController extends Controller {
                 'message' => 'Error al verificar token',
                 'success' => false
             ], 401);
+        }
+    }
+
+    /**
+     * Solicitar restablecimiento de contraseña
+     * Genera un token y envía un email con el link de reset
+     */
+    public function forgotPassword(Request $request): JsonResponse {
+        try {
+            $request->validate([
+                'email' => ['required', 'email', 'exists:users,email'],
+            ], [
+                'email.required' => 'El correo es requerido',
+                'email.email' => 'El correo no es válido',
+                'email.exists' => 'El correo no está registrado en el sistema',
+            ]);
+
+            $email = $request->input('email');
+
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'El correo no está registrado',
+                    'success' => false
+                ], 404);
+            }
+
+            if ($user->estado !== 'activo') {
+                return response()->json([
+                    'message' => 'Esta cuenta está inactiva o suspendida',
+                    'success' => false
+                ], 403);
+            }
+
+            $token = Str::random(64);
+
+            DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->delete();
+
+            DB::table('password_reset_tokens')
+                ->insert([
+                    'email' => $email,
+                    'token' => $token,
+                    'created_at' => Carbon::now(),
+                ]);
+
+            Mail::to($email)->send(new ResetPasswordMail($email, $token, $user->nombre_completo));
+
+            Log::info('Reset password token generado', [
+                'email' => $email,
+                'timestamp' => Carbon::now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Se ha enviado un correo con las instrucciones para restablecer tu contraseña'
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error en forgot password', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al procesar la solicitud',
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Validar que el token de reset sea válido y no haya expirado
+     */
+    public function validateResetToken(Request $request): JsonResponse {
+        try {
+            $request->validate([
+                'email' => ['required', 'email'],
+                'token' => ['required', 'string'],
+            ]);
+
+            $email = $request->input('email');
+            $token = $request->input('token');
+
+            // Buscar el registro del token
+            $passwordReset = DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->where('token', $token)
+                ->first();
+
+            if (!$passwordReset) {
+                return response()->json([
+                    'message' => 'El token de restablecimiento es inválido',
+                    'success' => false
+                ], 400);
+            }
+
+            // Verificar que el token no haya expirado
+            $tokenAge = Carbon::now()->diffInSeconds(Carbon::parse($passwordReset->created_at));
+
+            if ($tokenAge > 3600) {
+                // Eliminar token expirado
+                DB::table('password_reset_tokens')
+                    ->where('email', $email)
+                    ->where('token', $token)
+                    ->delete();
+
+                return response()->json([
+                    'message' => 'El enlace de restablecimiento ha expirado. Por favor, solicita uno nuevo',
+                    'success' => false
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Token válido'
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error al validar reset token', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Error al validar el token',
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Restablecer la contraseña del usuario
+     */
+    public function resetPassword(Request $request): JsonResponse {
+        try {
+            $request->validate([
+                'email' => ['required', 'email'],
+                'token' => ['required', 'string'],
+                'password' => ['required', 'string', 'min:8', 'confirmed'],
+            ], [
+                'password.required' => 'La contraseña es requerida',
+                'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+                'password.confirmed' => 'Las contraseñas no coinciden',
+            ]);
+
+            $email = $request->input('email');
+            $token = $request->input('token');
+            $password = $request->input('password');
+
+            // Validar que el token sea válido y no esté expirado
+            $passwordReset = DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->where('token', $token)
+                ->first();
+
+            if (!$passwordReset) {
+                return response()->json([
+                    'message' => 'El token de restablecimiento es inválido',
+                    'success' => false
+                ], 400);
+            }
+
+            // Verificar que el token no haya expirado
+            $tokenAge = Carbon::now()->diffInSeconds(Carbon::parse($passwordReset->created_at));
+
+            if ($tokenAge > 3600) {
+                DB::table('password_reset_tokens')
+                    ->where('email', $email)
+                    ->where('token', $token)
+                    ->delete();
+
+                return response()->json([
+                    'message' => 'El enlace de restablecimiento ha expirado. Por favor, solicita uno nuevo',
+                    'success' => false
+                ], 400);
+            }
+
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'El usuario no existe',
+                    'success' => false
+                ], 404);
+            }
+
+            $user->password = Hash::make($password);
+            $user->save();
+
+            DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->where('token', $token)
+                ->delete();
+
+            // Revocar todos los tokens de acceso existentes del usuario
+            DB::table('oauth_access_tokens')
+                ->where('user_id', $user->id)
+                ->where('revoked', false)
+                ->update(['revoked' => true]);
+
+            Log::info('Contraseña restablecida', [
+                'user_id' => $user->id,
+                'email' => $email,
+                'timestamp' => Carbon::now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tu contraseña ha sido restablecida exitosamente. Por favor inicia sesión con tu nueva contraseña'
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error en reset password', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al restablecer la contraseña',
+                'success' => false
+            ], 500);
         }
     }
 }
