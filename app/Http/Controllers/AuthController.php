@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller {
@@ -229,16 +230,30 @@ class AuthController extends Controller {
      * Genera un token y envía un email con el link de reset
      */
     public function forgotPassword(Request $request): JsonResponse {
-        try {
-            $request->validate([
-                'email' => ['required', 'email', 'exists:users,email'],
-            ], [
-                'email.required' => 'El correo es requerido',
-                'email.email' => 'El correo no es válido',
-                'email.exists' => 'El correo no está registrado en el sistema',
-            ]);
 
-            $email = $request->input('email');
+        $rules = [
+            'email' => ['required', 'email', 'exists:users,email'],
+        ];
+
+        $messages = [
+            'email.required' => 'El correo es requerido',
+            'email.email' => 'El correo no es válido',
+            'email.exists' => 'El correo no está registrado en el sistema',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+
+        try {
 
             $user = User::where('email', $email)->first();
 
@@ -298,16 +313,34 @@ class AuthController extends Controller {
      * Validar que el token de reset sea válido y no haya expirado
      */
     public function validateResetToken(Request $request): JsonResponse {
+
+        $rules = [
+            'email' => ['required', 'email'],
+            'token' => ['required', 'string'],
+        ];
+
+        $messages = [
+            'email.required' => 'El correo es requerido',
+            'email.email' => 'El correo no es válido',
+            'token.required' => 'El token es requerido',
+            'token.string' => 'El token debe ser una cadena de texto',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+        $token = $request->input('token');
+
         try {
-            $request->validate([
-                'email' => ['required', 'email'],
-                'token' => ['required', 'string'],
-            ]);
 
-            $email = $request->input('email');
-            $token = $request->input('token');
-
-            // Buscar el registro del token
             $passwordReset = DB::table('password_reset_tokens')
                 ->where('email', $email)
                 ->where('token', $token)
@@ -357,20 +390,39 @@ class AuthController extends Controller {
      * Restablecer la contraseña del usuario
      */
     public function resetPassword(Request $request): JsonResponse {
-        try {
-            $request->validate([
-                'email' => ['required', 'email'],
-                'token' => ['required', 'string'],
-                'password' => ['required', 'string', 'min:8', 'confirmed'],
-            ], [
-                'password.required' => 'La contraseña es requerida',
-                'password.min' => 'La contraseña debe tener al menos 8 caracteres',
-                'password.confirmed' => 'Las contraseñas no coinciden',
-            ]);
 
-            $email = $request->input('email');
-            $token = $request->input('token');
-            $password = $request->input('password');
+        $rules = [
+            'email' => ['required', 'email'],
+            'token' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ];
+
+        $messages = [
+            'email.required' => 'El correo es requerido',
+            'email.email' => 'El correo no es válido',
+            'token.required' => 'El token es requerido',
+            'token.string' => 'El token debe ser una cadena de texto',
+            'password.required' => 'La contraseña es requerida',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+            'password.confirmed' => 'Las contraseñas no coinciden',
+        ];
+
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+        $token = $request->input('token');
+        $password = $request->input('password');
+
+        try {
 
             // Validar que el token sea válido y no esté expirado
             $passwordReset = DB::table('password_reset_tokens')
