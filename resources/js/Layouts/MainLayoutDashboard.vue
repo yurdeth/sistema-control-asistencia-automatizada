@@ -197,6 +197,11 @@ onMounted(() => {
                         label: "Disponibilidad",
                         href: "/disponibilidad",
                         icon: "fa-solid fa-calendar-days",
+                    },
+                    {
+                        label: "Horarios",
+                        href: "/horarios",
+                        icon: "fa-solid fa-clock",
                     }
                 ]
         },
@@ -214,6 +219,16 @@ onMounted(() => {
                     label: "Estudiantes.",
                     href: "/estudiantes",
                     icon: "fa-solid fa-user",
+                },
+                {
+                    label: "Grupos",
+                    href: "/grupos",
+                    icon: "fa-solid fa-layer-group",
+                },
+                {
+                    label: "Solicitudes Inscripción",
+                    href: "/solicitudes-inscripcion",
+                    icon: "fa-solid fa-file-signature",
                 }
             ]
         },

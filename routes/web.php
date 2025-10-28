@@ -66,6 +66,24 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
         ]);
     });
 
+    Route::get('/horarios', function () {
+        return Inertia::render('Administration/classroomManagement/horarios', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
+    Route::get('/grupos', function () {
+        return Inertia::render('Administration/classroomManagement/grupos', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
+    Route::get('/solicitudes-inscripcion', function () {
+        return Inertia::render('Administration/General/solicitudesInscripcion', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
