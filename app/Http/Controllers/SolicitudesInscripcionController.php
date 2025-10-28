@@ -100,6 +100,7 @@ class SolicitudesInscripcionController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::COORDINADOR_CARRERAS->value,
             RolesEnum::DOCENTE->value,
             RolesEnum::ESTUDIANTE->value,
@@ -175,6 +176,7 @@ class SolicitudesInscripcionController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::COORDINADOR_CARRERAS->value,
             RolesEnum::DOCENTE->value,
             RolesEnum::ESTUDIANTE->value,
