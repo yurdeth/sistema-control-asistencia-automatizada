@@ -99,8 +99,13 @@ class SolicitudesInscripcionController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+            RolesEnum::ESTUDIANTE->value,
+        ];
 
-        if ($user_rolName != RolesEnum::INVITADO->value) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -169,8 +174,13 @@ class SolicitudesInscripcionController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+            RolesEnum::ESTUDIANTE->value,
+        ];
 
-        if ($user_rolName != RolesEnum::INVITADO->value) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -237,10 +247,7 @@ class SolicitudesInscripcionController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
-            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-            RolesEnum::JEFE_DEPARTAMENTO->value,
-            RolesEnum::COORDINADOR_CARRERAS->value,
             RolesEnum::DOCENTE->value,
         ];
 
