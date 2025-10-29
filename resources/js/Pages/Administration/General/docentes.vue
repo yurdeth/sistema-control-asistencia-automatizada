@@ -396,7 +396,7 @@
     const perPage = ref(5); // Número de registros por página
 
     // Configuración de axios
-    const API_URL = 'http://127.0.0.1:8000/api';
+    const API_URL = '/api';
     const getAuthHeaders = () => ({
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
