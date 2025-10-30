@@ -207,35 +207,14 @@ class User extends Authenticatable {
     }
 
     public function getByName(string $name, int $rol_id): Collection {
-        // Normalizar búsqueda para teléfonos
-        $normalizedSearch = preg_replace('/[\s\-\+\(\)]/', '', $name);
-
-        return DB::table('users')
-            ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
-            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
-            ->leftJoin('departamentos', 'users.departamento_id', '=', 'departamentos.id')
-            ->leftJoin('carreras', 'users.carrera_id', '=', 'carreras.id')
-            ->select(
-                'users.id',
-                'users.nombre_completo',
-                'users.email',
-                'users.telefono',
-                'users.departamento_id',
-                'users.carrera_id',
-                'users.estado',
-                'usuario_roles.rol_id',
-                'roles.nombre as rol_nombre',
-                'departamentos.nombre as departamento_nombre',
-                'carreras.nombre as carrera_nombre'
-            )
-            ->where('usuario_roles.rol_id', '=', $rol_id)
-            ->where(function ($query) use ($name, $normalizedSearch) {
-                $query->where('users.nombre_completo', 'like', '%' . $name . '%')
-                    ->orWhere('users.email', 'like', '%' . $name . '%')
-                    ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(users.telefono, ' ', ''), '-', ''), '+', ''), '(', '') LIKE ?", ['%' . $normalizedSearch . '%']);
+        return $this->getAllUsers()
+            ->where('rol_id', '=', $rol_id)
+            ->filter(function ($user) use ($name) {
+                return stripos($user->nombre_completo, $name) !== false
+                    || stripos($user->email, $name) !== false
+                    || stripos($user->telefono, $name) !== false;
             })
-            ->limit(50)
-            ->get();
+            ->values();
     }
 
     /**
