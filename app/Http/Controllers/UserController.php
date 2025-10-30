@@ -1011,7 +1011,6 @@ class UserController extends Controller {
     }
 
     public function getByDepartmentByRole(Request $request): JsonResponse {
-        Log::info($request);
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -1104,34 +1103,7 @@ class UserController extends Controller {
             ], 401);
         }
 
-        switch ($request->rol_nombre){
-            case 'root':
-                $role_id = 1;
-                break;
-            case 'administrador_academico':
-                $role_id = 2;
-                break;
-            case 'jefe_departamento':
-                $role_id = 3;
-                break;
-            case 'coordinador_carreras':
-                $role_id = 4;
-                break;
-            case 'docente':
-                $role_id = 5;
-                break;
-            case 'estudiante':
-                $role_id = 6;
-                break;
-            case 'invitado':
-                $role_id = 7;
-                break;
-            default:
-                return response()->json([
-                    'message' => 'Nombre de rol inválido',
-                    'success' => false
-                ], 422);
-        }
+        $role_id = $this->getRolIdByName($request->rol_nombre);
         $carrera_id = $this->sanitizeInput($request->carrera_id);
         $users = (new User())->getByCareerByRole($role_id, $carrera_id);
 
@@ -1232,34 +1204,7 @@ class UserController extends Controller {
         }
 
         // switch-case para obtener el rol_id basado en $request->rol_nombre
-        switch ($request->rol_nombre){
-            case 'root':
-                $role_id = 1;
-                break;
-            case 'administrador_academico':
-                $role_id = 2;
-                break;
-            case 'jefe_departamento':
-                $role_id = 3;
-                break;
-            case 'coordinador_carreras':
-                $role_id = 4;
-                break;
-            case 'docente':
-                $role_id = 5;
-                break;
-            case 'estudiante':
-                $role_id = 6;
-                break;
-            case 'invitado':
-                $role_id = 7;
-                break;
-            default:
-                return response()->json([
-                    'message' => 'Nombre de rol inválido',
-                    'success' => false
-                ], 422);
-        }
+        $role_id = $this->getRolIdByName($request->rol_nombre);
 
         $users = (new User())->getByStatusByRole($status, $role_id);
 
@@ -1574,6 +1519,11 @@ class UserController extends Controller {
             ->value('roles.nombre');
     }
 
+    private function getRolIdByName(string $rol_nombre): int|null {
+        return DB::table('roles')
+            ->where('nombre', $rol_nombre)
+            ->value('id');
+    }
 
     private function sanitizeInput($input): string {
         return htmlspecialchars(strip_tags(trim($input)));
