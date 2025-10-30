@@ -41,19 +41,6 @@ class User extends Authenticatable {
      */
     protected $hidden = ['password', 'remember_token',];
 
-    public function getUsersBasedOnMyUserRole(int $my_role_id): Collection {
-        $all_users = $this->getAllUsers();
-
-        return match ($my_role_id) {
-            1 => $all_users,
-            2 => $all_users->where('rol_id', '!=', 1),
-            3 => $all_users->whereNotIn('rol_id', [1, 2]),
-            4 => $all_users->whereNotIn('rol_id', [1, 2, 3]),
-            5 => $all_users->whereNotIn('rol_id', [1, 2, 3, 4]),
-            default => collect(),
-        };
-    }
-
     public function getAllUsers(): Collection {
         return DB::table('users')
             ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
@@ -77,6 +64,42 @@ class User extends Authenticatable {
             ->get();
     }
 
+    public function getUsersBasedOnMyUserRole(int $my_role_id): Collection {
+        $all_users = $this->getAllUsers();
+
+        return match ($my_role_id) {
+            1 => $all_users,
+            2 => $all_users->where('rol_id', '!=', 1),
+            3 => $all_users->whereNotIn('rol_id', [1, 2]),
+            4 => $all_users->whereNotIn('rol_id', [1, 2, 3]),
+            5 => $all_users->whereNotIn('rol_id', [1, 2, 3, 4]),
+            default => collect(),
+        };
+    }
+
+    public function getUser(int $user_id): Collection {
+        return DB::table('users')
+            ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->leftJoin('departamentos', 'users.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('carreras', 'users.carrera_id', '=', 'carreras.id')
+            ->select(
+                'users.id',
+                'users.nombre_completo',
+                'users.email',
+                'users.telefono',
+                'users.departamento_id',
+                'users.carrera_id',
+                'users.estado',
+                'usuario_roles.rol_id',
+                'roles.nombre as rol_nombre',
+                'departamentos.nombre as departamento_nombre',
+                'carreras.nombre as carrera_nombre'
+            )
+            ->where('users.id', $user_id)
+            ->get();
+    }
+
     public function getUserBasedOnMyUserRole(int $my_role_id, int $user_id): Collection {
         $user = $this->getUser($user_id);
 
@@ -88,10 +111,6 @@ class User extends Authenticatable {
             5 => $user->whereNotIn('rol_id', [1, 2, 3, 4]),
             default => collect(),
         };
-    }
-
-    public function getUser(int $user_id): Collection {
-        return $this->getAllUsers()->where('id', $user_id);
     }
 
     public function getUsersByRole(int $role_id): Collection {
@@ -188,15 +207,10 @@ class User extends Authenticatable {
             ->get();
     }
 
-    public function getByName(string $name, int $rol_id): Collection {
-        return $this->getAllUsers()
-            ->where('rol_id', '=', $rol_id)
-            ->filter(function ($user) use ($name) {
-                return stripos($user->nombre_completo, $name) !== false
-                    || stripos($user->email, $name) !== false
-                    || stripos($user->telefono, $name) !== false;
-            })
-            ->values();
+    public function getByName(string $name): Collection {
+        return DB::table('users')
+            ->where('nombre_completo', 'like', '%' . $name . '%')
+            ->get();
     }
 
     /**
