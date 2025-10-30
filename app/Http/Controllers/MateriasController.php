@@ -61,13 +61,8 @@ class MateriasController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
-        $rolesPermitidos = [
-            RolesEnum::ROOT->value,
-            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-            RolesEnum::JEFE_DEPARTAMENTO->value,
-        ];
 
-        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -111,15 +106,15 @@ class MateriasController extends Controller {
             $validation = $request->validate($rules, $messages);
 
             DB::beginTransaction();
-            
+
             $materia = DB::table('materias')->insert([
                 'codigo' => $request->codigo,
                 'nombre' => $request->nombre,
                 'descripcion' => $request->descripcion,
                 'carrera_id' => $request->carrera_id,
-                'estado' => $request->estado                          
+                'estado' => $request->estado
             ]);
-            
+
             DB::commit();
 
             return response()->json([
@@ -188,13 +183,8 @@ class MateriasController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
-        $rolesPermitidos = [
-            RolesEnum::ROOT->value,
-            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-            RolesEnum::JEFE_DEPARTAMENTO->value,
-        ];
 
-        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -295,9 +285,7 @@ class MateriasController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
-            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-            RolesEnum::JEFE_DEPARTAMENTO->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {

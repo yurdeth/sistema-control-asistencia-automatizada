@@ -60,12 +60,8 @@ class DepartamentosController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
-        $rolesPermitidos = [
-            RolesEnum::ROOT->value,
-            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-        ];
 
-        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+        if ($user_rolName != RolesEnum::JEFE_DEPARTAMENTO->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -178,12 +174,8 @@ class DepartamentosController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
-        $rolesPermitidos = [
-            RolesEnum::ROOT->value,
-            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-        ];
 
-        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+        if ($user_rolName != RolesEnum::JEFE_DEPARTAMENTO->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -333,6 +325,15 @@ class DepartamentosController extends Controller {
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+
+        if ($user_rolName != RolesEnum::JEFE_DEPARTAMENTO->value) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
         }
 
         try {
@@ -509,13 +510,6 @@ class DepartamentosController extends Controller {
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    private function getUserRoleId() {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
     }
 
     private function getUserRoleName(): string|null {

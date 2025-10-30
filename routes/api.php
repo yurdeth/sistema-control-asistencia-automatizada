@@ -66,7 +66,10 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/users/edit/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::get('/users/get/role/{id}', [UserController::class, 'getByRole'])->name('users.getByRole');
     Route::get('/users/get/department/{id}', [UserController::class, 'getByDepartment'])->name('users.getByDepartment');
-    Route::post('/users/get/status', [UserController::class, 'getByStatus'])->name('users.getByRoleAndDepartment');
+    Route::post('/users/get/department/by-role/', [UserController::class, 'getByDepartmentByRole'])->name('users.getByDepartmentByRole');
+    Route::post('/users/get/career/by-role/', [UserController::class, 'getByCareerByRole'])->name('users.getByCareerByRole');
+    Route::post('/users/get/status', [UserController::class, 'getByStatus'])->name('users.getByStatus');
+    Route::post('/users/get/status-role', [UserController::class, 'getByStatusByRole'])->name('users.getByStatusByRole');
     Route::get('/users/get/subject/{id}', [UserController::class, 'getBySubject'])->name('users.getBySubject');
     Route::get('/users/get/academics/all', [UserController::class, 'getAdministradoresAcademicosOnly'])->name('users.getAcademics');
     Route::get('/users/get/department-managers/all', [UserController::class, 'getDepartmentManagersOnly'])->name('users.getDepManagers');

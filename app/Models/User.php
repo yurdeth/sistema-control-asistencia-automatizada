@@ -106,6 +106,24 @@ class User extends Authenticatable {
         return $this->getAllUsers()->where('estado', $status);
     }
 
+    public function getByStatusByRole($status, $role_id): Collection {
+        return $this->getAllUsers()
+            ->where('estado', $status)
+            ->where('rol_id', $role_id);
+    }
+
+    public function getByDepartmentByRole($role_id, $department_id): Collection {
+        return $this->getAllUsers()
+            ->where('departamento_id', $department_id)
+            ->where('rol_id', $role_id);
+    }
+
+    public function getByCareerByRole($role_id, $carrera_id): Collection {
+        return $this->getAllUsers()
+            ->where('carrera_id', $carrera_id)
+            ->where('rol_id', $role_id);
+    }
+
     public function getUsersBySubject(int $subject_id): Collection {
         return DB::table('users')
             ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
