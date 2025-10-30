@@ -1213,7 +1213,7 @@ class UserController extends Controller {
         }
 
         $users = Cache::remember('coordinadores', 60, function () {
-            return (new User())->getDepartmentManagersOnly();
+            return (new User())->getDepartmentManagersOnly()->take(50);
         });
 
         if ($users->isEmpty()) {
@@ -1255,7 +1255,7 @@ class UserController extends Controller {
         }
 
         $users = Cache::remember('career_managers_only', 60, function () {
-            return (new User())->getCareerManagersOnly();
+            return (new User())->getCareerManagersOnly()->take(50);
         });
 
         if ($users->isEmpty()) {
@@ -1297,7 +1297,7 @@ class UserController extends Controller {
         }
 
         $users = Cache::remember('professors_only', 60, function () {
-            return (new User())->getProfessorsOnly();
+            return (new User())->getProfessorsOnly()->take(50);
         });
 
         if ($users->isEmpty()) {
@@ -1339,7 +1339,7 @@ class UserController extends Controller {
         }
 
         $users = Cache::remember('students_only', 60, function () {
-            return (new User())->getStudentsOnly();
+            return (new User())->getStudentsOnly()->take(50);
         });
 
         if ($users->isEmpty()) {
