@@ -728,7 +728,7 @@ async function fetchDocentes() {
             allDocentes.value = [];
             error.value = null;
         } else if (status === 401 || status === 403) {
-            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
+            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión.';
             allDocentes.value = [];
         } else {
             error.value = err.response?.data?.message || 'Error al cargar los docentes';
@@ -812,7 +812,7 @@ const fetchEnabledProfessors = async () => {
             allDocentes.value = [];
             error.value = null;
         } else if (status === 401 || status === 403) {
-            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
+            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión.';
             allDocentes.value = [];
         } else {
             error.value = err.response?.data?.message || 'Error al obtener los docentes activos';
@@ -845,7 +845,7 @@ const fetchDisabledProfessors = async () => {
         const data = response.data;
 
         if (!data.success) {
-            error.value = 'Error al obtener los docentes activos';
+            error.value = 'Error al obtener los docentes inactivos';
             allDocentes.value = [];
             return;
         }
@@ -874,7 +874,7 @@ const fetchDisabledProfessors = async () => {
             allDocentes.value = [];
             error.value = null;
         } else if (status === 401 || status === 403) {
-            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
+            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión.';
             allDocentes.value = [];
         } else {
             error.value = err.response?.data?.message || 'Error al obtener los docentes activos';
@@ -936,10 +936,10 @@ const fetchSuspendedProfessors = async () => {
             allDocentes.value = [];
             error.value = null;
         } else if (status === 401 || status === 403) {
-            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
+            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión.';
             allDocentes.value = [];
         } else {
-            error.value = err.response?.data?.message || 'Error al obtener los docentes activos';
+            error.value = err.response?.data?.message || 'Error al obtener los docentes suspendidos';
             allDocentes.value = [];
         }
     } finally {
@@ -998,7 +998,7 @@ const fetchByDepartment = async (department_id) => {
             allDocentes.value = [];
             error.value = null;
         } else if (status === 401 || status === 403) {
-            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
+            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión.';
             allDocentes.value = [];
         } else {
             error.value = err.response?.data?.message || 'Error al obtener los docentes activos';
@@ -1087,7 +1087,7 @@ const performApiSearch = async () => {
         if (status === 404) {
             error.value = 'No se encontraron docentes con ese criterio de búsqueda';
         } else if (status === 401 || status === 403) {
-            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
+            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión.';
         } else {
             error.value = err.response?.data?.errors.nombre || 'Error al buscar docentes';
         }
@@ -1109,7 +1109,7 @@ const performCleanSearch = async () => {
 };
 
 const handleSelectFilter = () => {
-    if (selectedOption.value === 'view-all') {
+    if (selectedOption.value === 'view-all' || selectedOption.value === '') {
         // Mostrar todos los docentes
         fetchDocentes();
     } else if (selectedOption.value === 'view-actives') {
@@ -1122,8 +1122,9 @@ const handleSelectFilter = () => {
         // Filtrar docentes suspendidos
         fetchSuspendedProfessors();
     } else if (selectedOption.value === 'view-by-deparment') {
-        fetchDepartamentosYCarreras();
-        handleFetchByDepartment();
+        fetchDepartamentosYCarreras().then(() => {
+            handleFetchByDepartment();
+        });
     }
 };
 

@@ -1158,9 +1158,6 @@ class UserController extends Controller {
         $rolesPermitidos = [
             RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-            RolesEnum::JEFE_DEPARTAMENTO->value,
-            RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -1200,9 +1197,6 @@ class UserController extends Controller {
         $rolesPermitidos = [
             RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-            RolesEnum::JEFE_DEPARTAMENTO->value,
-            RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -1213,7 +1207,7 @@ class UserController extends Controller {
         }
 
         $users = Cache::remember('coordinadores', 60, function () {
-            return (new User())->getDepartmentManagersOnly()->take(50);
+            return (new User())->getDepartmentManagersOnly();
         });
 
         if ($users->isEmpty()) {
@@ -1242,9 +1236,7 @@ class UserController extends Controller {
         $rolesPermitidos = [
             RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-            RolesEnum::JEFE_DEPARTAMENTO->value,
-            RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -1255,7 +1247,7 @@ class UserController extends Controller {
         }
 
         $users = Cache::remember('career_managers_only', 60, function () {
-            return (new User())->getCareerManagersOnly()->take(50);
+            return (new User())->getCareerManagersOnly();
         });
 
         if ($users->isEmpty()) {
@@ -1286,7 +1278,6 @@ class UserController extends Controller {
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
             RolesEnum::JEFE_DEPARTAMENTO->value,
             RolesEnum::COORDINADOR_CARRERAS->value,
-            RolesEnum::DOCENTE->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -1297,7 +1288,7 @@ class UserController extends Controller {
         }
 
         $users = Cache::remember('professors_only', 60, function () {
-            return (new User())->getProfessorsOnly()->take(50);
+            return (new User())->getProfessorsOnly();
         });
 
         if ($users->isEmpty()) {
@@ -1339,7 +1330,7 @@ class UserController extends Controller {
         }
 
         $users = Cache::remember('students_only', 60, function () {
-            return (new User())->getStudentsOnly()->take(50);
+            return (new User())->getStudentsOnly();
         });
 
         if ($users->isEmpty()) {
@@ -1497,7 +1488,7 @@ class UserController extends Controller {
 
         if ($users->isEmpty()) {
             return response()->json([
-                'message' => 'No se encontraron usuarios en el departamento especificado',
+                'message' => 'No se encontraron usuarios en la carrera especificada',
                 'success' => false
             ], 404);
         }

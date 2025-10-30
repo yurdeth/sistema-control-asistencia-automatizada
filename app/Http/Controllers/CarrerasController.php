@@ -306,11 +306,7 @@ class CarrerasController extends Controller {
         }
 
         try {
-            $carreras = DB::table('carreras')
-                ->select('id', 'nombre', 'departamento_id')
-                ->where('departamento_id', $departamentoId)
-                ->orderBy('nombre', 'asc')
-                ->get();
+            $carreras = (new carreras())->getByDepartamento((int)$departamentoId);
 
             return response()->json([
                 'message' => 'Carreras obtenidas exitosamente',

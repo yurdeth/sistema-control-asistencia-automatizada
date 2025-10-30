@@ -25,7 +25,7 @@ class carreras extends Model {
     public function getAllCarreras(): Collection {
         return DB::table('carreras')
             ->select('id', 'nombre', 'departamento_id')
-            ->orderBy('nombre', 'asc')
+            ->orderBy('departamento_id', 'asc')
             ->get();
     }
 
@@ -34,6 +34,14 @@ class carreras extends Model {
             ->select('id', 'nombre', 'departamento_id')
             ->where('id', $carrera_id)
             ->first();
+    }
+
+    public function getByDepartamento(int $departamento_id): Collection {
+        return DB::table('carreras')
+            ->select('id', 'nombre', 'departamento_id')
+            ->where('departamento_id', $departamento_id)
+            ->orderBy('nombre', 'asc')
+            ->get();
     }
 
     public function getByStatus(string $estado): Collection {
