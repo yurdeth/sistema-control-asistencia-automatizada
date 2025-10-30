@@ -229,6 +229,11 @@ onMounted(() => {
                     label: "Solicitudes Inscripción",
                     href: "/solicitudes-inscripcion",
                     icon: "fa-solid fa-file-signature",
+                },
+                {
+                    label: "Roles",
+                    href: "/roles",
+                    icon: "fa-solid fa-user-shield",
                 }
             ]
         },
