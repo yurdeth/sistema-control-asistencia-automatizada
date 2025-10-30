@@ -166,7 +166,26 @@ class User extends Authenticatable {
     }
 
     public function myProfile($user_id): Collection {
-        return $this->getAllUsers()->where('id', '=', $user_id);
+        return DB::table('users')
+            ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->leftJoin('departamentos', 'users.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('carreras', 'users.carrera_id', '=', 'carreras.id')
+            ->select(
+                'users.id',
+                'users.nombre_completo',
+                'users.email',
+                'users.telefono',
+                'users.departamento_id',
+                'users.carrera_id',
+                'users.estado',
+                'usuario_roles.rol_id',
+                'roles.nombre as rol_nombre',
+                'departamentos.nombre as departamento_nombre',
+                'carreras.nombre as carrera_nombre'
+            )
+            ->where('users.id', '=', $user_id)
+            ->get();
     }
 
     public function getByName(string $name, int $rol_id): Collection {

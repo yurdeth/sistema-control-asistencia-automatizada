@@ -1365,18 +1365,30 @@ class UserController extends Controller {
         }
 
         $user = (new User())->myProfile(Auth::user()->id)->first();
-        /*$departamento_nombre = DB::table('departamentos')
-            ->join('users', 'departamentos.id', '=', 'users.departamento_id')
-            ->where('users.id', $user->id)
-            ->value('departamentos.nombre');*/
-
-//        $user->departamento_nombre = $departamento_nombre;
 
         if (!$user) {
             return response()->json([
                 'message' => 'Usuario no encontrado',
                 'success' => false
             ], 404);
+        }
+
+        if ($user->departamento_id) {
+            $departamento_nombre = DB::table('departamentos')
+                ->where('id', $user->departamento_id)
+                ->value('nombre');
+            $user->departamento_nombre = $departamento_nombre;
+        } else {
+            $user->departamento_nombre = null;
+        }
+
+        if ($user->carrera_id) {
+            $carrera_nombre = DB::table('carreras')
+                ->where('id', $user->carrera_id)
+                ->value('nombre');
+            $user->carrera_nombre = $carrera_nombre;
+        } else {
+            $user->carrera_nombre = null;
         }
 
         return response()->json([
