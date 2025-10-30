@@ -687,7 +687,7 @@ async function fetchDocentes() {
     error.value = null;
 
     try {
-        const res = await axios.get(`${API_URL}/users/get/all`, getAuthHeaders());
+        const res = await axios.get(`${API_URL}/users/get/professors/all`, getAuthHeaders());
 
         // res.data.data puede ser un array o un objeto indexado; soporta ambos
         const payload = res.data?.data;

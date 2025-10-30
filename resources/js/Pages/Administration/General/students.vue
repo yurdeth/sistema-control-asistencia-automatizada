@@ -564,7 +564,7 @@
         error.value = null;
 
         try {
-            const res = await axios.get(`${API_URL}/users/get/all`, getAuthHeaders());
+            const res = await axios.get(`${API_URL}/users/get/students/all`, getAuthHeaders());
 
             const payload = res.data?.data;
             const raw = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);

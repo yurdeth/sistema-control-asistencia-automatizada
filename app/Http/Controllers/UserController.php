@@ -48,7 +48,7 @@ class UserController extends Controller {
         $user_rol = $this->getUserRoleId();
 
         $users = Cache::remember('all_users', 60, function () use ($user_rol) {
-            return (new User())->getUsersBasedOnMyUserRole($user_rol);
+            return (new User())->getUsersBasedOnMyUserRole($user_rol)->take(50);
         });
 
         if ($users->isEmpty()) {
