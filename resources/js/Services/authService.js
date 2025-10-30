@@ -30,6 +30,8 @@ export const authService ={
                 localStorage.removeItem('user');
                 router.visit('/login');
             }
+
+            localStorage.setItem('isAuthenticated', 'true');
         } catch (error) {
             console.error('Error verificando token:', error);
             localStorage.removeItem('token');

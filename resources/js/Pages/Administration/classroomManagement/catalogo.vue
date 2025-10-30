@@ -1,28 +1,38 @@
 <template>
-    <Head title="Catalogo" />
+    <Head title="Catalogo"/>
 
     <!-- Loader mientras verifica -->
-    <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
-        <div class="text-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
-            <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+    <!-- <div v-if="!isAuthenticated">
+        <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
+                <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+            </div>
         </div>
-    </div>
+    </div> -->
+
+    <Loader
+        v-if="!isAuthenticated"
+        @authenticated="handleAuthenticated"
+        message="Verificando sesión..."
+        :redirectDelay="2000"
+    />
 
     <MainLayoutDashboard>
-        <div class="p-6">
+        <div class="p-6" v-if="isAuthenticated">
             <!-- Header -->
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <div>
                         <h1 class="text-2xl font-bold" :style="{color:colorText}">Catálogo de Aulas</h1>
-                        <p class="text-gray-600 text-sm mt-1">Gestiona y visualiza todas las aulas disponibles dentro de la facultad</p>
+                        <p class="text-gray-600 text-sm mt-1">Gestiona y visualiza todas las aulas disponibles dentro de
+                            la facultad</p>
                     </div>
 
                     <button
                         class="hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
                         :style="{background: colorButton}"
-                        @click="irACrearAula"
+                        @click="openCreateModal"
                     >
                         <i class="fa-solid fa-plus"></i>
                         Agregar Aula
@@ -32,8 +42,8 @@
 
             <!-- Mensajes -->
             <div v-if="mensaje.mostrar"
-                 :class="mensaje.tipo === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'"
-                 class="border-l-4 p-4 mb-4 rounded">
+                :class="mensaje.tipo === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'"
+                class="border-l-4 p-4 mb-4 rounded">
                 <div class="flex justify-between items-center">
                     <p class="font-medium">{{ mensaje.texto }}</p>
                     <button @click="cerrarMensaje" class="text-xl font-bold">&times;</button>
@@ -104,14 +114,14 @@
                 </button>
             </div>
 
-           <!-- Lista de aulas -->
-                <div v-else-if="aulas.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <Card
-                        v-for="aula in aulasFiltradas"
-                        :key="aula.id"
-                        :aula="aula"
-                    />
-                </div>
+            <!-- Lista de aulas -->
+            <div v-else-if="aulas.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <Card
+                    v-for="aula in aulasPaginadas"
+                    :key="aula.id"
+                    :aula="aula"
+                />
+            </div>
 
             <!-- Sin aulas -->
             <div v-else class="text-center py-12 bg-gray-50 rounded-lg">
@@ -119,27 +129,230 @@
                 <p class="text-gray-600 text-lg">No hay aulas registradas</p>
                 <p class="text-gray-500 text-sm mt-2">Comienza agregando tu primera aula</p>
             </div>
+            <!-- Controles de paginación -->
+            <div class="flex justify-center mt-6 space-x-2">
+                <button
+                    @click="paginaActual--"
+                    :disabled="paginaActual ===1"
+                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                >
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+                <button
+                    @click="paginaActual++"
+                    :disabled="paginaActual === totalPaginas"
+                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                >
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+            <br>
         </div>
+
+
+        <Modal :show="showModal" @close="closeModal" max-width="lg">
+            <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
+                <h2 class="text-lg font-semibold">
+                    {{ isEditMode ? 'Editar aula' : 'Agregar aula' }}
+                </h2>
+
+                <!-- Sección de Imagen -->
+                <div>
+                    <label class="block text-sm font-medium mb-2">Imagen del Aula</label>
+
+                    <!-- Input oculto para seleccionar archivo -->
+                    <input
+                        ref="fileInput"
+                        type="file"
+                        @change="handleImageUpload"
+                        accept="image/*"
+                        class="hidden"
+                    />
+
+                    <!-- Vista previa o placeholder -->
+                    <div class="flex flex-col items-center">
+                        <!-- Cuadro de imagen -->
+                        <div
+                            @click="triggerFileInput"
+                            class="w-full h-64 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-all hover:border-blue-500 hover:bg-blue-50"
+                            :class="imagePreview ? 'border-gray-300 bg-gray-50' : 'border-gray-300 bg-gray-100'"
+                        >
+                            <!-- Sin imagen -->
+                            <div v-if="!imagePreview" class="text-center">
+                                <i class="fa-solid fa-image text-5xl text-gray-400 mb-3"></i>
+                                <p class="text-gray-500 font-medium">Imagen del aula</p>
+                                <p class="text-gray-400 text-sm mt-1">Haz clic para agregar una imagen</p>
+                            </div>
+
+                            <!-- Con imagen -->
+                            <img
+                                v-else
+                                :src="imagePreview"
+                                alt="Vista previa"
+                                class="w-full h-full object-cover rounded-lg"
+                            />
+                        </div>
+
+                        <!-- Botones de acción (solo se muestran si hay imagen) -->
+                        <div v-if="imagePreview" class="flex gap-3 mt-3">
+                            <button
+                                type="button"
+                                @click="triggerFileInput"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                            >
+                                <i class="fa-solid fa-pen"></i>
+                                Editar
+                            </button>
+                            <button
+                                type="button"
+                                @click="removeImage"
+                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                            >
+                                <i class="fa-solid fa-trash"></i>
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
+
+                    <p v-if="formErrors.imagen" class="text-red-500 text-xs mt-2">
+                        {{ formErrors.imagen[0] }}
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Código</label>
+                    <input
+                        type="text"
+                        v-model="form.codigo"
+                        class="w-full mt-1 border-gray-300 rounded-md"
+                        :class="{ 'border-red-500': formErrors.codigo }"
+                    />
+                    <p v-if="formErrors.codigo" class="text-red-500 text-xs mt-1">
+                        {{ formErrors.codigo[0] }}
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Nombre</label>
+                    <input
+                        type="text"
+                        v-model="form.nombre"
+                        @input="form.nombre = form.nombre.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')"
+                        class="w-full mt-1 border-gray-300 rounded-md"
+                        :class="{ 'border-red-500': formErrors.nombre }"
+                    />
+                    <p v-if="formErrors.nombre" class="text-red-500 text-xs mt-1">
+                        {{ formErrors.nombre[0] }}
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Capacidad</label>
+                    <input
+                        type="number"
+                        v-model="form.capacidad"
+                        class="w-full mt-1 border-gray-300 rounded-md"
+                        max="150"
+                        :class="{ 'border-red-500': formErrors.capacidad }"
+                        @input="validateCapacity"
+                    />
+                    <p v-if="formErrors.capacidad" class="text-red-500 text-xs mt-1">
+                        {{ formErrors.capacidad[0] }}
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Ubicación</label>
+                    <textarea
+                        v-model="form.ubicacion"
+                        class="w-full mt-1 border-gray-300 rounded-md"
+                        :class="{ 'border-red-500': formErrors.ubicacion }"
+                    ></textarea>
+                    <p v-if="formErrors.ubicacion" class="text-red-500 text-xs mt-1">
+                        {{ formErrors.ubicacion[0] }}
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Estado</label>
+                    <select
+                        v-model="form.estado"
+                        class="w-full mt-1 border-gray-300 rounded-md"
+                        :class="{ 'border-red-500': formErrors.estado }"
+                    >
+                        <option value="activo">Disponible</option>
+                        <option value="inactivo">Ocupada</option>
+                        <option value="inactivo">Mantenimiento</option>
+                        <option value="inactivo">Inactiva</option>
+                    </select>
+                    <p v-if="formErrors.estado" class="text-red-500 text-xs mt-1">
+                        {{ formErrors.estado[0] }}
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" @click="closeModal" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors" :disabled="loading">
+                        {{ isEditMode ? 'Actualizar' : 'Crear' }}
+                    </button>
+                </div>
+            </form>
+        </Modal>
+
     </MainLayoutDashboard>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import {ref, computed, onMounted} from 'vue';
+import {Head, Link} from '@inertiajs/vue3';
+import Loader from '@/Components/AdministrationComponent/Loader.vue';
 import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
 import axios from 'axios';
+import browserImageCompression from 'browser-image-compression';
+
 // componentes
 import Card from '@/Components/AdministrationComponent/Card.vue';
 import {authService} from "@/Services/authService.js";
+import Modal from "@/Components/Modal.vue";
+import {createDeparments, updateDepartment} from "@/Services/deparmentsService.js";
 
-const isLoading = ref(true);
+
 const colorText = ref('#2C2D2F');
 const colorButton = ref('#d93f3f');
+const showModal = ref(false);
+const isEditMode = ref(false);
+const fileInput = ref(null);
+const imagePreview = ref(null);
+    // Estado de autenticación
+    const isAuthenticated = ref(false);
+
+    // Maneja cuando la autenticación es exitosa
+    const handleAuthenticated = (status) => {
+        isAuthenticated.value = status;
+    };
+
+const form = ref({
+    id: null,
+    codigo: '',
+    nombre: '',
+    capacidad: '',
+    ubicacion: '',
+    estado: 'activo',
+    imagen: null,
+});
+
+const formErrors = ref({});
 
 // ======| Estados |======
 const aulas = ref([]);
 const cargando = ref(false);
+const loading = ref(false);
 const error = ref(null);
+
 const mensaje = ref({
     mostrar: false,
     tipo: '',
@@ -151,6 +364,26 @@ const filtros = ref({
     capacidad: 'all',
     estado: 'all'
 });
+
+onMounted(async () => {
+    await authService.verifyToken(localStorage.getItem("token"));
+
+    await cargarAulas();
+    isLoading.value = false;
+});
+
+// ======| Para la paginación |======
+const paginaActual = ref(1)
+const porPagina = ref(9)
+
+
+const totalPaginas = computed(() => Math.ceil(aulasFiltradas.value.length / porPagina.value))
+
+const aulasPaginadas = computed(() => {
+    const inicio = (paginaActual.value - 1) * porPagina.value
+    const fin = inicio + porPagina.value
+    return aulasFiltradas.value.slice(inicio, fin)
+})
 
 // ======| Filtrado dinámico de las aulas |======
 const aulasFiltradas = computed(() => {
@@ -303,6 +536,23 @@ const mostrarMensaje = (tipo, texto) => {
     }, 5000);
 };
 
+// Función para abrir modal de creación
+function openCreateModal() {
+    isEditMode.value = false
+    form.value = {
+        id: null,
+        codigo: '',
+        nombre: '',
+        capacidad: '',
+        ubicacion: '',
+        estado: 'activo',
+        imagen: null,
+    }
+    imagePreview.value = null
+    formErrors.value = {}
+    showModal.value = true
+}
+
 /**
  * Cerrar mensaje
  */
@@ -310,11 +560,124 @@ const cerrarMensaje = () => {
     mensaje.value.mostrar = false;
 };
 
+function closeModal() {
+    showModal.value = false
+    imagePreview.value = null
+    formErrors.value = {}
+}
 
-onMounted(async () => {
-    await authService.verifyToken(localStorage.getItem("token"));
+async function handleSubmit() {
+    try {
+        // Limpiar errores previos
+        formErrors.value = {};
 
-    await cargarAulas();
-    isLoading.value = false;
-});
+        if (isEditMode.value) {
+            // Actualizar departamento existente
+            await updateDepartment(form.value.id, form.value);
+            alert('Aula actualizada exitosamente');
+        } else {
+            // Crear nuevo departamento
+            console.log('Creando aula:', form.value);
+            // Validación personalizada: no permitir números en el nombre
+            const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+            if (!nombreRegex.test(form.value.nombre)) {
+                formErrors.value.nombre = ['El nombre no debe contener números ni caracteres especiales.'];
+                return;
+            }
+
+            await createDeparments(form.value);
+            alert('Aula creada exitosamente');
+        }
+
+        // Recargar la tabla
+        await cargarAulas();
+        closeModal();
+
+        // Limpiar el formulario
+        form.value = {
+            codigo: '',
+            nombre: '',
+            capacidad: '',
+            ubicacion: '',
+            estado: 'activo',
+            imagen: null,
+        };
+        imagePreview.value = null;
+
+    } catch (error) {
+        console.error('Error completo:', error);
+        if (error.response?.status === 422) {
+            formErrors.value = error.response.data.errors;
+            console.error('Errores de validación:', formErrors.value);
+            alert('Por favor, verifica los campos del formulario:');
+        } else {
+            console.error('Error inesperado:', error);
+            alert('Ocurrió un error al guardar: ' + (error.response?.data?.message || error.message));
+        }
+    }
+}
+
+// Disparar el input de archivo
+const triggerFileInput = () => {
+    fileInput.value.click();
+};
+
+// Manejar la carga de imagen
+const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+        // Validar tipo de archivo
+        if (!file.type.startsWith('image/')) {
+            formErrors.value.imagen = ['Por favor selecciona un archivo de imagen válido'];
+            return;
+        }
+
+        try {
+            // Comprimir la imagen
+            const options = {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 800,
+                useWebWorker: true
+            };
+
+            const compressedFile = await browserImageCompression(file, options);
+            form.value.imagen = compressedFile;
+
+            // Crear vista previa
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.value = e.target.result;
+            };
+            reader.readAsDataURL(compressedFile);
+
+            // Limpiar error si existía
+            if (formErrors.value.imagen) {
+                delete formErrors.value.imagen;
+            }
+        } catch (error) {
+            console.error('Error al comprimir la imagen:', error);
+            formErrors.value.imagen = ['Error al procesar la imagen'];
+        }
+    }
+};
+
+// Eliminar imagen
+const removeImage = () => {
+    imagePreview.value = null;
+    form.value.imagen = null;
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
+};
+
+function validateCapacity(event) {
+    const value = event.target.value;
+    // Only allow numbers up to 150
+    const regex = /^(?:1[0-4][0-9]|150|[1-9]?[0-9])$/;
+    if (!regex.test(value)) {
+        form.value.capacidad = Math.min(Number(value), 150);
+    }
+}
+
 </script>

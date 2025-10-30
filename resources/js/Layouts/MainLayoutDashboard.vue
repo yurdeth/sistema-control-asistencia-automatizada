@@ -80,6 +80,25 @@
                 <nav class="flex items-center justify-between">
                     <div></div>
                     <div class="sm:ms-6 sm:flex sm:items-center" v-if="user && user.nombre_completo">
+                        <Link
+                        href="#"
+                        class="sidebar-link flex items-center gap-2 p-2 rounded-lg transition-colors duration-300
+                                hover:text-white shadow-lg hover:shadow-md"
+                        :style="{ color: colorText }"
+                        >
+                            <i class="fa-solid fa-bell"></i> Notificaciones
+                            <!-- Badge de notificación -->
+                        <span
+                            v-if="notificationCount > 0"
+                            class="absolute -top-1 left-8 text-white text-xs font-bold px-2 py-0.5 rounded-full
+                                transform hover:-translate-y-0.5 transition-all duration-200 shadow-md"
+                            :style="{background:'#eb6238'}"
+                        >
+                            {{ notificationCount }}
+                        </span>
+                        </Link>
+
+
                         <!-- Custom Dropdown -->
                         <div class="relative" ref="dropdownRef">
                             <button
@@ -178,6 +197,11 @@ onMounted(() => {
                         label: "Disponibilidad",
                         href: "/disponibilidad",
                         icon: "fa-solid fa-calendar-days",
+                    },
+                    {
+                        label: "Horarios",
+                        href: "/horarios",
+                        icon: "fa-solid fa-clock",
                     }
                 ]
         },
@@ -193,31 +217,36 @@ onMounted(() => {
                 },
                 {
                     label: "Estudiantes.",
-                    href: "#",
+                    href: "/estudiantes",
                     icon: "fa-solid fa-user",
+                },
+                {
+                    label: "Grupos",
+                    href: "/grupos",
+                    icon: "fa-solid fa-layer-group",
+                },
+                {
+                    label: "Solicitudes Inscripción",
+                    href: "/solicitudes-inscripcion",
+                    icon: "fa-solid fa-file-signature",
                 }
             ]
         },
-                {
+        {
             key: "Reportes-sistema",
             title: "Reportes",
             icon: "fa-solid fa-folder-open",
             items: [
                 {
-                    label: "Aulas Fuera de Servicio",
-                    href: "#",
+                    label: "Gestión de reportes",
+                    href: "/informes",
                     icon: "fa-solid fa-file",
                 },
                 {
-                    label: "Asignaciones Recurrentes",
+                    label: "Incidencias",
                     href: "#",
-                    icon: "fa-solid fa-file",
+                    icon: "fa-solid fa-triangle-exclamation",
                 },
-                {
-                    label: "Exportar reportes",
-                    href: "#",
-                    icon: "fa-solid fa-file-import",
-                }
             ]
         }
     ];

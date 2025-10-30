@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ResetPasswordMail;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -9,103 +10,57 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller {
     public function loginAsGuest(): JsonResponse {
-        if (Auth::check()) {
-            return response()->json([
-                'message' => 'Ya autenticado',
-                'success' => false
-            ], 400);
-        }
-
-        $credentials = [
-            'email' => env('GUEST_EMAIL'),
-            'password' => env('GUEST_PASSWORD')
-        ];
-
         try {
-            // Verificar que las credenciales de invitado estén configuradas
-            if (!$credentials['email'] || !$credentials['password']) {
-                return response()->json([
-                    'message' => 'Las credenciales de invitado no están configuradas',
-                    'success' => false
-                ], 500);
-            }
+            // En esta verga, creo un usuario aleatorio temporalmente para el invitado
+            $randomUser = User::create([
+                'nombre_completo' => 'guest ' . uniqid(),
+                'email' => 'guest_' . uniqid() . '@ues.edu.sv',
+                'password' => bcrypt(uniqid()),
+                'departamento_id' => null,
+                'estado' => 'activo',
+                'ultimo_acceso' => Carbon::now(),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
 
-            // Verificar si el usuario existe
-            $user = User::where('email', $credentials['email'])->first();
+            DB::table('usuario_roles')->insert([
+                'usuario_id' => $randomUser->id,
+                'rol_id' => 7,
+                'asignado_por_id' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
 
-            if (!$user) {
-                return response()->json([
-                    'message' => 'El usuario invitado no existe',
-                    'success' => false
-                ], 404);
-            }
+            $randomUser->save();
+            Auth::login($randomUser);
+            $user = $randomUser;
 
-            // Verificar el estado del usuario antes de intentar login
-            if ($user->estado !== 'activo') {
-                return response()->json([
-                    'message' => 'El usuario invitado no está activo',
-                    'success' => false
-                ], 403);
-            }
-
-            // Intentar autenticación
-            if (!Auth::attempt($credentials)) {
-                return response()->json([
-                    'message' => 'Error en las credenciales de invitado',
-                    'success' => false
-                ], 401);
-            }
-
-            // Actualizar último acceso
-            $user->ultimo_acceso = Carbon::now();
-            $user->save();
-
-            // Obtener rol del usuario
-            $role_id = DB::table('usuario_roles')
-                ->where('usuario_id', $user->id)
-                ->value('rol_id');
-
-            $user->role_id = $role_id;
-
-            // Crear token de acceso
-            $tokenResult = $user->createToken('Guest Access Token');
-            $token = $tokenResult->token;
-            $token->expires_at = Carbon::now()->addDays(30);
-            $token->save();
-
-            // Obtener información adicional del usuario
-            $departamento_nombre = DB::table('departamentos')
-                ->where('id', $user->departamento_id)
-                ->value('nombre');
-
-            $user->departamento_nombre = $departamento_nombre;
-
-            $role_nombre = DB::table('roles')
-                ->join('usuario_roles', 'roles.id', '=', 'usuario_roles.rol_id')
-                ->where('usuario_roles.usuario_id', $user->id)
-                ->value('nombre');
-
-            $user->role_nombre = $role_nombre;
+            // Crear token de invitado
+            $tokenResult = $user->createToken('Personal Access Token');
+            $guestToken = $tokenResult->token;
+            $guestToken->expires_at = Carbon::now()->addDays(30);
+            $guestToken->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Inicio de sesión como invitado exitoso',
+                'message' => 'Inicio de sesión exitoso',
                 'user' => $user,
                 'token' => $tokenResult->accessToken,
                 'token_type' => 'Bearer',
-                'expires_at' => Carbon::parse($token->expires_at)->toDateTimeString(),
+                'expires_at' => Carbon::parse($guestToken->expires_at)->toDateTimeString(),
             ]);
-
         } catch (Exception $e) {
             Log::error('Error en login de invitado', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
             ]);
-
             return response()->json([
                 'message' => 'Error en el servidor',
                 'success' => false
@@ -236,17 +191,6 @@ class AuthController extends Controller {
         }
     }
 
-    /*private function sendWelcomeMail(Request $request, User $user){
-        $details = [
-            'subject' => 'Bienvenido a Minerva RV Lab, '. $user->name . '.',
-            'name' => 'Minerva RV Lab',
-            'email' => $user->email,
-            'message' => 'Es un gusto tenerte con nosotros'
-        ];
-
-        Mail::to($user->email)->send(new ContactFormMail($details));
-    }*/
-
     public function verifyToken(Request $request): JsonResponse {
         try {
             // El middleware auth:api ya verificó el token
@@ -278,6 +222,280 @@ class AuthController extends Controller {
                 'message' => 'Error al verificar token',
                 'success' => false
             ], 401);
+        }
+    }
+
+    /**
+     * Solicitar restablecimiento de contraseña
+     * Genera un token y envía un email con el link de reset
+     */
+    public function forgotPassword(Request $request): JsonResponse {
+
+        $rules = [
+            'email' => ['required', 'email', 'exists:users,email'],
+        ];
+
+        $messages = [
+            'email.required' => 'El correo es requerido',
+            'email.email' => 'El correo no es válido',
+            'email.exists' => 'El correo no está registrado en el sistema',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+
+        try {
+
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'El correo no está registrado',
+                    'success' => false
+                ], 404);
+            }
+
+            if ($user->estado !== 'activo') {
+                return response()->json([
+                    'message' => 'Esta cuenta está inactiva o suspendida',
+                    'success' => false
+                ], 403);
+            }
+
+            $token = Str::random(64);
+
+            DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->delete();
+
+            DB::table('password_reset_tokens')
+                ->insert([
+                    'email' => $email,
+                    'token' => $token,
+                    'created_at' => Carbon::now(),
+                ]);
+
+            Mail::to($email)->send(new ResetPasswordMail($email, $token, $user->nombre_completo));
+
+            Log::info('Reset password token generado', [
+                'email' => $email,
+                'timestamp' => Carbon::now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Se ha enviado un correo con las instrucciones para restablecer tu contraseña'
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error en forgot password', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al procesar la solicitud',
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Validar que el token de reset sea válido y no haya expirado
+     */
+    public function validateResetToken(Request $request): JsonResponse {
+
+        $rules = [
+            'email' => ['required', 'email'],
+            'token' => ['required', 'string'],
+        ];
+
+        $messages = [
+            'email.required' => 'El correo es requerido',
+            'email.email' => 'El correo no es válido',
+            'token.required' => 'El token es requerido',
+            'token.string' => 'El token debe ser una cadena de texto',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+        $token = $request->input('token');
+
+        try {
+
+            $passwordReset = DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->where('token', $token)
+                ->first();
+
+            if (!$passwordReset) {
+                return response()->json([
+                    'message' => 'El token de restablecimiento es inválido',
+                    'success' => false
+                ], 400);
+            }
+
+            // Verificar que el token no haya expirado
+            $tokenAge = Carbon::now()->diffInSeconds(Carbon::parse($passwordReset->created_at));
+
+            if ($tokenAge > 3600) {
+                // Eliminar token expirado
+                DB::table('password_reset_tokens')
+                    ->where('email', $email)
+                    ->where('token', $token)
+                    ->delete();
+
+                return response()->json([
+                    'message' => 'El enlace de restablecimiento ha expirado. Por favor, solicita uno nuevo',
+                    'success' => false
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Token válido'
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error al validar reset token', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Error al validar el token',
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Restablecer la contraseña del usuario
+     */
+    public function resetPassword(Request $request): JsonResponse {
+
+        $rules = [
+            'email' => ['required', 'email'],
+            'token' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ];
+
+        $messages = [
+            'email.required' => 'El correo es requerido',
+            'email.email' => 'El correo no es válido',
+            'token.required' => 'El token es requerido',
+            'token.string' => 'El token debe ser una cadena de texto',
+            'password.required' => 'La contraseña es requerida',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+            'password.confirmed' => 'Las contraseñas no coinciden',
+        ];
+
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+        $token = $request->input('token');
+        $password = $request->input('password');
+
+        try {
+
+            // Validar que el token sea válido y no esté expirado
+            $passwordReset = DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->where('token', $token)
+                ->first();
+
+            if (!$passwordReset) {
+                return response()->json([
+                    'message' => 'El token de restablecimiento es inválido',
+                    'success' => false
+                ], 400);
+            }
+
+            // Verificar que el token no haya expirado
+            $tokenAge = Carbon::now()->diffInSeconds(Carbon::parse($passwordReset->created_at));
+
+            if ($tokenAge > 3600) {
+                DB::table('password_reset_tokens')
+                    ->where('email', $email)
+                    ->where('token', $token)
+                    ->delete();
+
+                return response()->json([
+                    'message' => 'El enlace de restablecimiento ha expirado. Por favor, solicita uno nuevo',
+                    'success' => false
+                ], 400);
+            }
+
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'El usuario no existe',
+                    'success' => false
+                ], 404);
+            }
+
+            $user->password = Hash::make($password);
+            $user->save();
+
+            DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->where('token', $token)
+                ->delete();
+
+            // Revocar todos los tokens de acceso existentes del usuario
+            DB::table('oauth_access_tokens')
+                ->where('user_id', $user->id)
+                ->where('revoked', false)
+                ->update(['revoked' => true]);
+
+            Log::info('Contraseña restablecida', [
+                'user_id' => $user->id,
+                'email' => $email,
+                'timestamp' => Carbon::now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tu contraseña ha sido restablecida exitosamente. Por favor inicia sesión con tu nueva contraseña'
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error en reset password', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al restablecer la contraseña',
+                'success' => false
+            ], 500);
         }
     }
 }

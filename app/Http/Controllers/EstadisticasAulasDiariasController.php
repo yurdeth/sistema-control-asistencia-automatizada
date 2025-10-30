@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\estadisticas_aulas_diarias;
+use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,8 +13,6 @@ use Illuminate\Support\Facades\Validator;
 
 class EstadisticasAulasDiariasController extends Controller {
     public function index(): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -21,8 +20,15 @@ class EstadisticasAulasDiariasController extends Controller {
             ], 401);
         }
 
-        // Solo roles administrativos pueden ver estadísticas (rol 1-4)
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -53,8 +59,6 @@ class EstadisticasAulasDiariasController extends Controller {
     }
 
     public function show($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -62,8 +66,15 @@ class EstadisticasAulasDiariasController extends Controller {
             ], 401);
         }
 
-        // Solo roles administrativos pueden ver estadísticas (rol 1-4)
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -94,8 +105,6 @@ class EstadisticasAulasDiariasController extends Controller {
     }
 
     public function getByClassroom($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -103,8 +112,15 @@ class EstadisticasAulasDiariasController extends Controller {
             ], 401);
         }
 
-        // Solo roles administrativos pueden ver estadísticas (rol 1-4)
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -137,8 +153,6 @@ class EstadisticasAulasDiariasController extends Controller {
     }
 
     public function getByDate($fecha): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -146,8 +160,15 @@ class EstadisticasAulasDiariasController extends Controller {
             ], 401);
         }
 
-        // Solo roles administrativos pueden ver estadísticas (rol 1-4)
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -180,8 +201,6 @@ class EstadisticasAulasDiariasController extends Controller {
     }
 
     public function getByDateRange(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -189,8 +208,15 @@ class EstadisticasAulasDiariasController extends Controller {
             ], 401);
         }
 
-        // Solo roles administrativos pueden ver estadísticas (rol 1-4)
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -237,8 +263,6 @@ class EstadisticasAulasDiariasController extends Controller {
     }
 
     public function getTopOccupied(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -246,8 +270,15 @@ class EstadisticasAulasDiariasController extends Controller {
             ], 401);
         }
 
-        // Solo roles administrativos pueden ver estadísticas (rol 1-4)
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -285,8 +316,6 @@ class EstadisticasAulasDiariasController extends Controller {
     }
 
     public function getLowOccupancy(Request $request): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -294,8 +323,15 @@ class EstadisticasAulasDiariasController extends Controller {
             ], 401);
         }
 
-        // Solo roles administrativos pueden ver estadísticas (rol 1-4)
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -331,8 +367,6 @@ class EstadisticasAulasDiariasController extends Controller {
     }
 
     public function getAverageOccupancy(): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -340,8 +374,15 @@ class EstadisticasAulasDiariasController extends Controller {
             ], 401);
         }
 
-        // Solo roles administrativos pueden ver estadísticas (rol 1-4)
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -350,7 +391,7 @@ class EstadisticasAulasDiariasController extends Controller {
 
         try {
             $promedios = estadisticas_aulas_diarias::with(['aula'])
-                ->select('aula_id', 
+                ->select('aula_id',
                     DB::raw('AVG(porcentaje_ocupacion) as promedio_ocupacion'),
                     DB::raw('AVG(minutos_ocupada) as promedio_minutos'))
                 ->groupBy('aula_id')
@@ -377,8 +418,6 @@ class EstadisticasAulasDiariasController extends Controller {
     }
 
     public function getTotalMinutesByClassroom($id): JsonResponse {
-        $user_rol = $this->getUserRole();
-
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -386,8 +425,15 @@ class EstadisticasAulasDiariasController extends Controller {
             ], 401);
         }
 
-        // Solo roles administrativos pueden ver estadísticas (rol 1-4)
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -413,11 +459,12 @@ class EstadisticasAulasDiariasController extends Controller {
         }
     }
 
-    private function getUserRole() {
+    private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
             ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
+            ->value('roles.nombre');
     }
 
     private function sanitizeInput($input): string {

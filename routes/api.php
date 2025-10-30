@@ -1,28 +1,29 @@
 <?php
 
+use App\Http\Controllers\AsistenciasEstudiantesController;
 use App\Http\Controllers\AulaRecursosController;
 use App\Http\Controllers\AulasController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CarrerasController;
 use App\Http\Controllers\CiclosAcademicosController;
+use App\Http\Controllers\ConfiguracionSistemaController;
 use App\Http\Controllers\DepartamentosController;
+use App\Http\Controllers\EscaneosQrController;
+use App\Http\Controllers\EstadisticasAulasDiariasController;
 use App\Http\Controllers\GruposController;
+use App\Http\Controllers\HistorialAulasController;
 use App\Http\Controllers\HorariosController;
+use App\Http\Controllers\InscripcionesController;
+use App\Http\Controllers\MantenimientosController;
 use App\Http\Controllers\MateriasController;
+use App\Http\Controllers\NotificacionesController;
 use App\Http\Controllers\RecursosTipoController;
 use App\Http\Controllers\RolesController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\SolicitudesInscripcionController;
-use App\Http\Controllers\InscripcionesController;
 use App\Http\Controllers\SesionesClaseController;
-use App\Http\Controllers\AsistenciasEstudiantesController;
-use App\Http\Controllers\MantenimientosController;
-use App\Http\Controllers\EscaneosQrController;
-use App\Http\Controllers\HistorialAulasController;
+use App\Http\Controllers\SolicitudesInscripcionController;
 use App\Http\Controllers\SystemLogsController;
 use App\Http\Controllers\TiposNotificacionController;
-use App\Http\Controllers\NotificacionesController;
-use App\Http\Controllers\EstadisticasAulasDiariasController;
-use App\Http\Controllers\ConfiguracionSistemaController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +39,11 @@ Route::get('/login', function () {
 Route::post('/login', [AuthController::class, "login"])->name('login.post');
 //Route::post('/login-web', [AuthController::class, "loginWeb"])->name('login.post.web');
 Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
+
+// Password Reset
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot.password');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset.password');
+Route::post('/validate-reset-token', [AuthController::class, 'validateResetToken'])->name('validate.reset.token');
 
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
@@ -60,7 +66,10 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/users/edit/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::get('/users/get/role/{id}', [UserController::class, 'getByRole'])->name('users.getByRole');
     Route::get('/users/get/department/{id}', [UserController::class, 'getByDepartment'])->name('users.getByDepartment');
-    Route::post('/users/get/status', [UserController::class, 'getByStatus'])->name('users.getByRoleAndDepartment');
+    Route::post('/users/get/department/by-role/', [UserController::class, 'getByDepartmentByRole'])->name('users.getByDepartmentByRole');
+    Route::post('/users/get/career/by-role/', [UserController::class, 'getByCareerByRole'])->name('users.getByCareerByRole');
+    Route::post('/users/get/status', [UserController::class, 'getByStatus'])->name('users.getByStatus');
+    Route::post('/users/get/status-role', [UserController::class, 'getByStatusByRole'])->name('users.getByStatusByRole');
     Route::get('/users/get/subject/{id}', [UserController::class, 'getBySubject'])->name('users.getBySubject');
     Route::get('/users/get/academics/all', [UserController::class, 'getAdministradoresAcademicosOnly'])->name('users.getAcademics');
     Route::get('/users/get/department-managers/all', [UserController::class, 'getDepartmentManagersOnly'])->name('users.getDepManagers');
@@ -87,8 +96,10 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/subjects/new', [MateriasController::class, 'store'])->name('materias.store');
     Route::patch('/subjects/edit/{id}', [MateriasController::class, 'edit'])->name('materias.edit');
     Route::delete('/subjects/delete/{id}', [MateriasController::class, 'destroy'])->name('materias.delete');
-    Route::get('/subjects/get/department/{id}', [MateriasController::class, 'getMateriasByDepartment'])->name('materias.getByDepartment');
+    Route::get('/subjects/get/by-career/{id}', [MateriasController::class, 'getMateriasByCareerId'])->name('materias.getByCareer');
     Route::get('/subjects/get/status/{estado}', [MateriasController::class, 'getMateriasByStatus'])->name('materias.getByStatus');
+    Route::get('/subjects/get/user/{id}', [MateriasController::class, 'getSubjectsByUserId'])->name('materias.getByUser');
+    Route::get('/subjects/get/my/all', [MateriasController::class, 'getMySubjects'])->name('materias.getMySubjects');
 
     //************************************ MANAGE GROUPS ************************************//
     Route::get('/groups/get/all', [GruposController::class, 'index'])->name('grupos.index');
@@ -140,7 +151,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/classroom-resources/get/resource/{id}', [AulaRecursosController::class, 'getClassroomsByResource'])->name('aulaRecursos.getByResource');
     Route::post('/classroom-resources/get/status/all', [AulaRecursosController::class, 'getResourcesByStatus'])->name('aulaRecursos.getByStatus');
     Route::patch('/classroom-resources/change-status/{id}', [AulaRecursosController::class, 'changeResourceStatus'])->name('aulaRecursos.changeStatus');
-
+    Route::get('/classroom-resources/get/inventory/all', [AulaRecursosController::class, 'getInventory'])->name('aulaRecursos.getInventory');
 
     //************************************ MANAGE ACADEMIC TERM ************************************//
     Route::get('/academic-terms/get/all', [CiclosAcademicosController::class, 'index'])->name('academicTerms.index');
@@ -158,7 +169,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/resource-types/edit/{id}', [RecursosTipoController::class, 'edit'])->name('resourceTypes.edit');
     Route::delete('/resource-types/delete/{id}', [RecursosTipoController::class, 'destroy'])->name('resourceTypes.delete');
 
-  //************************************ MANAGE ENROLLMENT REQUESTS ************************************//
+    //************************************ MANAGE ENROLLMENT REQUESTS ************************************//
     Route::get('/enrollment-requests/get/all', [SolicitudesInscripcionController::class, 'index'])->name('enrollmentRequests.index');
     Route::get('/enrollment-requests/get/{id}', [SolicitudesInscripcionController::class, 'show'])->name('enrollmentRequests.show');
     Route::post('/enrollment-requests/new', [SolicitudesInscripcionController::class, 'store'])->name('enrollmentRequests.store');
@@ -299,4 +310,15 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::delete('/system-config/delete/{id}', [ConfiguracionSistemaController::class, 'destroy'])->name('systemConfig.destroy');
     Route::get('/system-config/get/category/{categoria}', [ConfiguracionSistemaController::class, 'getByCategory'])->name('systemConfig.getByCategory');
     Route::get('/system-config/get/modifiable/all', [ConfiguracionSistemaController::class, 'getModifiable'])->name('systemConfig.getModifiable');
+
+    //************************************ MANAGE CARREERS ************************************//
+    Route::get('/careers/get/all', [CarrerasController::class, 'index'])->name('carreras.index');
+    Route::get('/careers/get/{id}', [CarrerasController::class, 'show'])->name('carreras.show');
+    Route::post('/careers/new', [CarrerasController::class, 'store'])->name('carreras.store');
+    Route::patch('/careers/edit/{id}', [CarrerasController::class, 'update'])->name('carreras.edit');
+    Route::delete('/careers/delete/{id}', [CarrerasController::class, 'destroy'])->name('carreras.delete');
+    Route::get('/careers/get/by-departament/{departamentoId}', [CarrerasController::class, 'getByDepartamento'])->name('carreras.by.departamento');
+    Route::get('/careers/get/status/{estado}', [CarrerasController::class, 'getCareersByStatus'])->name('carreras.by.status');
+    Route::post('/careers/disable/{id}', [CarrerasController::class, 'disableCareer'])->name('carreras.disable');
+    Route::post('/careers/enable/{id}', [CarrerasController::class, 'enableCareer'])->name('carreras.enable');
 });

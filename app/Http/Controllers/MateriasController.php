@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\materias;
+use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -59,20 +60,20 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Solo permitir a administradores, académicos y jefes de departamento
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+
+        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
             'codigo' => $this->sanitizeInput($request->input('codigo', '')),
             'nombre' => $this->sanitizeInput($request->input('nombre', '')),
             'descripcion' => $this->sanitizeInput($request->input('descripcion', '')),
-            'departamento_id' => $this->sanitizeInput($request->input('departamento_id', '')),
+            'carrera_id' => $this->sanitizeInput($request->input('carrera_id', '')),
             'estado' => $this->sanitizeInput($request->input('estado', 'activa')),
         ]);
 
@@ -80,7 +81,7 @@ class MateriasController extends Controller {
             'codigo' => 'required|string|max:10|unique:materias,codigo',
             'nombre' => 'required|string|max:100',
             'descripcion' => 'nullable|string|max:255',
-            'departamento_id' => 'required|integer|exists:departamentos,id',
+            'carrera_id' => 'required|integer|exists:carreras,id',
             'estado' => 'required|in:activa,inactiva',
         ];
 
@@ -94,9 +95,9 @@ class MateriasController extends Controller {
             'nombre.max' => 'El nombre no debe exceder los 100 caracteres.',
             'descripcion.string' => 'La descripción debe ser una cadena de texto.',
             'descripcion.max' => 'La descripción no debe exceder los 255 caracteres.',
-            'departamento_id.required' => 'El ID del departamento es obligatorio.',
-            'departamento_id.integer' => 'El ID del departamento debe ser un número entero.',
-            'departamento_id.exists' => 'El departamento especificado no existe.',
+            'carrera_id.required' => 'El ID de la carrera es obligatorio.',
+            'carrera_id.integer' => 'El ID de la carrera debe ser un número entero.',
+            'carrera_id.exists' => 'La carrera especificada no existe.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser "activa" o "inactiva".',
         ];
@@ -105,7 +106,15 @@ class MateriasController extends Controller {
             $validation = $request->validate($rules, $messages);
 
             DB::beginTransaction();
-            $materia = materias::create($validation);
+
+            $materia = DB::table('materias')->insert([
+                'codigo' => $request->codigo,
+                'nombre' => $request->nombre,
+                'descripcion' => $request->descripcion,
+                'carrera_id' => $request->carrera_id,
+                'estado' => $request->estado
+            ]);
+
             DB::commit();
 
             return response()->json([
@@ -121,6 +130,10 @@ class MateriasController extends Controller {
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 
     /**
@@ -169,19 +182,20 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+
+        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
             'codigo' => $this->sanitizeInput($request->input('codigo', '')),
             'nombre' => $this->sanitizeInput($request->input('nombre', '')),
             'descripcion' => $this->sanitizeInput($request->input('descripcion', '')),
-            'departamento_id' => $this->sanitizeInput($request->input('departamento_id', '')),
+            'carrera_id' => $this->sanitizeInput($request->input('carrera_id', '')),
             'estado' => $this->sanitizeInput($request->input('estado', '')),
         ]);
 
@@ -189,7 +203,7 @@ class MateriasController extends Controller {
             'codigo' => 'sometimes|required|string|max:10|unique:materias,codigo,' . $materia_id,
             'nombre' => 'sometimes|required|string|max:100',
             'descripcion' => 'sometimes|nullable|string|max:255',
-            'departamento_id' => 'sometimes|required|integer|exists:departamentos,id',
+            'carrera_id' => 'sometimes|required|integer|exists:carreras,id',
             'estado' => 'sometimes|required|in:activa,inactiva',
         ];
 
@@ -203,9 +217,9 @@ class MateriasController extends Controller {
             'nombre.max' => 'El nombre no debe exceder los 100 caracteres.',
             'descripcion.string' => 'La descripción debe ser una cadena de texto.',
             'descripcion.max' => 'La descripción no debe exceder los 255 caracteres.',
-            'departamento_id.required' => 'El ID del departamento es obligatorio.',
-            'departamento_id.integer' => 'El ID del departamento debe ser un número entero.',
-            'departamento_id.exists' => 'El departamento especificado no existe.',
+            'carrera_id.required' => 'El ID de la carrera es obligatorio.',
+            'carrera_id.integer' => 'El ID de la carrera debe ser un número entero.',
+            'carrera_id.exists' => 'La carrera especificada no existe.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser "activa" o "inactiva".',
         ];
@@ -232,8 +246,8 @@ class MateriasController extends Controller {
             if ($request->has('descripcion')) {
                 $materia->descripcion = $validation['descripcion'];
             }
-            if ($request->has('departamento_id')) {
-                $materia->departamento_id = $validation['departamento_id'];
+            if ($request->has('carrera_id')) {
+                $materia->carrera_id = $validation['carrera_id'];
             }
             if ($request->has('estado')) {
                 $materia->estado = $validation['estado'];
@@ -269,12 +283,16 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -305,7 +323,7 @@ class MateriasController extends Controller {
         }
     }
 
-    public function getMateriasByDepartment(int $department_id): JsonResponse {
+    public function getMateriasByCareerId(int $career_id): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -313,17 +331,8 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Solo permitir a administradores, académicos, jefes de departamento y coordinadores de carrera
-        if ($user_rol > 4) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }
-
         try {
-            $materias = (new materias())->getSubjectsByDepartment($department_id);
+            $materias = (new materias())->getSubjectsByCareerId($career_id);
 
             if ($materias->isEmpty()) {
                 return response()->json([
@@ -354,13 +363,20 @@ class MateriasController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Solo permitir a administradores, académicos, jefes de departamento y coordinadores de carrera
-        if ($user_rol > 4) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -387,14 +403,75 @@ class MateriasController extends Controller {
         }
     }
 
-    private function getUserRole() {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
+    public function getSubjectsByUserId(int $user_id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            $materias = (new materias())->getSubjectsByUserId($user_id);
+
+            if ($materias->isEmpty()) {
+                return response()->json([
+                    'message' => 'No se encontraron materias para el usuario especificado',
+                    'success' => false
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Materias encontradas',
+                'success' => true,
+                'data' => $materias
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las materias',
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    private function sanitizeInput($input): string {
-        return htmlspecialchars(strip_tags(trim($input)));
+    public function getMySubjects(): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            $materias = (new materias())->getMySubjects();
+
+            if ($materias->isEmpty()) {
+                return response()->json([
+                    'message' => 'No se encontraron materias para el usuario autenticado',
+                    'success' => false
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Materias encontradas',
+                'success' => true,
+                'data' => $materias
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las materias',
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function getUserRoleName(): string|null {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->where('users.id', Auth::id())
+            ->value('roles.nombre');
     }
 }

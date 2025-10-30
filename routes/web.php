@@ -42,6 +42,12 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
         ]);
     });
 
+    Route::get('/estudiantes', function () {
+        return Inertia::render('Administration/General/students', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
     Route::get('/disponibilidad', function () {
         return Inertia::render('Administration/classroomManagement/availability', [
             'mustCheckAuth' => true
@@ -50,6 +56,30 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
 
     Route::get('/departamentos', function () {
         return Inertia::render('Administration/General/departments', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
+    Route::get('/informes', function () {
+        return Inertia::render('Administration/General/reports', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
+    Route::get('/horarios', function () {
+        return Inertia::render('Administration/classroomManagement/horarios', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
+    Route::get('/grupos', function () {
+        return Inertia::render('Administration/classroomManagement/grupos', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
+    Route::get('/solicitudes-inscripcion', function () {
+        return Inertia::render('Administration/General/solicitudesInscripcion', [
             'mustCheckAuth' => true
         ]);
     });

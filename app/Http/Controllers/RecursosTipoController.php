@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\recursos_tipo;
+use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,15 +22,6 @@ class RecursosTipoController extends Controller {
                 'success' => false
             ], 401);
         }
-
-        /*$user_rol = $this->getUserRole();
-        // Disponible solamente para: Administradores (1), Administrador académico (2), Jefe de departamentos (3) y Docentes (4)
-        if ($user_rol > 4) {
-            return response()->json([
-                'message' => 'Acceso no autorizado',
-                'success' => false
-            ], 401);
-        }*/
 
         try {
             $recursos_tipos = Cache::remember('recursos_tipos', 60, function () {
@@ -61,13 +53,18 @@ class RecursosTipoController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Disponible solamente para: Administradores (1), Administrador académico (2) y Jefe de departamentos (3)
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $request->merge([
@@ -135,13 +132,18 @@ class RecursosTipoController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Disponible solamente para: Administradores (1), Administrador académico (2) y Jefe de departamentos (3)
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -178,13 +180,18 @@ class RecursosTipoController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Disponible solamente para: Administradores (1), Administrador académico (2) y Jefe de departamentos (3)
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         $recursos_tipo = recursos_tipo::find($recursos_tipo_id);
@@ -268,13 +275,18 @@ class RecursosTipoController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        // Disponible solamente para: Administradores (1), Administrador académico (2) y Jefe de departamentos (3)
-        if ($user_rol > 3) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
         try {
@@ -306,11 +318,12 @@ class RecursosTipoController extends Controller {
         }
     }
 
-    private function getUserRole() {
+    private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
             ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
+            ->value('roles.nombre');
     }
 
     private function sanitizeInput($input): string {

@@ -1,16 +1,15 @@
 <template>
-    <Head title="Departamentos" />
+    <Head title="Departamentos"/>
 
-    <!-- Loader mientras verifica -->
-    <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
-        <div class="text-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
-            <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
-        </div>
-    </div>
+    <Loader
+        v-if="!isAuthenticated"
+        @authenticated="handleAuthenticated"
+        message="Verificando sesión..."
+        :redirectDelay="2000"
+    />
 
     <MainLayoutDashboard>
-        <div class="p-6">
+        <div class="p-6" v-if="isAuthenticated">
             <!-- Header de la vista-->
             <div class="mb-6">
                 <h1 class="text-2xl font-bold text-gray-900 mb-1" :style="{color:colorText}">Departamentos</h1>
@@ -53,71 +52,89 @@
                 <div v-if="!loading" class="bg-white rounded-lg overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full" :style="{ border: '1px solid #d93f3f' }">
-                            <thead class="bg-gray-50 border-b-2 border-gray-200" :style="{background: '#d93f3f', height: '40px'}">
-                                <tr>
-                                    <th class="text-white">Id</th>
-                                    <th class="text-white">Nombre</th>
-                                    <th class="text-white">Descripción</th>
-                                    <th class="text-white">Estado</th>
-                                    <th class="text-white">Opciones</th>
-                                </tr>
+                            <thead class="bg-gray-50 border-b-2 border-gray-200"
+                                   :style="{background: '#d93f3f', height: '40px'}">
+                            <tr>
+                                <th class="text-white">Id</th>
+                                <th class="text-white">Nombre</th>
+                                <th class="text-white">Descripción</th>
+                                <th class="text-white">Estado</th>
+                                <th class="text-white">Opciones</th>
+                            </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                <!-- Mensaje cuando no hay resultados -->
-                <tr v-if="departments.length === 0">
-                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
-                        <div class="flex flex-col items-center gap-2">
-                            <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <p class="text-lg font-medium">No se encontraron resultados</p>
-                            <p class="text-sm">
-                                {{ searchTerm ? `No hay departamentos que coincidan con "${searchTerm}"` : 'No hay departamentos registrados' }}
-                            </p>
-                        </div>
-                    </td>
-                </tr>
+                            <!-- Mensaje cuando no hay resultados -->
+                            <tr v-if="departments.length === 0">
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor"
+                                             viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <p class="text-lg font-medium">No se encontraron resultados</p>
+                                        <p class="text-sm">
+                                            {{
+                                                searchTerm ? `No hay departamentos que coincidan con "${searchTerm}"` : 'No hay departamentos registrados'
+                                            }}
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
 
-                <!-- Filas con datos -->
-                <tr v-else v-for="department in departments" :key="department.id" class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ department.id }}</td>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ department.nombre }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
-                        <div class="relative group">
-                            <!-- Texto truncado -->
-                            <p class="truncate">
-                                {{ department.descripcion || 'Sin descripción' }}
-                            </p>
+                            <!-- Filas con datos -->
+                            <tr v-else v-for="department in departments" :key="department.id"
+                                class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm text-gray-900">{{ department.id }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ department.nombre }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                                    <div class="relative group">
+                                        <!-- Texto truncado -->
+                                        <p class="truncate">
+                                            {{ department.descripcion || 'Sin descripción' }}
+                                        </p>
 
-                            <!-- Tooltip con descripción completa al hacer hover -->
-                            <div class="invisible group-hover:visible absolute z-10 w-64 p-3 text-white text-xs rounded-lg shadow-lg -top-2 left-0 transform -translate-y-full"
-                            :style="{ background: '#ff6e61' }">
-                            {{ department.descripcion || 'Sin descripción' }}
-                                <div class="absolute bottom-0 left-6 transform translate-y-1/2 rotate-45 w-2 h-2" :style="{ background: '#ff6e61' }"></div>
-                            </div>
-                        </div>
-                    </td>
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ department.estado }}</td>
-                                    <td class="px-6 py-4 text-sm">
-                                        <div class="flex gap-2">
-                                            <button
+                                        <!-- Tooltip con descripción completa al hacer hover -->
+                                        <div
+                                            class="invisible group-hover:visible absolute z-10 w-64 p-3 text-white text-xs rounded-lg shadow-lg -top-2 left-0 transform -translate-y-full"
+                                            :style="{ background: '#ff6e61' }">
+                                            {{ department.descripcion || 'Sin descripción' }}
+                                            <div
+                                                class="absolute bottom-0 left-6 transform translate-y-1/2 rotate-45 w-2 h-2"
+                                                :style="{ background: '#ff6e61' }"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900 flex justify-center items-center">
+                                    {{ department.estado }}
+                                </td>
+                                <td class="px-6 py-4 text-sm">
+                                    <div class="flex gap-2 justify-center items-center">
+                                        <button
                                             @click="openEditModal(department)"
                                             class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
                                             :disabled="loading"
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                @click="deleteItem(department.id)"
-                                                class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                                :style="{ background: '#9b3b3e' }"
-                                                :disabled="loading"
-                                            >
-                                                Eliminar
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        >
+                                            Editar
+                                        </button>
+                                        <button
+                                            @click="deleteItem(department.id)"
+                                            class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                            :style="{ background: '#9b3b3e' }"
+                                            :disabled="loading"
+                                        >
+                                            Eliminar
+                                        </button>
+                                        <button
+                                            @click="openCarreraModal(department.id)"
+                                            class="text-white px-4 py-2 rounded-lg"
+                                            :style="{background:'#eb9733'}"
+                                        >
+                                            Carreras
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -184,177 +201,264 @@
             </form>
         </Modal>
 
+        <!--Modal de carreras-->
+        <Modal :show="showCarreraModal" @close="showCarreraModal = false" max-width="md">
+            <div class="p-6">
+                <h2 class="text-lg font-semibold mb-4">
+                    Carreras de {{ selectedDepartment?.nombre }}
+                </h2>
+
+                <div v-for="(carrera, index) in carreras" :key="carrera.id" class="mb-2 border rounded">
+                    <button
+                        class="w-full text-left px-4 py-2 bg-gray-100 hover:bg-gray-200"
+                        @click="carrera.open = !carrera.open"
+                    >
+                        {{ carrera.nombre }}
+                    </button>
+                    <div v-show="carrera.open" class="p-4 bg-white border-t">
+                        <!-- Aquí puedes poner más info de la carrera -->
+                        <p>Información de la carrera...</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <button
+                        type="button"
+                        @click="showCarreraModal = false"
+                        class="px-4 py-2 bg-gray-300 rounded"
+                    >
+                        Salir
+                    </button>
+                </div>
+
+            </div>
+        </Modal>
+
+
     </MainLayoutDashboard>
 
 </template>
 
 <script setup>
-    import { Head } from '@inertiajs/vue3';
-    import { ref, onMounted, computed  } from 'vue';
-    import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
-    import Modal from '@/Components/Modal.vue';
-    import { getDeparmentsAll, createDeparments, updateDepartment, deleteDepartment, searchName, searchStatus } from '@/Services/deparmentsService';
-    import {authService} from "@/Services/authService.js";
+import {Head} from '@inertiajs/vue3';
+import {ref, onMounted, computed} from 'vue';
+import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
+import Modal from '@/Components/Modal.vue';
+import {
+    getDeparmentsAll,
+    createDeparments,
+    updateDepartment,
+    deleteDepartment,
+    searchName,
+    searchStatus
+} from '@/Services/deparmentsService';
+import {authService} from "@/Services/authService.js";
 
-    const isLoading = ref(true)
+import Loader from '@/Components/AdministrationComponent/Loader.vue';
+import axios from "axios";
 
-    // Definimos las propiedades necesarias
-    const colorText = ref('#1F2937')
-    const searchTerm = ref('')
-    const loading = ref(false)
-    const error = ref(null)
+// Estado de autenticación
+const isAuthenticated = ref(false);
 
-    const allDepartments = ref([]);
+// Maneja cuando la autenticación es exitosa
+const handleAuthenticated = (status) => {
+    isAuthenticated.value = status;
+};
 
-    // Computed property para filtrar departamentos
-    const departments = computed(() => {
-        if (!searchTerm.value.trim()) {
-            return allDepartments.value;
-        }
+// Definimos las propiedades necesarias
+const colorText = ref('#1F2937')
+const searchTerm = ref('')
+const loading = ref(false)
+const error = ref(null)
 
-        const search = searchTerm.value.toLowerCase().trim();
+const showCarreraModal = ref(false);
+const selectedDepartment = ref(null);
+const carreras = ref([]);
 
-        return allDepartments.value.filter(dept => {
-            const nombre = dept.nombre?.toLowerCase() || '';
-            const estado = dept.estado?.toLowerCase() || '';
-            const descripcion = dept.descripcion?.toLowerCase() || '';
+const allDepartments = ref([]);
 
-            return nombre.includes(search) ||
-                estado.includes(search) ||
-                descripcion.includes(search);
-        });
-    });
-
-    // Función para cargar departamentos
-    async function fetchDepartments() {
-        try {
-            loading.value = true;
-            error.value = null;
-            const response = await getDeparmentsAll();
-            allDepartments.value = Array.isArray(response) ? response : response.data;
-        } catch (error) {
-            console.error('Error al obtener los departamentos:', error);
-            error.value = 'Error al cargar los departamentos';
-        } finally {
-            loading.value = false;
-        }
+// Computed property para filtrar departamentos
+const departments = computed(() => {
+    if (!searchTerm.value.trim()) {
+        return allDepartments.value;
     }
 
-    onMounted(async () => {
-        await authService.verifyToken(localStorage.getItem("token"));
+    const search = searchTerm.value.toLowerCase().trim();
 
-        await fetchDepartments();
-        isLoading.value = false;
+    return allDepartments.value.filter(dept => {
+        const nombre = dept.nombre?.toLowerCase() || '';
+        const estado = dept.estado?.toLowerCase() || '';
+        const descripcion = dept.descripcion?.toLowerCase() || '';
+
+        return nombre.includes(search) ||
+            estado.includes(search) ||
+            descripcion.includes(search);
     });
+});
 
-    // parte donde se trabaja lo del modal
-    const showModal = ref(false)
-    const isEditMode = ref(false)
+// Función para cargar departamentos
+async function fetchDepartments() {
+    try {
+        loading.value = true;
+        error.value = null;
+        const response = await getDeparmentsAll();
+        allDepartments.value = Array.isArray(response) ? response : response.data;
+    } catch (error) {
+        console.error('Error al obtener los departamentos:', error);
+        error.value = 'Error al cargar los departamentos';
+    } finally {
+        loading.value = false;
+    }
+}
 
-    // Formulario reactivo
-    const form = ref({
+onMounted(async () => {
+    await authService.verifyToken(localStorage.getItem("token"));
+
+    await fetchDepartments();
+    isLoading.value = false;
+});
+
+// parte donde se trabaja lo del modal
+const showModal = ref(false)
+const isEditMode = ref(false)
+
+// Formulario reactivo
+const form = ref({
+    nombre: '',
+    descripcion: '',
+    estado: 'activo',
+});
+
+const formErrors = ref({});
+
+// Función para abrir modal de creación
+function openCreateModal() {
+    isEditMode.value = false
+    form.value = {
+        id: null,
         nombre: '',
         descripcion: '',
         estado: 'activo',
-    });
+    }
+    formErrors.value = {}
+    showModal.value = true
+}
 
-    const formErrors = ref({});
+// Función para abrir modal de edición
+function openEditModal(department) {
+    isEditMode.value = true
+    form.value = {...department}
+    formErrors.value = {}
+    showModal.value = true;
+}
 
-    // Función para abrir modal de creación
-    function openCreateModal() {
-        isEditMode.value = false
+// Función para cerrar modal
+function closeModal() {
+    showModal.value = false
+    formErrors.value = {}
+}
+
+// Lógica para crear o editar
+async function handleSubmit() {
+    try {
+        // Limpiar errores previos
+        formErrors.value = {};
+
+        if (isEditMode.value) {
+            // Actualizar departamento existente
+            await updateDepartment(form.value.id, form.value);
+            alert('Departamento actualizado exitosamente');
+        } else {
+            // Crear nuevo departamento
+            console.log('Creando departamento:', form.value);
+            // Validación personalizada: no permitir números en el nombre
+            const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+            if (!nombreRegex.test(form.value.nombre)) {
+                formErrors.value.nombre = ['El nombre no debe contener números ni caracteres especiales.'];
+                return;
+            }
+
+            await createDeparments(form.value);
+            alert('Departamento creado exitosamente');
+        }
+
+        // Recargar la tabla
+        await fetchDepartments();
+        closeModal();
+
+        // Limpiar el formulario
         form.value = {
-            id: null,
             nombre: '',
             descripcion: '',
             estado: 'activo',
+        };
+
+    } catch (error) {
+        console.error('Error completo:', error);
+        if (error.response?.status === 422) {
+            formErrors.value = error.response.data.errors;
+            console.error('Errores de validación:', formErrors.value);
+            alert('Por favor, verifica los campos del formulario:');
+        } else {
+            console.error('Error inesperado:', error);
+            alert('Ocurrió un error al guardar: ' + (error.response?.data?.message || error.message));
         }
-        formErrors.value = {}
-        showModal.value = true
+    }
+}
+
+// Función para eliminar departamento
+async function deleteItem(id) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este departamento?')) {
+        return;
     }
 
-    // Función para abrir modal de edición
-    function openEditModal(department) {
-        isEditMode.value = true
-        form.value = { ...department }
-        formErrors.value = {}
-        showModal.value = true;
+    try {
+        await deleteDepartment(id);
+
+        allDepartments.value = allDepartments.value.filter(dept => dept.id !== id);
+        alert('Departamento eliminado exitosamente');
+    } catch (error) {
+        console.error('Error al eliminar:', error);
+        if (error.response?.status === 404) {
+            alert('El departamento no existe o ya fue eliminado.');
+        } else if (error.response?.status === 403) {
+            alert('No tienes permisos para eliminar este departamento.');
+        } else {
+            alert('Error al eliminar: ' + (error.response?.data?.message || error.message));
+        }
     }
+}
 
-    // Función para cerrar modal
-    function closeModal() {
-        showModal.value = false
-        formErrors.value = {}
-    }
-
-    // Lógica para crear o editar
-    async function handleSubmit() {
-        try {
-            // Limpiar errores previos
-            formErrors.value = {};
-
-            if (isEditMode.value) {
-                // Actualizar departamento existente
-                await updateDepartment(form.value.id, form.value);
-                alert('Departamento actualizado exitosamente');
-            } else {
-                // Crear nuevo departamento
-                console.log('Creando departamento:', form.value);
-                // Validación personalizada: no permitir números en el nombre
-                const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
-                if (!nombreRegex.test(form.value.nombre)) {
-                    formErrors.value.nombre = ['El nombre no debe contener números ni caracteres especiales.'];
-                    return;
-                }
-
-                await createDeparments(form.value);
-                alert('Departamento creado exitosamente');
+async function fetchCarreras(departamento_id) {
+    try {
+        const response = await axios.get(`/api/careers/get/by-departament/${departamento_id}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
+        });
 
-            // Recargar la tabla
-            await fetchDepartments();
-            closeModal();
-
-            // Limpiar el formulario
-            form.value = {
-                nombre: '',
-                descripcion: '',
-                estado: 'activo',
-            };
-
-        } catch (error) {
-            console.error('Error completo:', error);
-            if (error.response?.status === 422) {
-                formErrors.value = error.response.data.errors;
-                console.error('Errores de validación:', formErrors.value);
-                alert('Por favor, verifica los campos del formulario:');
-            } else {
-                console.error('Error inesperado:', error);
-                alert('Ocurrió un error al guardar: ' + (error.response?.data?.message || error.message));
-            }
-        }
+        return response.data;
+    } catch (err) {
+        console.error('Error al cargar carreras:', err);
+        console.error('Error completo:', err.response?.data);
+        formErrors.value.general = 'Error al cargar carreras';
+        return [];
     }
+}
 
-    // Función para eliminar departamento
-    async function deleteItem(id) {
-        if (!confirm('¿Estás seguro de que deseas eliminar este departamento?')) {
-            return;
-        }
+// Parte donde se trabaja el modal de carreras
+async function openCarreraModal(department_id) {
+    selectedDepartment.value = departments.value.find(dept => dept.id === department_id);
 
-        try {
-            await deleteDepartment(id);
+    const response = await fetchCarreras(department_id);
 
-            allDepartments.value = allDepartments.value.filter(dept => dept.id !== id);
-            alert('Departamento eliminado exitosamente');
-        } catch (error) {
-            console.error('Error al eliminar:', error);
-            if (error.response?.status === 404) {
-                alert('El departamento no existe o ya fue eliminado.');
-            } else if (error.response?.status === 403) {
-                alert('No tienes permisos para eliminar este departamento.');
-            } else {
-                alert('Error al eliminar: ' + (error.response?.data?.message || error.message));
-            }
-        }
-    }
+    // Extraer y mapear carreras
+    const data = response.data || response;
+    carreras.value = (Array.isArray(data) ? data : Object.values(data || {}))
+        .map(c => ({ id: c.id, nombre: c.nombre || c.name || 'Sin nombre' }));
+
+    showCarreraModal.value = true;
+}
+
 </script>

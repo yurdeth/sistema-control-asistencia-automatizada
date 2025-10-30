@@ -21,6 +21,7 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "browser-image-compression": "^2.0.2",
         "xlsx": "^0.18.5"
     }
 }

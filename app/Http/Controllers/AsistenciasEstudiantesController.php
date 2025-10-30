@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\asistencias_estudiantes;
+use App\RolesEnum;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,11 +21,16 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [1, 2, 3];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -44,7 +51,7 @@ class AsistenciasEstudiantesController extends Controller {
                 'success' => true,
                 'data' => $asistencias
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener las asistencias',
@@ -61,11 +68,16 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [1, 2, 3];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -86,7 +98,7 @@ class AsistenciasEstudiantesController extends Controller {
                 'success' => true,
                 'data' => $asistencia
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener la asistencia',
@@ -103,16 +115,22 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::DOCENTE->value,
+            RolesEnum::ESTUDIANTE->value
+        ];
 
-        $rolesPermitidos = [5, 6];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 403);
         }
+
+        $request->merge([
+            'estado' => $this->sanitizeInput($request->input('estado')),
+        ]);
 
         try {
             $validator = Validator::make($request->all(), [
@@ -155,7 +173,7 @@ class AsistenciasEstudiantesController extends Controller {
                 'message' => 'Asistencia registrada exitosamente',
                 'data' => $asistencia
             ], 201);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al registrar la asistencia',
@@ -172,11 +190,14 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [5];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -215,7 +236,7 @@ class AsistenciasEstudiantesController extends Controller {
                 'message' => 'Asistencia actualizada exitosamente',
                 'data' => $asistencia
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar la asistencia',
@@ -232,11 +253,14 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [5];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -259,7 +283,7 @@ class AsistenciasEstudiantesController extends Controller {
                 'success' => true,
                 'message' => 'Asistencia eliminada exitosamente'
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al eliminar la asistencia',
@@ -276,11 +300,14 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [2, 4, 5];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -303,7 +330,7 @@ class AsistenciasEstudiantesController extends Controller {
                 'success' => true,
                 'data' => $asistencias
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener las asistencias de la sesión',
@@ -320,11 +347,14 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [2, 4, 5];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -364,11 +394,14 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [2, 4, 5];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -408,11 +441,14 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [2, 4, 5];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -475,11 +511,16 @@ class AsistenciasEstudiantesController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [1, 2, 3, 4, 5];
-
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -583,11 +624,12 @@ class AsistenciasEstudiantesController extends Controller {
         }
     }
 
-    private function getUserRole() {
+    private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
             ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
+            ->value('roles.nombre');
     }
 
     private function sanitizeInput($input): string {

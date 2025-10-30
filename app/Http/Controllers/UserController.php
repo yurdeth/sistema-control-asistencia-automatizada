@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\RolesEnum;
 use App\Rules\FormatEmailRule;
 use App\Rules\PasswordFormatRule;
 use App\Rules\PhoneRule;
@@ -28,16 +29,26 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
+        $user_rol = $this->getUserRoleId();
+
         $users = Cache::remember('all_users', 60, function () use ($user_rol) {
-            return (new User())->getUsersBasedOnMyUserRole($user_rol);
+            return (new User())->getUsersBasedOnMyUserRole($user_rol)->take(50);
         });
 
         if ($users->isEmpty()) {
@@ -54,6 +65,21 @@ class UserController extends Controller {
         ]);
     }
 
+    private function getUserRoleName(): string|null {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->where('users.id', Auth::id())
+            ->value('roles.nombre');
+    }
+
+    private function getUserRoleId() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -65,9 +91,16 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        $rolesPermitidos = [1, 2, 3, 5]; // root, Académico, Jefe de Departamento, Docente
-        if (!in_array($user_rol, $rolesPermitidos)) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -80,7 +113,8 @@ class UserController extends Controller {
             'telefono' => $this->sanitizeInput($request->input('telefono')),
             'password' => $this->sanitizeInput($request->input('password')),
             'password_confirmation' => $this->sanitizeInput($request->input('password_confirmation')),
-            'departamento_id' => $this->sanitizeInput($request->input('departamento_id')),
+            'departamento_id' => $request->input('departamento_id') ? $this->sanitizeInput($request->input('departamento_id')) : null,
+            'carrera_id' => $request->input('carrera_id') ? $this->sanitizeInput($request->input('carrera_id')) : null,
             'rol_id' => $this->sanitizeInput($request->input('rol_id')),
             'estado' => $this->sanitizeInput($request->input('estado')),
         ]);
@@ -91,7 +125,6 @@ class UserController extends Controller {
             'telefono' => ['nullable', 'string', 'max:20', new PhoneRule()],
             'password' => ['required', 'string', 'min:8', new PasswordFormatRule()],
             'password_confirmation' => 'required|string|same:password',
-            'departamento_id' => 'required|integer|exists:departamentos,id',
             'rol_id' => 'required|integer|exists:roles,id',
             'estado' => 'required|in:activo,inactivo,suspendido',
         ];
@@ -114,15 +147,87 @@ class UserController extends Controller {
             'password_confirmation.required' => 'La confirmación de la contraseña es obligatoria.',
             'password_confirmation.string' => 'La confirmación de la contraseña debe ser una cadena de texto.',
             'password_confirmation.same' => 'La confirmación de la contraseña no coincide con la contraseña.',
-            'departamento_id.required' => 'El ID del departamento es obligatorio.',
+            'departamento_id.required' => 'El ID del departamento es obligatorio para este rol.',
             'departamento_id.integer' => 'El ID del departamento debe ser un número entero.',
             'departamento_id.exists' => 'El ID del departamento no existe.',
+            'departamento_id.prohibited' => 'El departamento no debe ser especificado para este rol.',
+            'carrera_id.required' => 'El ID de la carrera es obligatorio para este rol.',
+            'carrera_id.integer' => 'El ID de la carrera debe ser un número entero.',
+            'carrera_id.exists' => 'El ID de la carrera no existe.',
+            'carrera_id.prohibited' => 'La carrera no debe ser especificada para este rol.',
             'rol_id.required' => 'El ID del rol es obligatorio.',
             'rol_id.integer' => 'El ID del rol debe ser un número entero.',
             'rol_id.exists' => 'El ID del rol no existe.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser uno de los siguientes: activo, inactivo, suspendido.',
         ];
+
+        // Validación condicional basada en el rol_id
+        $rol_id = $request->input('rol_id');
+        $departamento_id = $request->input('departamento_id');
+        $carrera_id = $request->input('carrera_id');
+
+        // Validaciones según el rol
+        switch ((int)$rol_id) {
+            case 1:
+            case 2:
+            case 7:
+                //Ni departamento_id ni carrera_id
+                $rules['departamento_id'] = 'prohibited';
+                $rules['carrera_id'] = 'prohibited';
+                break;
+
+            case 3:
+                //departamento_id (obligatorio)
+                $rules['departamento_id'] = 'required|integer|exists:departamentos,id';
+                $rules['carrera_id'] = 'prohibited';
+                break;
+
+            case 4:
+            case 6:
+                $rules['carrera_id'] = 'required|integer|exists:carreras,id';
+                $rules['departamento_id'] = 'prohibited';
+                break;
+
+            case 5:
+                // Puede tener departamento_id O carrera_id (uno de los dos obligatorio, pero no ambos)
+                if (!empty($departamento_id) && !empty($carrera_id)) {
+                    return response()->json([
+                        'message' => 'Error de validación',
+                        'errors' => [
+                            'departamento_id' => ['No se puede especificar departamento y carrera al mismo tiempo para un docente.'],
+                            'carrera_id' => ['No se puede especificar departamento y carrera al mismo tiempo para un docente.']
+                        ],
+                        'success' => false
+                    ], 422);
+                }
+
+                if (empty($departamento_id) && empty($carrera_id)) {
+                    return response()->json([
+                        'message' => 'Error de validación',
+                        'errors' => [
+                            'departamento_id' => ['Se debe especificar un departamento o una carrera para un docente.'],
+                            'carrera_id' => ['Se debe especificar un departamento o una carrera para un docente.']
+                        ],
+                        'success' => false
+                    ], 422);
+                }
+
+                if (!empty($departamento_id)) {
+                    $rules['departamento_id'] = 'required|integer|exists:departamentos,id';
+                    $rules['carrera_id'] = 'nullable';
+                } else {
+                    $rules['carrera_id'] = 'required|integer|exists:carreras,id';
+                    $rules['departamento_id'] = 'nullable';
+                }
+                break;
+
+            default:
+                // Para roles no definidos, permitir null en ambos
+                $rules['departamento_id'] = 'nullable|integer|exists:departamentos,id';
+                $rules['carrera_id'] = 'nullable|integer|exists:carreras,id';
+                break;
+        }
 
         try {
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -132,6 +237,17 @@ class UserController extends Controller {
                     'errors' => $validator->errors(),
                     'success' => false
                 ], 422);
+            }
+
+            $user_rol_id = (int)$this->getUserRoleId();
+
+            if ($request->rol_id <= $user_rol_id) {
+                if ($user_rolName != RolesEnum::ROOT->value) {
+                    return response()->json([
+                        'message' => 'No tiene permiso para asignar este rol',
+                        'success' => false
+                    ], 403);
+                }
             }
 
             DB::beginTransaction();
@@ -148,7 +264,8 @@ class UserController extends Controller {
             $user->email = $validatedData['email'];
             $user->telefono = $telefono;
             $user->password = Hash::make($validatedData['password']);
-            $user->departamento_id = $validatedData['departamento_id'];
+            $user->departamento_id = $validatedData['departamento_id'] ?? null;
+            $user->carrera_id = $validatedData['carrera_id'] ?? null;
             $user->estado = $validatedData['estado'];
             $user->save();
 
@@ -186,6 +303,10 @@ class UserController extends Controller {
         }
     }
 
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
+    }
+
     /**
      * Display the specified resource.
      */
@@ -197,19 +318,26 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        Log::info($user_rol);
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        if ($user_rol != 1 && Auth::user()->id != $id) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos) && Auth::user()->id != $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
-            ], 401);
+            ], 403);
         }
 
-        $user = (new User())->getUser($id)->first();
+        $user_rol = $this->getUserRoleId();
+        $user = (new User())->getUserBasedOnMyUserRole($user_rol, $id);
 
-        if (!$user) {
+        if (!$user || $user->isEmpty()) {
             return response()->json([
                 'message' => 'Usuario no encontrado',
                 'success' => false
@@ -231,14 +359,31 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
 
-        $rolesPermitidos = [1, 2, 3, 5]; // root, Académico, Jefe de Departamento, Docente
-        if (!in_array($user_rol, $rolesPermitidos) && Auth::user()->id != $id) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos) && Auth::user()->id != $id) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 403);
+        }
+
+        $user_rol_id = (int)$this->getUserRoleId();
+
+        if ($request->rol_id <= $user_rol_id) {
+            if ($user_rolName != RolesEnum::ROOT->value) {
+                return response()->json([
+                    'message' => 'No tiene permiso para asignar este rol',
+                    'success' => false
+                ], 403);
+            }
         }
 
         $dataToMerge = [];
@@ -264,7 +409,11 @@ class UserController extends Controller {
         }
 
         if ($request->has('departamento_id')) {
-            $dataToMerge['departamento_id'] = $this->sanitizeInput($request->input('departamento_id', ''));
+            $dataToMerge['departamento_id'] = $request->input('departamento_id') ? $this->sanitizeInput($request->input('departamento_id')) : null;
+        }
+
+        if ($request->has('carrera_id')) {
+            $dataToMerge['carrera_id'] = $request->input('carrera_id') ? $this->sanitizeInput($request->input('carrera_id')) : null;
         }
 
         if ($request->has('rol_id')) {
@@ -284,7 +433,6 @@ class UserController extends Controller {
                 'unique:users,email,' . $id, new FormatEmailRule()
             ],
             'telefono' => ['nullable', 'string', 'max:20', new PhoneRule()],
-            'departamento_id' => 'sometimes|required|integer|exists:departamentos,id',
             'rol_id' => 'sometimes|required|integer|exists:roles,id',
             'estado' => 'sometimes|required|in:activo,inactivo,suspendido',
         ];
@@ -312,15 +460,136 @@ class UserController extends Controller {
             'password_confirmation.required' => 'La confirmación de la contraseña es obligatoria.',
             'password_confirmation.string' => 'La confirmación de la contraseña debe ser una cadena de texto.',
             'password_confirmation.same' => 'La confirmación de la contraseña no coincide con la contraseña.',
-            'departamento_id.required' => 'El ID del departamento es obligatorio.',
+            'departamento_id.required' => 'El ID del departamento es obligatorio para este rol.',
             'departamento_id.integer' => 'El ID del departamento debe ser un número entero.',
             'departamento_id.exists' => 'El ID del departamento no existe.',
+            'departamento_id.prohibited' => 'El departamento no debe ser especificado para este rol.',
+            'carrera_id.required' => 'El ID de la carrera es obligatorio para este rol.',
+            'carrera_id.integer' => 'El ID de la carrera debe ser un número entero.',
+            'carrera_id.exists' => 'El ID de la carrera no existe.',
+            'carrera_id.prohibited' => 'La carrera no debe ser especificada para este rol.',
             'rol_id.required' => 'El ID del rol es obligatorio.',
             'rol_id.integer' => 'El ID del rol debe ser un número entero.',
             'rol_id.exists' => 'El ID del rol no existe.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser uno de los siguientes: activo, inactivo, suspendido.',
         ];
+
+        // Validación condicional basada en el rol_id (si se está actualizando)
+        $rol_id = $request->input('rol_id');
+
+        // Si se está actualizando el rol, aplicar validaciones condicionales
+        if ($request->has('rol_id')) {
+            // Obtener el usuario actual para verificar sus valores existentes
+            $currentUser = User::find($id);
+
+            $departamento_id = $request->input('departamento_id');
+            $carrera_id = $request->input('carrera_id');
+
+            // Validaciones según el rol
+            switch ((int)$rol_id) {
+                case 1: // root
+                case 2: // administrador_academico
+                case 7: // invitado
+                    // NO deben tener ni departamento_id ni carrera_id
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = 'prohibited';
+                    }
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = 'prohibited';
+                    }
+                    break;
+
+                case 3: // jefe_departamento
+                    // SOLO debe tener departamento_id (obligatorio)
+                    // Si no se proporciona en la petición, verificar que el usuario ya tenga uno
+                    if (!$request->has('departamento_id') && !$currentUser->departamento_id) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'departamento_id' => ['El departamento es obligatorio para el rol de jefe de departamento.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = 'required|integer|exists:departamentos,id';
+                    }
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = 'prohibited';
+                    }
+                    break;
+
+                case 4: // coordinador_carreras
+                case 6: // estudiante
+                    // SOLO debe tener carrera_id (obligatorio)
+                    // Si no se proporciona en la petición, verificar que el usuario ya tenga una
+                    if (!$request->has('carrera_id') && !$currentUser->carrera_id) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'carrera_id' => ['La carrera es obligatoria para este rol.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = 'required|integer|exists:carreras,id';
+                    }
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = 'prohibited';
+                    }
+                    break;
+
+                case 5: // docente
+                    // Puede tener departamento_id O carrera_id (uno de los dos obligatorio, pero no ambos)
+                    if (!empty($departamento_id) && !empty($carrera_id)) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'departamento_id' => ['No se puede especificar departamento y carrera al mismo tiempo para un docente.'],
+                                'carrera_id' => ['No se puede especificar departamento y carrera al mismo tiempo para un docente.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    // Verificar que tenga al menos uno (en la petición o en la BD)
+                    $tieneDepartamento = $request->has('departamento_id') ? !empty($departamento_id) : !empty($currentUser->departamento_id);
+                    $tieneCarrera = $request->has('carrera_id') ? !empty($carrera_id) : !empty($currentUser->carrera_id);
+
+                    if (!$tieneDepartamento && !$tieneCarrera) {
+                        return response()->json([
+                            'message' => 'Error de validación',
+                            'errors' => [
+                                'departamento_id' => ['Se debe especificar un departamento o una carrera para un docente.'],
+                                'carrera_id' => ['Se debe especificar un departamento o una carrera para un docente.']
+                            ],
+                            'success' => false
+                        ], 422);
+                    }
+
+                    if ($request->has('departamento_id')) {
+                        $rules['departamento_id'] = !empty($departamento_id) ? 'required|integer|exists:departamentos,id' : 'nullable';
+                    }
+                    if ($request->has('carrera_id')) {
+                        $rules['carrera_id'] = !empty($carrera_id) ? 'required|integer|exists:carreras,id' : 'nullable';
+                    }
+                    break;
+
+                default:
+                    // Para roles no definidos, permitir null en ambos
+                    $rules['departamento_id'] = 'sometimes|nullable|integer|exists:departamentos,id';
+                    $rules['carrera_id'] = 'sometimes|nullable|integer|exists:carreras,id';
+                    break;
+            }
+        } else {
+            // Si no se está actualizando el rol, solo validar si se proporcionan los campos
+            $rules['departamento_id'] = 'sometimes|nullable|integer|exists:departamentos,id';
+            $rules['carrera_id'] = 'sometimes|nullable|integer|exists:carreras,id';
+        }
 
         try {
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -362,8 +631,51 @@ class UserController extends Controller {
                 $user->departamento_id = $validatedData['departamento_id'];
             }
 
+            if (isset($validatedData['carrera_id'])) {
+                $user->carrera_id = $validatedData['carrera_id'];
+            }
+
             if (isset($validatedData['estado'])) {
                 $user->estado = $validatedData['estado'];
+            }
+
+            // Si se está cambiando el rol, limpiar departamento_id y carrera_id según las reglas del nuevo rol
+            if (isset($validatedData['rol_id'])) {
+                $new_rol_id = (int)$validatedData['rol_id'];
+
+                switch ($new_rol_id) {
+                    case 1: // root
+                    case 2: // administrador_academico
+                    case 7: // invitado
+                        // Estos roles NO deben tener ni departamento_id ni carrera_id
+                        $user->departamento_id = null;
+                        $user->carrera_id = null;
+                        break;
+
+                    case 3: // jefe_departamento
+                        // SOLO debe tener departamento_id, limpiar carrera_id
+                        $user->carrera_id = null;
+                        // Si no se proporcionó departamento_id en la actualización, mantener el actual
+                        break;
+
+                    case 4: // coordinador_carreras
+                    case 6: // estudiante
+                        // SOLO debe tener carrera_id, limpiar departamento_id
+                        $user->departamento_id = null;
+                        // Si no se proporcionó carrera_id en la actualización, mantener el actual
+                        break;
+
+                    case 5: // docente
+                        // Puede tener departamento_id O carrera_id
+                        // Si se proporcionó uno, limpiar el otro
+                        if (isset($validatedData['departamento_id']) && $validatedData['departamento_id']) {
+                            $user->carrera_id = null;
+                        } elseif (isset($validatedData['carrera_id']) && $validatedData['carrera_id']) {
+                            $user->departamento_id = null;
+                        }
+                        // Si no se proporcionó ninguno, mantener el que ya tiene
+                        break;
+                }
             }
 
             $user->save();
@@ -416,8 +728,8 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol != 1) {
+        $user_rolName = $this->getUserRoleName();
+        if ($user_rolName != RolesEnum::ROOT->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -478,8 +790,8 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol != 1) {
+        $user_rolName = $this->getUserRoleName();
+        if ($user_rolName != RolesEnum::ROOT->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -504,7 +816,7 @@ class UserController extends Controller {
                 ], 403);
             }
 
-            if($user->estado == 'inactivo') {
+            if ($user->estado == 'inactivo') {
                 return response()->json([
                     'message' => 'El usuario ya está inactivo',
                     'success' => false
@@ -537,8 +849,8 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol != 1) {
+        $user_rolName = $this->getUserRoleName();
+        if ($user_rolName != RolesEnum::ROOT->value) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -563,7 +875,7 @@ class UserController extends Controller {
                 ], 404);
             }
 
-            if($user->estado == 'activo') {
+            if ($user->estado == 'activo') {
                 return response()->json([
                     'message' => 'El usuario ya está activo',
                     'success' => false
@@ -596,20 +908,47 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
             ], 401);
         }
 
+        $rules = [
+            'nombre' => 'required|string|max:255',
+            'rol_nombre' => 'sometimes|string|in:root,administrador_academico,jefe_departamento,coordinador_carreras,docente,estudiante',
+        ];
+
+        $messages = [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.string' => 'El nombre debe ser una cadena de texto.',
+            'nombre.max' => 'El nombre no debe exceder los 255 caracteres.',
+            'rol_nombre.string' => 'El nombre del rol debe ser una cadena de texto.',
+            'rol_nombre.in' => 'El nombre del rol debe ser uno de los siguientes: root, administrador_academico, jefe_departamento, coordinador_carreras, docente, estudiante.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $validator->errors(),
+                'success' => false
+            ], 422);
+        }
+
         $name = $this->sanitizeInput($request->nombre);
-        $users = Cache::remember('users_by_name', 60, function () use ($name) {
-            return (new User())->getAllUsers()->filter(function ($user) use ($name) {
-                return stripos($user->nombre_completo, $name) !== false;
-            });
-        });
+        $rol_id = $this->getRolIdByName($request->rol_nombre ?? null);
+        $users = (new User())->getByName($name, $rol_id);
 
         if ($users->isEmpty()) {
             return response()->json([
@@ -625,6 +964,12 @@ class UserController extends Controller {
         ]);
     }
 
+    private function getRolIdByName(string $rol_nombre): int|null {
+        return DB::table('roles')
+            ->where('nombre', $rol_nombre)
+            ->value('id');
+    }
+
     public function getByRole(int $role_id): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -633,8 +978,16 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -667,8 +1020,16 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -701,8 +1062,16 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -743,8 +1112,16 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -777,8 +1154,13 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -811,8 +1193,13 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -845,8 +1232,14 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -879,8 +1272,15 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -913,8 +1313,16 @@ class UserController extends Controller {
             ], 401);
         }
 
-        $user_rol = $this->getUserRole();
-        if ($user_rol >= 6) {
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -948,18 +1356,30 @@ class UserController extends Controller {
         }
 
         $user = (new User())->myProfile(Auth::user()->id)->first();
-        $departamento_nombre = DB::table('departamentos')
-            ->join('users', 'departamentos.id', '=', 'users.departamento_id')
-            ->where('users.id', $user->id)
-            ->value('departamentos.nombre');
-
-        $user->departamento_nombre = $departamento_nombre;
 
         if (!$user) {
             return response()->json([
                 'message' => 'Usuario no encontrado',
                 'success' => false
             ], 404);
+        }
+
+        if ($user->departamento_id) {
+            $departamento_nombre = DB::table('departamentos')
+                ->where('id', $user->departamento_id)
+                ->value('nombre');
+            $user->departamento_nombre = $departamento_nombre;
+        } else {
+            $user->departamento_nombre = null;
+        }
+
+        if ($user->carrera_id) {
+            $carrera_nombre = DB::table('carreras')
+                ->where('id', $user->carrera_id)
+                ->value('nombre');
+            $user->carrera_nombre = $carrera_nombre;
+        } else {
+            $user->carrera_nombre = null;
         }
 
         return response()->json([
@@ -969,14 +1389,164 @@ class UserController extends Controller {
         ]);
     }
 
-    private function getUserRole() {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
+    public function getByDepartmentByRole(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        switch ($request->rol_nombre) {
+            case 'root':
+                $role_id = 1;
+                break;
+            case 'administrador_academico':
+                $role_id = 2;
+                break;
+            case 'jefe_departamento':
+                $role_id = 3;
+                break;
+            case 'coordinador_carreras':
+                $role_id = 4;
+                break;
+            case 'docente':
+                $role_id = 5;
+                break;
+            case 'estudiante':
+                $role_id = 6;
+                break;
+            case 'invitado':
+                $role_id = 7;
+                break;
+            default:
+                return response()->json([
+                    'message' => 'Nombre de rol inválido',
+                    'success' => false
+                ], 422);
+        }
+        $department_id = $this->sanitizeInput($request->departamento_id);
+        $users = (new User())->getByDepartmentByRole($role_id, $department_id);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios en el departamento especificado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
     }
 
-    private function sanitizeInput($input): string {
-        return htmlspecialchars(strip_tags(trim($input)));
+    public function getByCareerByRole(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $role_id = $this->getRolIdByName($request->rol_nombre);
+        $carrera_id = $this->sanitizeInput($request->carrera_id);
+        $users = (new User())->getByCareerByRole($role_id, $carrera_id);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios en la carrera especificada',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    public function getByStatusByRole(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $status = $this->sanitizeInput($request->estado);
+        if (!in_array($status, ['activo', 'inactivo', 'suspendido'])) {
+            return response()->json([
+                'message' => 'Estado inválido',
+                'success' => false
+            ], 422);
+        }
+
+        $role_id = $this->getRolIdByName($request->rol_nombre);
+
+        $users = (new User())->getByStatusByRole($status, $role_id);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios con el estado especificado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
     }
 }
