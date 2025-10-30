@@ -26,6 +26,23 @@
                         class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <button
+                        @click="performApiSearch"
+                        class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                        :style="{background: '#667aff'}"
+                    >
+                        <span class="text-xl"><i class="fas fa-search"></i></span>
+                        Búsqueda Avanzada
+                    </button>
+                    <button
+                        @click="performCleanSearch"
+                        v-if="searchTerm"
+                        class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                        :style="{background: '#ff6678'}"
+                    >
+                        <span class="text-xl"><i class="fa-solid fa-trash"></i></span>
+                        Limpiar Búsqueda
+                    </button>
+                    <button
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                         :style="{background: '#ff9966'}"
@@ -43,31 +60,25 @@
                     </label>
                     <input id="fileUpload" type="file" accept=".xlsx, .xls" class="hidden" @change="handleExcelUpload"/>
                 </div>
-                <div class="mt-5">
-                    <input type="radio" id="view-all" value="view-all" v-model="selectedOption"
-                           @change="handleRadioChange">
-                    <label for="view-all">Ver todos los docentes</label>
-
-                    <input type="radio" id="view-actives" value="view-actives" v-model="selectedOption"
-                           @change="handleRadioChange" class="ml-4">
-                    <label for="view-actives">Ver docentes activos</label>
-
-                    <input type="radio" id="view-inactives" value="view-inactives" v-model="selectedOption"
-                           @change="handleRadioChange" class="ml-4">
-                    <label for="view-inactives">Ver docentes inactivos</label>
-
-                    <input type="radio" id="view-suspended" value="view-suspended" v-model="selectedOption"
-                           @change="handleRadioChange" class="ml-4">
-                    <label for="view-suspended">Ver docentes suspendidos</label>
-
-                    <input type="radio" id="view-by-deparment" value="view-by-deparment" v-model="selectedOption"
-                           @change="handleRadioChange" class="ml-4">
-                    <label for="view-by-deparment">Ver docentes por departmento</label>
+                <div class="mt-5 flex gap-3">
+                    <select
+                        v-model="selectedOption"
+                        @change="handleSelectFilter"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        :class="selectedOption === 'view-by-deparment' ? 'w-1/2' : 'w-full'"
+                    >
+                        <option value="">Seleccione una opción de filtro</option>
+                        <option value="view-all">Ver todos los docentes</option>
+                        <option value="view-actives">Ver docentes activos</option>
+                        <option value="view-inactives">Ver docentes inactivos</option>
+                        <option value="view-suspended">Ver docentes suspendidos</option>
+                        <option value="view-by-deparment">Ver docentes por departamento</option>
+                    </select>
 
                     <select
                         v-if="selectedOption === 'view-by-deparment'"
                         v-model="formData.departamento_id"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-3"
+                        class="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :class="{'border-red-500': formErrors.departamento_id}"
                         @change="handleFetchByDepartment"
                         required
@@ -444,6 +455,7 @@ const isEditMode = ref(false);
 const submitting = ref(false);
 const formErrors = ref({});
 const currentDocenteId = ref(null);
+let errorTimeout = null;
 
 // Configuración de axios
 const API_URL = '/api';
@@ -479,7 +491,8 @@ const docentesFiltrados = computed(() => {
     const term = searchTerm.value.toLowerCase();
     return data.filter(docente =>
         docente.nombre_completo.toLowerCase().includes(term) ||
-        docente.email.toLowerCase().includes(term)
+        docente.email.toLowerCase().includes(term) ||
+        docente.telefono.toLowerCase().includes(term)
     );
 });
 
@@ -1001,7 +1014,101 @@ const handleFetchByDepartment = () => {
     fetchByDepartment(formData.value.departamento_id);
 };
 
-const handleRadioChange = () => {
+const performApiSearch = async () => {
+    loading.value = true;
+    error.value = null;
+
+    // Limpiar cualquier timeout previo
+    if (errorTimeout) {
+        clearTimeout(errorTimeout);
+        errorTimeout = null;
+    }
+
+    if (searchTerm.value === '') {
+        loading.value = true;
+        error.value = 'El término de búsqueda no puede estar vacío';
+        errorTimeout = setTimeout(() => {
+            error.value = null;
+            fetchDocentes();
+            loading.value = false;
+        }, 3000);
+        return;
+    }
+
+    try {
+        const response = await axios.post(
+            `${API_URL}/users/get/name`,
+            {
+                nombre: searchTerm.value,
+                rol_nombre: 'docente'
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            }
+        );
+
+        const data = response.data;
+
+        if (!data.success) {
+            error.value = 'Error al obtener los docentes';
+            allDocentes.value = [];
+            errorTimeout = setTimeout(() => {
+                error.value = null;
+                fetchDocentes();
+            }, 3000);
+            return;
+        }
+
+        // Manejar la respuesta según la estructura (objeto indexado o array)
+        const payload = data.data || data;
+        const raw = Array.isArray(payload)
+            ? payload
+            : (payload && typeof payload === 'object' ? Object.values(payload) : []);
+
+        allDocentes.value = raw.map(docente => ({
+            id: docente.id ?? 'N/A',
+            nombre_completo: docente.nombre_completo ?? docente.name ?? 'Unknown',
+            email: docente.email ?? 'N/A',
+            telefono: docente.telefono ?? docente.phone ?? 'N/A',
+            estado: docente.estado ?? docente.status ?? 'activo',
+            departamento_id: docente.departamento_id ?? null,
+            carrera_id: docente.carrera_id ?? null,
+        }));
+
+        error.value = null;
+
+    } catch (err) {
+        const status = err.response?.status;
+        allDocentes.value = [];
+
+        if (status === 404) {
+            error.value = 'No se encontraron docentes con ese criterio de búsqueda';
+        } else if (status === 401 || status === 403) {
+            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
+        } else {
+            error.value = err.response?.data?.errors.nombre || 'Error al buscar docentes';
+        }
+
+        // Programar limpieza y recarga después de mostrar el error
+        errorTimeout = setTimeout(() => {
+            error.value = null;
+            fetchDocentes();
+        }, 3000);
+
+    } finally {
+        loading.value = false;
+    }
+};
+
+const performCleanSearch = async () => {
+    searchTerm.value = '';
+    await fetchDocentes();
+};
+
+const handleSelectFilter = () => {
     if (selectedOption.value === 'view-all') {
         // Mostrar todos los docentes
         fetchDocentes();
@@ -1029,5 +1136,8 @@ onMounted(async () => {
     searchTerm.value = '';
     await fetchDocentes();
     isLoading.value = false;
+    if (errorTimeout) {
+        clearTimeout(errorTimeout);
+    }
 });
 </script>

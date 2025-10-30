@@ -65,6 +65,21 @@ class UserController extends Controller {
         ]);
     }
 
+    private function getUserRoleName(): string|null {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->where('users.id', Auth::id())
+            ->value('roles.nombre');
+    }
+
+    private function getUserRoleId() {
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->where('users.id', Auth::id())
+            ->value('usuario_roles.rol_id');
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -224,9 +239,9 @@ class UserController extends Controller {
                 ], 422);
             }
 
-            $user_rol_id = (int) $this->getUserRoleId();
+            $user_rol_id = (int)$this->getUserRoleId();
 
-            if ($request->rol_id <= $user_rol_id){
+            if ($request->rol_id <= $user_rol_id) {
                 if ($user_rolName != RolesEnum::ROOT->value) {
                     return response()->json([
                         'message' => 'No tiene permiso para asignar este rol',
@@ -286,6 +301,10 @@ class UserController extends Controller {
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function sanitizeInput($input): string {
+        return htmlspecialchars(strip_tags(trim($input)));
     }
 
     /**
@@ -356,9 +375,9 @@ class UserController extends Controller {
             ], 403);
         }
 
-        $user_rol_id = (int) $this->getUserRoleId();
+        $user_rol_id = (int)$this->getUserRoleId();
 
-        if ($request->rol_id <= $user_rol_id){
+        if ($request->rol_id <= $user_rol_id) {
             if ($user_rolName != RolesEnum::ROOT->value) {
                 return response()->json([
                     'message' => 'No tiene permiso para asignar este rol',
@@ -797,7 +816,7 @@ class UserController extends Controller {
                 ], 403);
             }
 
-            if($user->estado == 'inactivo') {
+            if ($user->estado == 'inactivo') {
                 return response()->json([
                     'message' => 'El usuario ya está inactivo',
                     'success' => false
@@ -856,7 +875,7 @@ class UserController extends Controller {
                 ], 404);
             }
 
-            if($user->estado == 'activo') {
+            if ($user->estado == 'activo') {
                 return response()->json([
                     'message' => 'El usuario ya está activo',
                     'success' => false
@@ -905,12 +924,31 @@ class UserController extends Controller {
             ], 401);
         }
 
+        $rules = [
+            'nombre' => 'required|string|max:255',
+            'rol_nombre' => 'sometimes|string|in:root,administrador_academico,jefe_departamento,coordinador_carreras,docente,estudiante',
+        ];
+
+        $messages = [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.string' => 'El nombre debe ser una cadena de texto.',
+            'nombre.max' => 'El nombre no debe exceder los 255 caracteres.',
+            'rol_nombre.string' => 'El nombre del rol debe ser una cadena de texto.',
+            'rol_nombre.in' => 'El nombre del rol debe ser uno de los siguientes: root, administrador_academico, jefe_departamento, coordinador_carreras, docente, estudiante.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $validator->errors(),
+                'success' => false
+            ], 422);
+        }
+
         $name = $this->sanitizeInput($request->nombre);
-        $users = Cache::remember('users_by_name', 60, function () use ($name) {
-            return (new User())->getAllUsers()->filter(function ($user) use ($name) {
-                return stripos($user->nombre_completo, $name) !== false;
-            });
-        });
+        $rol_id = $this->getRolIdByName($request->rol_nombre ?? null);
+        $users = (new User())->getByName($name, $rol_id);
 
         if ($users->isEmpty()) {
             return response()->json([
@@ -924,6 +962,12 @@ class UserController extends Controller {
             'success' => true,
             'data' => $users
         ]);
+    }
+
+    private function getRolIdByName(string $rol_nombre): int|null {
+        return DB::table('roles')
+            ->where('nombre', $rol_nombre)
+            ->value('id');
     }
 
     public function getByRole(int $role_id): JsonResponse {
@@ -1342,23 +1386,164 @@ class UserController extends Controller {
         ]);
     }
 
-    private function getUserRoleId() {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->where('users.id', Auth::id())
-            ->value('usuario_roles.rol_id');
+    public function getByDepartmentByRole(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        switch ($request->rol_nombre) {
+            case 'root':
+                $role_id = 1;
+                break;
+            case 'administrador_academico':
+                $role_id = 2;
+                break;
+            case 'jefe_departamento':
+                $role_id = 3;
+                break;
+            case 'coordinador_carreras':
+                $role_id = 4;
+                break;
+            case 'docente':
+                $role_id = 5;
+                break;
+            case 'estudiante':
+                $role_id = 6;
+                break;
+            case 'invitado':
+                $role_id = 7;
+                break;
+            default:
+                return response()->json([
+                    'message' => 'Nombre de rol inválido',
+                    'success' => false
+                ], 422);
+        }
+        $department_id = $this->sanitizeInput($request->departamento_id);
+        $users = (new User())->getByDepartmentByRole($role_id, $department_id);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios en el departamento especificado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
     }
 
-    private function getUserRoleName(): string|null {
-        return DB::table('usuario_roles')
-            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
-            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
-            ->where('users.id', Auth::id())
-            ->value('roles.nombre');
+    public function getByCareerByRole(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $role_id = $this->getRolIdByName($request->rol_nombre);
+        $carrera_id = $this->sanitizeInput($request->carrera_id);
+        $users = (new User())->getByCareerByRole($role_id, $carrera_id);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios en el departamento especificado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
     }
 
+    public function getByStatusByRole(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
 
-    private function sanitizeInput($input): string {
-        return htmlspecialchars(strip_tags(trim($input)));
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $status = $this->sanitizeInput($request->estado);
+        if (!in_array($status, ['activo', 'inactivo', 'suspendido'])) {
+            return response()->json([
+                'message' => 'Estado inválido',
+                'success' => false
+            ], 422);
+        }
+
+        $role_id = $this->getRolIdByName($request->rol_nombre);
+
+        $users = (new User())->getByStatusByRole($status, $role_id);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios con el estado especificado',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
     }
 }
