@@ -1,14 +1,38 @@
 <template>
     <div class="flex h-screen bg-gray-100">
 
+        <!-- Overlay para móviles cuando el sidebar está abierto -->
+        <div
+            v-if="sidebarOpen"
+            @click="sidebarOpen = false"
+            class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+        ></div>
+
         <!--Sidebar-->
         <aside
             :style="{
                 backgroundColor: colorSidebar,
                 '--sidebar-text-color': colorText
             }"
-            class="w-64 p-4 pr-0 overflow-x-hidden"
+            :class="[
+                'fixed lg:static inset-y-0 left-0 z-30 w-64 p-4 pr-0 overflow-x-hidden overflow-y-auto',
+                'transform transition-transform duration-300 ease-in-out',
+                sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+            ]"
         >
+
+            <!-- Botón cerrar para móviles -->
+            <div class="flex items-center justify-between mb-2 lg:hidden pr-4">
+                <div class="w-6"></div> <!-- Espaciador para centrar -->
+                <button
+                    @click="sidebarOpen = false"
+                    class="p-2 rounded-md hover:bg-white/10 transition-colors"
+                    :style="{ color: colorText }"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
             <div class="content-logo">
                 <img class="Logosystem" src="/Images/Idea Logo Proyecto.png" alt="Logo">
             </div>
@@ -41,7 +65,7 @@
                 >
                     <span class="flex items-center gap-2">
                         <i :class="menu.icon" :style="{ color: colorText }"></i>
-                        {{ menu.title }}
+                        <span>{{ menu.title }}</span>
                     </span>
 
                     <svg
@@ -75,27 +99,38 @@
         </aside>
 
         <!-- navbar -->
-        <div class="flex-1 flex flex-col">
-            <header :style="{ backgroundColor: colorNavbar }" class="text-white p-4 h-13">
+        <div class="flex-1 flex flex-col min-w-0">
+            <header :style="{ backgroundColor: colorNavbar }" class="text-white p-3 sm:p-4 h-auto">
                 <nav class="flex items-center justify-between">
+                    <!--Button para el responsive-->
+                    <button
+                        @click="sidebarOpen = !sidebarOpen"
+                        class="lg:hidden p-2 rounded-md hover:bg-white/10 transition-colors"
+                        :style="{ color: colorText }"
+                    >
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
                     <div></div>
-                    <div class="sm:ms-6 sm:flex sm:items-center" v-if="user && user.nombre_completo">
+
+                    <div class="flex items-center gap-2 sm:gap-4" v-if="user && user.nombre_completo">
+                        <!-- Notificaciones -->
                         <Link
                         href="#"
-                        class="sidebar-link flex items-center gap-2 p-2 rounded-lg transition-colors duration-300
-                                hover:text-white shadow-lg hover:shadow-md"
+                        class="sidebar-link flex items-center gap-1 sm:gap-2 p-2 rounded-lg transition-colors duration-300
+                                hover:text-white shadow-lg hover:shadow-md relative"
                         :style="{ color: colorText }"
                         >
-                            <i class="fa-solid fa-bell"></i> Notificaciones
+                            <i class="fa-solid fa-bell text-base sm:text-lg"></i>
+                            <span class="hidden sm:inline">Notificaciones</span>
                             <!-- Badge de notificación -->
-                        <span
-                            v-if="notificationCount > 0"
-                            class="absolute -top-1 left-8 text-white text-xs font-bold px-2 py-0.5 rounded-full
-                                transform hover:-translate-y-0.5 transition-all duration-200 shadow-md"
-                            :style="{background:'#eb6238'}"
-                        >
-                            {{ notificationCount }}
-                        </span>
+                            <span
+                                v-if="notificationCount > 0"
+                                class="absolute -top-1 left-6 sm:left-8 text-white text-xs font-bold px-2 py-0.5 rounded-full
+                                    transform hover:-translate-y-0.5 transition-all duration-200 shadow-md"
+                                :style="{background:'#eb6238'}"
+                            >
+                                {{ notificationCount }}
+                            </span>
                         </Link>
 
 
@@ -138,19 +173,11 @@
             </header>
 
             <!--Contenido de inicio-->
-            <main class="flex-1 overflow-y-auto bg-gray-100">
+            <main class="flex-1 overflow-y-auto bg-gray-100 p-3 sm:p-4 md:p-6">
                 <!-- Mostrar mensaje de bienvenida si no hay contenido en el slot -->
                 <template v-if="$slots.default">
                     <slot />
                 </template>
-                <!-- <template v-else>
-                    <div class="flex items-center justify-center mensaje">
-                        <h1 class="text-4xl text-blue-500 text-center">
-                        👋 Bienvenido al sistema. <br />Selecciona una opción del menú para
-                        comenzar.
-                        </h1>
-                    </div>
-                </template> -->
             </main>
 
         </div>
@@ -164,6 +191,8 @@
     import { authService } from "@/Services/authService";
 
 const user = ref(null);
+const sidebarOpen = ref(false); // Control del sidebar en móviles
+const notificationCount = ref(5); // simulando como se veria
 
 onMounted(() => {
     const storedUser = localStorage.getItem('user');
@@ -339,5 +368,16 @@ onMounted(() => {
         border-radius: 10px;
     }
 
-</style>
+    /* Asegura que el sidebar-link sea visible en móviles */
+    .sidebar-link {
+        white-space: nowrap;
+    }
 
+    /* Para Mejorar la experiencia táctil en móviles */
+    @media (max-width: 1024px) {
+        .sidebar-link,
+        .sidebar-submenu-link {
+            min-height: 44px;
+        }
+    }
+</style>

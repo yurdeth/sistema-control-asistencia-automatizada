@@ -50,10 +50,11 @@
 
                 <!--Tabla con los datos-->
                 <div v-if="!loading" class="bg-white rounded-lg overflow-hidden">
-                    <div class="overflow-x-auto">
+                    <!-- Vista Desktop/Laptop-->
+                    <div class="hidden lg:block overflow-x-auto">
                         <table class="w-full" :style="{ border: '1px solid #d93f3f' }">
                             <thead class="bg-gray-50 border-b-2 border-gray-200"
-                                   :style="{background: '#d93f3f', height: '40px'}">
+                                :style="{background: '#d93f3f', height: '40px'}">
                             <tr>
                                 <th class="text-white">Id</th>
                                 <th class="text-white">Nombre</th>
@@ -68,9 +69,9 @@
                                 <td colspan="5" class="px-6 py-8 text-center text-gray-500">
                                     <div class="flex flex-col items-center gap-2">
                                         <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor"
-                                             viewBox="0 0 24 24">
+                                            viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                         <p class="text-lg font-medium">No se encontraron resultados</p>
                                         <p class="text-sm">
@@ -83,60 +84,138 @@
                             </tr>
 
                             <!-- Filas con datos -->
-                            <tr v-else v-for="department in departments" :key="department.id"
-                                class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm text-gray-900">{{ department.id }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ department.nombre }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
-                                    <div class="relative group">
-                                        <!-- Texto truncado -->
-                                        <p class="truncate">
+                                <tr v-else v-for="department in departments" :key="department.id"
+                                    class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 text-sm text-gray-900">{{ department.id }}</td>
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ department.nombre }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                                        <div class="relative group">
+                                            <!-- Texto truncado -->
+                                            <p class="truncate">
+                                                {{ department.descripcion || 'Sin descripción' }}
+                                            </p>
+
+                                            <!-- Tooltip con descripción completa al hacer hover -->
+                                            <div
+                                                class="invisible group-hover:visible absolute z-10 w-64 p-3 text-white text-xs rounded-lg shadow-lg -top-2 left-0 transform -translate-y-full"
+                                                :style="{ background: '#ff6e61' }">
+                                                {{ department.descripcion || 'Sin descripción' }}
+                                                <div
+                                                    class="absolute bottom-0 left-6 transform translate-y-1/2 rotate-45 w-2 h-2"
+                                                    :style="{ background: '#ff6e61' }"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900 flex justify-center items-center">
+                                        {{ department.estado }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm">
+                                        <div class="flex gap-2 justify-center items-center">
+                                            <button
+                                                @click="openEditModal(department)"
+                                                class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
+                                                :disabled="loading"
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                @click="deleteItem(department.id)"
+                                                class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                                :style="{ background: '#9b3b3e' }"
+                                                :disabled="loading"
+                                            >
+                                                Eliminar
+                                            </button>
+                                            <button
+                                                @click="openCarreraModal(department.id)"
+                                                class="text-white px-4 py-2 rounded-lg"
+                                                :style="{background:'#eb9733'}"
+                                            >
+                                                Carreras
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Vista Móvil/Tablet: Cards -->
+                    <div class="lg:hidden">
+                        <!-- Mensaje cuando no hay resultados -->
+                        <div v-if="departments.length === 0" class="px-4 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center gap-2">
+                                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-base font-medium">No se encontraron resultados</p>
+                                <p class="text-sm px-4">
+                                    {{ searchTerm ? `No hay departamentos que coincidan con "${searchTerm}"` : 'No hay departamentos registrados' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Cards de departamentos -->
+                        <div v-else class="space-y-4 p-4">
+                            <div v-for="department in departments" :key="department.id"
+                            class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+
+                                <!-- Header del card -->
+                                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                                    <div class="flex justify-between items-start gap-3">
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="font-semibold text-gray-900 text-base truncate">{{ department.nombre }}</h3>
+                                            <p class="text-xs text-gray-500 mt-1">ID: {{ department.id }}</p>
+                                        </div>
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap flex-shrink-0"
+                                            :class="department.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                            {{ department.estado }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Contenido del card -->
+                                <div class="px-4 py-3">
+                                    <div class="mb-3">
+                                        <p class="text-xs text-gray-500 font-medium mb-1">Descripción:</p>
+                                        <p class="text-sm text-gray-700">
                                             {{ department.descripcion || 'Sin descripción' }}
                                         </p>
-
-                                        <!-- Tooltip con descripción completa al hacer hover -->
-                                        <div
-                                            class="invisible group-hover:visible absolute z-10 w-64 p-3 text-white text-xs rounded-lg shadow-lg -top-2 left-0 transform -translate-y-full"
-                                            :style="{ background: '#ff6e61' }">
-                                            {{ department.descripcion || 'Sin descripción' }}
-                                            <div
-                                                class="absolute bottom-0 left-6 transform translate-y-1/2 rotate-45 w-2 h-2"
-                                                :style="{ background: '#ff6e61' }"></div>
-                                        </div>
                                     </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900 flex justify-center items-center">
-                                    {{ department.estado }}
-                                </td>
-                                <td class="px-6 py-4 text-sm">
-                                    <div class="flex gap-2 justify-center items-center">
+
+                                    <!-- Botones de acción -->
+                                    <div class="flex flex-col sm:flex-row gap-2">
                                         <button
                                             @click="openEditModal(department)"
-                                            class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
+                                            class="bg-green-500 hover:bg-green-800 text-white px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
                                             :disabled="loading"
                                         >
-                                            Editar
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                            <span>Editar</span>
                                         </button>
                                         <button
                                             @click="deleteItem(department.id)"
-                                            class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                            class="hover:bg-red-600 text-white px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
                                             :style="{ background: '#9b3b3e' }"
                                             :disabled="loading"
                                         >
-                                            Eliminar
+                                            <i class="fa-solid fa-trash"></i>
+                                            <span>Eliminar</span>
                                         </button>
                                         <button
                                             @click="openCarreraModal(department.id)"
-                                            class="text-white px-4 py-2 rounded-lg"
+                                            class="text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-medium"
                                             :style="{background:'#eb9733'}"
                                         >
-                                            Carreras
+                                            <i class="fa-solid fa-graduation-cap"></i>
+                                            <span>Carreras</span>
                                         </button>
                                     </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -230,11 +309,8 @@
                         Salir
                     </button>
                 </div>
-
             </div>
         </Modal>
-
-
     </MainLayoutDashboard>
 
 </template>
@@ -249,8 +325,6 @@ import {
     createDeparments,
     updateDepartment,
     deleteDepartment,
-    searchName,
-    searchStatus
 } from '@/Services/deparmentsService';
 import {authService} from "@/Services/authService.js";
 
@@ -270,10 +344,24 @@ const colorText = ref('#1F2937')
 const searchTerm = ref('')
 const loading = ref(false)
 const error = ref(null)
-
 const showCarreraModal = ref(false);
 const selectedDepartment = ref(null);
 const carreras = ref([]);
+
+const props = defineProps({
+    departments: {
+        type: Array,
+        default: () => []
+    },
+    loading: {
+        type: Boolean,
+        default: false
+    },
+    searchTerm: {
+        type: String,
+        default: ''
+    }
+});
 
 const allDepartments = ref([]);
 
@@ -315,7 +403,7 @@ onMounted(async () => {
     await authService.verifyToken(localStorage.getItem("token"));
 
     await fetchDepartments();
-    isLoading.value = false;
+    // isLoading.value = false;
 });
 
 // parte donde se trabaja lo del modal
@@ -457,8 +545,6 @@ async function openCarreraModal(department_id) {
     const data = response.data || response;
     carreras.value = (Array.isArray(data) ? data : Object.values(data || {}))
         .map(c => ({ id: c.id, nombre: c.nombre || c.name || 'Sin nombre' }));
-
     showCarreraModal.value = true;
 }
-
 </script>

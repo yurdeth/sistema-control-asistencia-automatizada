@@ -21,21 +21,21 @@
     <MainLayoutDashboard>
         <div class="p-6" v-if="isAuthenticated">
             <!-- Header -->
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h1 class="text-2xl font-bold" :style="{color:colorText}">Catálogo de Aulas</h1>
+            <div class="mb-4 sm:mb-6">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4">
+                    <div  class="flex-1">
+                        <h1 class="text-xl sm:text-2xl font-bold" :style="{color:colorText}">Catálogo de Aulas</h1>
                         <p class="text-gray-600 text-sm mt-1">Gestiona y visualiza todas las aulas disponibles dentro de
                             la facultad</p>
                     </div>
 
                     <button
-                        class="hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                        class="hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm sm:text-base whitespace-nowrap w-full sm:w-auto"
                         :style="{background: colorButton}"
                         @click="openCreateModal"
                     >
                         <i class="fa-solid fa-plus"></i>
-                        Agregar Aula
+                        <span>Agregar Aula</span>
                     </button>
                 </div>
             </div>
@@ -43,18 +43,20 @@
             <!-- Mensajes -->
             <div v-if="mensaje.mostrar"
                 :class="mensaje.tipo === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'"
-                class="border-l-4 p-4 mb-4 rounded">
-                <div class="flex justify-between items-center">
-                    <p class="font-medium">{{ mensaje.texto }}</p>
-                    <button @click="cerrarMensaje" class="text-xl font-bold">&times;</button>
+                class="border-l-4 p-3 sm:p-4 mb-4 rounded">
+                <div class="flex justify-between items-start gap-2">
+                    <p class="font-medium text-sm sm:text-base flex-1">{{ mensaje.texto }}</p>
+                    <button @click="cerrarMensaje" class="text-xl font-bold flex-shrink-0 hover:opacity-70 transition-opacity">
+                        &times;
+                    </button>
                 </div>
             </div>
 
             <!-- Filtros -->
-            <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <!-- Búsqueda -->
-                    <div class="relative w-full">
+                    <div class="relative w-full sm:col-span-2 lg:col-span-1">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
                         <input
                             v-model="filtros.busqueda"
@@ -67,7 +69,7 @@
                     <!-- Filtro por capacidad -->
                     <select
                         v-model="filtros.capacidad"
-                        class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
                     >
                         <option value="all">Todas las capacidades</option>
                         <option value="small">Pequeña (≤30 personas)</option>
@@ -78,7 +80,7 @@
                     <!-- Filtro por estado -->
                     <select
                         v-model="filtros.estado"
-                        class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
                     >
                         <option value="all">Todos los estados</option>
                         <option value="disponible">Disponible</option>
@@ -320,7 +322,6 @@ import {authService} from "@/Services/authService.js";
 import Modal from "@/Components/Modal.vue";
 import {createDeparments, updateDepartment} from "@/Services/deparmentsService.js";
 
-
 const colorText = ref('#2C2D2F');
 const colorButton = ref('#d93f3f');
 const showModal = ref(false);
@@ -369,7 +370,7 @@ onMounted(async () => {
     await authService.verifyToken(localStorage.getItem("token"));
 
     await cargarAulas();
-    isLoading.value = false;
+    // isLoading.value = false;
 });
 
 // ======| Para la paginación |======
