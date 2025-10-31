@@ -165,7 +165,7 @@
                                 <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-1">
                                         <i class="fa-solid fa-people-group text-xs sm:text-sm"></i>
-                                        <span class="text-xs sm:text-sm text-gray-900">{{ aula.capacidad }}</span>
+                                        <span class="text-xs sm:text-sm text-gray-900">{{ aula.capacidad_pupitres }}</span>
                                     </div>
                                 </td>
 
@@ -413,18 +413,18 @@
         await authService.verifyToken(localStorage.getItem("token"));
 
         aulas.value = [
-            {id: 1, nombre: 'Aula A-101', codigo: 'A101', sector: 'Sector A', sectorId: 1, capacidad: 40, tipo: 'Teoría', disponible: true, equipamiento: ['Proyector', 'Pizarra', 'AC']},
-            {id: 2, nombre: 'Laboratorio B-203', codigo: 'B203', sector: 'Sector B', sectorId: 2, capacidad: 30, tipo: 'Laboratorio', disponible: true, equipamiento: ['Computadoras', 'Proyector', 'AC']},
-            {id: 3, nombre: 'Aula C-105', codigo: 'C105', sector: 'Sector C', sectorId: 3, capacidad: 50, tipo: 'Teoría', disponible: false, equipamiento: ['Proyector', 'Pizarra']},
-            {id: 4, nombre: 'Aula Magna', codigo: 'AM01', sector: 'Sector A', sectorId: 1, capacidad: 200, tipo: 'Auditorio', disponible: true, equipamiento: ['Sistema de Audio', 'Proyector', 'AC', 'Micrófonos']},
-            {id: 5, nombre: 'Aula A-102', codigo: 'A102', sector: 'Sector A', sectorId: 1, capacidad: 35, tipo: 'Teoría', disponible: false, equipamiento: ['Proyector', 'Pizarra']},
-            {id: 6, nombre: 'Laboratorio C-301', codigo: 'C301', sector: 'Sector C', sectorId: 3, capacidad: 25, tipo: 'Laboratorio', disponible: true, equipamiento: ['Computadoras', 'Proyector']},
-            {id: 7, nombre: 'Aula B-205', codigo: 'B205', sector: 'Sector B', sectorId: 2, capacidad: 45, tipo: 'Teoría', disponible: false, equipamiento: ['Proyector', 'Pizarra', 'AC']},
-            {id: 8, nombre: 'Aula A-103', codigo: 'A103', sector: 'Sector A', sectorId: 1, capacidad: 40, tipo: 'Teoría', disponible: true, equipamiento: ['Proyector', 'Pizarra']},
-            {id: 9, nombre: 'Laboratorio B-204', codigo: 'B204', sector: 'Sector B', sectorId: 2, capacidad: 28, tipo: 'Laboratorio', disponible: false, equipamiento: ['Computadoras', 'AC']},
-            {id: 10, nombre: 'Aula C-106', codigo: 'C106', sector: 'Sector C', sectorId: 3, capacidad: 38, tipo: 'Teoría', disponible: true, equipamiento: ['Proyector', 'Pizarra', 'AC']},
-            {id: 11, nombre: 'Aula A-104', codigo: 'A104', sector: 'Sector A', sectorId: 1, capacidad: 42, tipo: 'Teoría', disponible: false, equipamiento: ['Proyector', 'AC']},
-            {id: 12, nombre: 'Laboratorio C-302', codigo: 'C302', sector: 'Sector C', sectorId: 3, capacidad: 30, tipo: 'Laboratorio', disponible: true, equipamiento: ['Computadoras', 'Proyector', 'AC']}
+            {id: 1, nombre: 'Aula A-101', codigo: 'A101', sector: 'Sector A', sectorId: 1, capacidad_pupitres: 40, tipo: 'Teoría', disponible: true, equipamiento: ['Proyector', 'Pizarra', 'AC']},
+            {id: 2, nombre: 'Laboratorio B-203', codigo: 'B203', sector: 'Sector B', sectorId: 2, capacidad_pupitres: 30, tipo: 'Laboratorio', disponible: true, equipamiento: ['Computadoras', 'Proyector', 'AC']},
+            {id: 3, nombre: 'Aula C-105', codigo: 'C105', sector: 'Sector C', sectorId: 3, capacidad_pupitres: 50, tipo: 'Teoría', disponible: false, equipamiento: ['Proyector', 'Pizarra']},
+            {id: 4, nombre: 'Aula Magna', codigo: 'AM01', sector: 'Sector A', sectorId: 1, capacidad_pupitres: 200, tipo: 'Auditorio', disponible: true, equipamiento: ['Sistema de Audio', 'Proyector', 'AC', 'Micrófonos']},
+            {id: 5, nombre: 'Aula A-102', codigo: 'A102', sector: 'Sector A', sectorId: 1, capacidad_pupitres: 35, tipo: 'Teoría', disponible: false, equipamiento: ['Proyector', 'Pizarra']},
+            {id: 6, nombre: 'Laboratorio C-301', codigo: 'C301', sector: 'Sector C', sectorId: 3, capacidad_pupitres: 25, tipo: 'Laboratorio', disponible: true, equipamiento: ['Computadoras', 'Proyector']},
+            {id: 7, nombre: 'Aula B-205', codigo: 'B205', sector: 'Sector B', sectorId: 2, capacidad_pupitres: 45, tipo: 'Teoría', disponible: false, equipamiento: ['Proyector', 'Pizarra', 'AC']},
+            {id: 8, nombre: 'Aula A-103', codigo: 'A103', sector: 'Sector A', sectorId: 1, capacidad_pupitres: 40, tipo: 'Teoría', disponible: true, equipamiento: ['Proyector', 'Pizarra']},
+            {id: 9, nombre: 'Laboratorio B-204', codigo: 'B204', sector: 'Sector B', sectorId: 2, capacidad_pupitres: 28, tipo: 'Laboratorio', disponible: false, equipamiento: ['Computadoras', 'AC']},
+            {id: 10, nombre: 'Aula C-106', codigo: 'C106', sector: 'Sector C', sectorId: 3, capacidad_pupitres: 38, tipo: 'Teoría', disponible: true, equipamiento: ['Proyector', 'Pizarra', 'AC']},
+            {id: 11, nombre: 'Aula A-104', codigo: 'A104', sector: 'Sector A', sectorId: 1, capacidad_pupitres: 42, tipo: 'Teoría', disponible: false, equipamiento: ['Proyector', 'AC']},
+            {id: 12, nombre: 'Laboratorio C-302', codigo: 'C302', sector: 'Sector C', sectorId: 3, capacidad_pupitres: 30, tipo: 'Laboratorio', disponible: true, equipamiento: ['Computadoras', 'Proyector', 'AC']}
         ];
 
         sectores.value = [

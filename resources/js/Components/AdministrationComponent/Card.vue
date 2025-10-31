@@ -19,9 +19,9 @@
                 <span class="text-sm">Capacidad: {{ aula.capacidad_pupitres }} personas</span>
             </div>
 
-<div class="text-sm text-gray-600 mb-3">
-  <span class="font-semibold">Ubicación:</span> {{ ubicacionTruncada }}
-</div>
+            <div class="text-sm text-gray-600 mb-3">
+                <span class="font-semibold">Ubicación:</span> {{ ubicacionTruncada }}
+            </div>
 
 
             <hr>
@@ -52,6 +52,10 @@
                 <!-- Si no tiene recursos -->
                 <div v-else class="text-xs text-gray-400 italic">
                     Sin recursos asignados
+                </div>
+
+                <div>
+                    <img v-if="aula.imagen_url" :src="aula.imagen_url" alt="Imagen del aula" class="mt-2 w-full h-32 object-cover rounded">
                 </div>
             </div>
 
@@ -89,7 +93,7 @@
     </div>
 
     <!-- Modal que se abre para realizar acciones sobre el aula -->
-    <Modal :show="showModal" @close="cerrarModal">
+    <Modal :show="showModal" @close="cerrarModal" >
         <!-- Componente que muestra el contenido dinámico del aula según el modo (ver, editar, reservar) -->
         <AulaModalContent
             :aula="selectedAula"
@@ -101,7 +105,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import {computed, ref} from 'vue'
 import Modal from '../Modal.vue';
 import AulaModalContent from './AulaModalContent.vue';
 
@@ -120,7 +124,7 @@ const selectedAula = ref(null);
 const modoActual = ref('ver'); // 'ver', 'editar', 'reservar'
 
 // Función para abrir el modal con el aula seleccionada y el modo correspondiente
-const abrirModal = ({ aula, modo }) => {
+const abrirModal = ({aula, modo}) => {
     selectedAula.value = aula;
     modoActual.value = modo;
     showModal.value = true;
