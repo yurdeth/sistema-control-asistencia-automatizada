@@ -96,6 +96,12 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
         ]);
     });
 
+    Route::get('/sesiones-clase', function () {
+        return Inertia::render('Administration/classroomManagement/sesionesClase', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
     Route::get('tipos-recursos', function () {
         return Inertia::render('Administration/classroomManagement/tiposRecursos', [
             'mustCheckAuth' => true

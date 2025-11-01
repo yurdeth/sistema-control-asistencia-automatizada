@@ -236,6 +236,11 @@ onMounted(() => {
                         label: "Tipos de Recursos",
                         href: "tipos-recursos",
                         icon: "fa-solid fa-list-check",
+                    },
+                    {
+                        label: "Sesiones de Clase",
+                        href: "/sesiones-clase",
+                        icon: "fa-solid fa-calendar-check",
                     }
                 ]
         },
