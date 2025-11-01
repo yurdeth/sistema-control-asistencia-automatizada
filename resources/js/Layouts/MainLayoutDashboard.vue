@@ -231,6 +231,11 @@ onMounted(() => {
                         label: "Horarios",
                         href: "/horarios",
                         icon: "fa-solid fa-clock",
+                    },
+                    {
+                        label: "Tipos de Recursos",
+                        href: "tipos-recursos",
+                        icon: "fa-solid fa-list-check",
                     }
                 ]
         },
