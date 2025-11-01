@@ -76,10 +76,10 @@
                     >
                         <option value="">Todos los estados</option>
                         <option value="programada">Programada</option>
-                        <option value="en_curso">En Curso</option>
+                        <option value="en_curso">En curso</option>
                         <option value="finalizada">Finalizada</option>
                         <option value="cancelada">Cancelada</option>
-                        <option value="sin_marcar_salida">Sin Marcar Salida</option>
+                        <option value="sin_marcar_salida">Sin marcar salida</option>
                     </select>
 
                     <select
