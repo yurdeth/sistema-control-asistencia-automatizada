@@ -90,6 +90,12 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
         ]);
     });
 
+    Route::get('/materias', function () {
+        return Inertia::render('Administration/General/materias', [
+            'mustCheckAuth' => true
+        ]);
+    });
+
     Route::get('tipos-recursos', function () {
         return Inertia::render('Administration/classroomManagement/tiposRecursos', [
             'mustCheckAuth' => true

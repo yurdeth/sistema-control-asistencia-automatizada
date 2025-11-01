@@ -268,6 +268,11 @@ onMounted(() => {
                     label: "Roles",
                     href: "/roles",
                     icon: "fa-solid fa-user-shield",
+                },
+                {
+                    label: "Materias",
+                    href: "/materias",
+                    icon: "fa-solid fa-book",
                 }
             ]
         },
