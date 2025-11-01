@@ -19,6 +19,7 @@ class DepartamentosSeeder extends Seeder {
      * Ciencias Económicas
      * Departamento de ciencias naturales y matemática
      * Química y Farmacia
+     * Ciencias Agronómicas
      * */
 
     public function run(): void {
@@ -89,6 +90,20 @@ class DepartamentosSeeder extends Seeder {
             [
                 'nombre' => 'Guest',
                 'descripcion' => 'Guest.',
+                'estado' => 'activo',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Capacitaciones Varias',
+                'descripcion' => 'Departamento para capacitaciones y prácticas varias.',
+                'estado' => 'activo',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Escuela de Carreras Técnicas. Sede Morazán',
+                'descripcion' => 'Escuela de carreras técnicas ubicada en la Sede Morazán.',
                 'estado' => 'activo',
                 'created_at' => now(),
                 'updated_at' => now(),
