@@ -32,6 +32,14 @@
         "carrera": "Licenciatura en Mercadeo Internacional"
     },
     {
+        "departamento": "Ciencias Económicas",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "departamento": "Ciencias Naturales y Matemática",
+        "carrera": "Comunes Licenciaturas y Profesorados"
+    },
+    {
         "departamento": "Ciencias Naturales y Matemática",
         "carrera": "Licenciatura en Biología"
     },
@@ -138,6 +146,9 @@
     {
         "departamento": "Ingeniería y Arquitectura",
         "carrera": "Arquitectura"
+    },{
+        "departamento": "Ingeniería y Arquitectura",
+        "carrera": "Comunes Arquitectura e Ingenierías"
     },
     {
         "departamento": "Ingeniería y Arquitectura",
