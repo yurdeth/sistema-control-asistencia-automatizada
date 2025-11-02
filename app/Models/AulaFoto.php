@@ -4,8 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AulaFoto extends Model
-{
+class AulaFoto extends Model {
     protected $table = 'aula_fotos';
 
     protected $fillable = [
@@ -13,11 +12,19 @@ class AulaFoto extends Model
         'ruta',
     ];
 
+    // En app/Models/AulaFoto.php
+    protected $appends = ['url'];
+
+    public function getUrlAttribute(): string
+    {
+        // Usa la URL configurada en .env
+        return config('app.url') . '/storage/' . $this->ruta;
+    }
+
     /**
      * Relación con Aula (belongsTo)
      */
-    public function aula()
-    {
+    public function aula() {
         return $this->belongsTo(Aula::class, 'aula_id');
     }
 }

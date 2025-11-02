@@ -124,7 +124,7 @@ class UserSeeder extends Seeder
         }
 
         $this->command->info('Creando Docentes...');
-        for ($i = 0; $i < 50; $i++) {
+        for ($i = 0; $i < 508; $i++) {
             $usarDepartamento = false;
 
             if ($hayDepartamentos && $hayCarreras) {
@@ -147,7 +147,7 @@ class UserSeeder extends Seeder
                 'asignado_por_id' => $coordinadores->random()->id,
             ]);
         }
-        $this->command->info('50 Docentes creados');
+        $this->command->info('Docentes creados');
 
         if ($hayCarreras) {
             $this->command->info('Creando Estudiantes...');
@@ -165,7 +165,7 @@ class UserSeeder extends Seeder
                     'asignado_por_id' => $coordinadores->random()->id,
                 ]);
             }
-            $this->command->info('200 Estudiantes creados');
+            $this->command->info('Estudiantes creados');
         } else {
             $this->command->warn('Saltando Estudiantes (no hay carreras)');
         }

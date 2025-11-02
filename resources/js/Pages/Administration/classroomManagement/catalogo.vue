@@ -21,40 +21,43 @@
     <MainLayoutDashboard>
         <div class="p-6" v-if="isAuthenticated">
             <!-- Header -->
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h1 class="text-2xl font-bold" :style="{color:colorText}">Catálogo de Aulas</h1>
+            <div class="mb-4 sm:mb-6">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4">
+                    <div class="flex-1">
+                        <h1 class="text-xl sm:text-2xl font-bold" :style="{color:colorText}">Catálogo de Aulas</h1>
                         <p class="text-gray-600 text-sm mt-1">Gestiona y visualiza todas las aulas disponibles dentro de
                             la facultad</p>
                     </div>
 
                     <button
-                        class="hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                        class="hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm sm:text-base whitespace-nowrap w-full sm:w-auto"
                         :style="{background: colorButton}"
                         @click="openCreateModal"
                     >
                         <i class="fa-solid fa-plus"></i>
-                        Agregar Aula
+                        <span>Agregar Aula</span>
                     </button>
                 </div>
             </div>
 
             <!-- Mensajes -->
             <div v-if="mensaje.mostrar"
-                :class="mensaje.tipo === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'"
-                class="border-l-4 p-4 mb-4 rounded">
-                <div class="flex justify-between items-center">
-                    <p class="font-medium">{{ mensaje.texto }}</p>
-                    <button @click="cerrarMensaje" class="text-xl font-bold">&times;</button>
+                 :class="mensaje.tipo === 'success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'"
+                 class="border-l-4 p-3 sm:p-4 mb-4 rounded">
+                <div class="flex justify-between items-start gap-2">
+                    <p class="font-medium text-sm sm:text-base flex-1">{{ mensaje.texto }}</p>
+                    <button @click="cerrarMensaje"
+                            class="text-xl font-bold flex-shrink-0 hover:opacity-70 transition-opacity">
+                        &times;
+                    </button>
                 </div>
             </div>
 
             <!-- Filtros -->
-            <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 border border-gray-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <!-- Búsqueda -->
-                    <div class="relative w-full">
+                    <div class="relative w-full sm:col-span-2 lg:col-span-1">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
                         <input
                             v-model="filtros.busqueda"
@@ -66,8 +69,8 @@
 
                     <!-- Filtro por capacidad -->
                     <select
-                        v-model="filtros.capacidad"
-                        class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        v-model="filtros.capacidad_pupitres"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
                     >
                         <option value="all">Todas las capacidades</option>
                         <option value="small">Pequeña (≤30 personas)</option>
@@ -78,7 +81,7 @@
                     <!-- Filtro por estado -->
                     <select
                         v-model="filtros.estado"
-                        class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
                     >
                         <option value="all">Todos los estados</option>
                         <option value="disponible">Disponible</option>
@@ -152,151 +155,173 @@
         </div>
 
 
-        <Modal :show="showModal" @close="closeModal" max-width="lg">
+        <Modal :show="showModal" @close="closeModal">
             <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
                 <h2 class="text-lg font-semibold">
                     {{ isEditMode ? 'Editar aula' : 'Agregar aula' }}
                 </h2>
 
-                <!-- Sección de Imagen -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Imagen del Aula</label>
-
-                    <!-- Input oculto para seleccionar archivo -->
-                    <input
-                        ref="fileInput"
-                        type="file"
-                        @change="handleImageUpload"
-                        accept="image/*"
-                        class="hidden"
-                    />
-
-                    <!-- Vista previa o placeholder -->
-                    <div class="flex flex-col items-center">
-                        <!-- Cuadro de imagen -->
-                        <div
-                            @click="triggerFileInput"
-                            class="w-full h-64 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-all hover:border-blue-500 hover:bg-blue-50"
-                            :class="imagePreview ? 'border-gray-300 bg-gray-50' : 'border-gray-300 bg-gray-100'"
-                        >
-                            <!-- Sin imagen -->
-                            <div v-if="!imagePreview" class="text-center">
-                                <i class="fa-solid fa-image text-5xl text-gray-400 mb-3"></i>
-                                <p class="text-gray-500 font-medium">Imagen del aula</p>
-                                <p class="text-gray-400 text-sm mt-1">Haz clic para agregar una imagen</p>
-                            </div>
-
-                            <!-- Con imagen -->
-                            <img
-                                v-else
-                                :src="imagePreview"
-                                alt="Vista previa"
-                                class="w-full h-full object-cover rounded-lg"
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium">Código</label>
+                            <input
+                                type="text"
+                                v-model="form.codigo"
+                                class="w-full mt-1 border-gray-300 rounded-md"
+                                :class="{ 'border-red-500': formErrors.codigo }"
                             />
+                            <p v-if="formErrors.codigo" class="text-red-500 text-xs mt-1">
+                                {{ formErrors.codigo[0] }}
+                            </p>
                         </div>
 
-                        <!-- Botones de acción (solo se muestran si hay imagen) -->
-                        <div v-if="imagePreview" class="flex gap-3 mt-3">
-                            <button
-                                type="button"
-                                @click="triggerFileInput"
-                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                        <div>
+                            <label class="block text-sm font-medium">Nombre</label>
+                            <input
+                                type="text"
+                                v-model="form.nombre"
+                                @input="form.nombre = form.nombre.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')"
+                                class="w-full mt-1 border-gray-300 rounded-md"
+                                :class="{ 'border-red-500': formErrors.nombre }"
+                            />
+                            <p v-if="formErrors.nombre" class="text-red-500 text-xs mt-1">
+                                {{ formErrors.nombre[0] }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">Capacidad</label>
+                            <input
+                                type="number"
+                                v-model="form.capacidad_pupitres"
+                                class="w-full mt-1 border-gray-300 rounded-md"
+                                max="150"
+                                min="1"
+                                :class="{ 'border-red-500': formErrors.capacidad_pupitres }"
+                                @input="validateCapacity"
+                            />
+                            <p v-if="formErrors.capacidad_pupitres" class="text-red-500 text-xs mt-1">
+                                {{ formErrors.capacidad_pupitres[0] }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">Ubicación</label>
+                            <textarea
+                                v-model="form.ubicacion"
+                                class="w-full mt-1 border-gray-300 rounded-md"
+                                :class="{ 'border-red-500': formErrors.ubicacion }"
+                            ></textarea>
+                            <p v-if="formErrors.ubicacion" class="text-red-500 text-xs mt-1">
+                                {{ formErrors.ubicacion[0] }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium">Estado</label>
+                            <select
+                                v-model="form.estado"
+                                class="w-full mt-1 border-gray-300 rounded-md"
+                                :class="{ 'border-red-500': formErrors.estado }"
                             >
-                                <i class="fa-solid fa-pen"></i>
-                                Editar
-                            </button>
-                            <button
-                                type="button"
-                                @click="removeImage"
-                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                            >
-                                <i class="fa-solid fa-trash"></i>
-                                Eliminar
-                            </button>
+                                <option value="disponible">Disponible</option>
+                                <option value="ocupada">Ocupada</option>
+                                <option value="mantenimiento">Mantenimiento</option>
+                                <option value="inactiva">Inactiva</option>
+                            </select>
+                            <p v-if="formErrors.estado" class="text-red-500 text-xs mt-1">
+                                {{ formErrors.estado[0] }}
+                            </p>
                         </div>
                     </div>
 
-                    <p v-if="formErrors.imagen" class="text-red-500 text-xs mt-2">
-                        {{ formErrors.imagen[0] }}
-                    </p>
-                </div>
+                    <div class="space-y-4">
+                        <!-- Sección de Imagen -->
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Imagen del Aula</label>
 
-                <div>
-                    <label class="block text-sm font-medium">Código</label>
-                    <input
-                        type="text"
-                        v-model="form.codigo"
-                        class="w-full mt-1 border-gray-300 rounded-md"
-                        :class="{ 'border-red-500': formErrors.codigo }"
-                    />
-                    <p v-if="formErrors.codigo" class="text-red-500 text-xs mt-1">
-                        {{ formErrors.codigo[0] }}
-                    </p>
-                </div>
+                            <!-- Input oculto para seleccionar archivo -->
+                            <input
+                                ref="fileInput"
+                                type="file"
+                                @change="handleImageUpload"
+                                accept="image/*"
+                                class="hidden"
+                            />
 
-                <div>
-                    <label class="block text-sm font-medium">Nombre</label>
-                    <input
-                        type="text"
-                        v-model="form.nombre"
-                        @input="form.nombre = form.nombre.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '')"
-                        class="w-full mt-1 border-gray-300 rounded-md"
-                        :class="{ 'border-red-500': formErrors.nombre }"
-                    />
-                    <p v-if="formErrors.nombre" class="text-red-500 text-xs mt-1">
-                        {{ formErrors.nombre[0] }}
-                    </p>
-                </div>
+                            <!-- Vista previa o placeholder -->
+                            <div class="flex flex-col items-center">
+                                <!-- Cuadro de imagen -->
+                                <div
+                                    @click="triggerFileInput"
+                                    class="w-full h-64 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-all hover:border-blue-500 hover:bg-blue-50"
+                                    :class="imagePreview ? 'border-gray-300 bg-gray-50' : 'border-gray-300 bg-gray-100'"
+                                >
+                                    <!-- Sin imagen -->
+                                    <div v-if="!imagePreview" class="text-center">
+                                        <i class="fa-solid fa-image text-5xl text-gray-400 mb-3"></i>
+                                        <p class="text-gray-500 font-medium">Imagen del aula</p>
+                                        <p class="text-gray-400 text-sm mt-1">Haz clic para agregar una imagen</p>
+                                    </div>
 
-                <div>
-                    <label class="block text-sm font-medium">Capacidad</label>
-                    <input
-                        type="number"
-                        v-model="form.capacidad"
-                        class="w-full mt-1 border-gray-300 rounded-md"
-                        max="150"
-                        :class="{ 'border-red-500': formErrors.capacidad }"
-                        @input="validateCapacity"
-                    />
-                    <p v-if="formErrors.capacidad" class="text-red-500 text-xs mt-1">
-                        {{ formErrors.capacidad[0] }}
-                    </p>
-                </div>
+                                    <!-- Con imagen -->
+                                    <img
+                                        v-else
+                                        :src="imagePreview"
+                                        alt="Vista previa"
+                                        class="w-full h-full object-cover rounded-lg"
+                                    />
+                                </div>
 
-                <div>
-                    <label class="block text-sm font-medium">Ubicación</label>
-                    <textarea
-                        v-model="form.ubicacion"
-                        class="w-full mt-1 border-gray-300 rounded-md"
-                        :class="{ 'border-red-500': formErrors.ubicacion }"
-                    ></textarea>
-                    <p v-if="formErrors.ubicacion" class="text-red-500 text-xs mt-1">
-                        {{ formErrors.ubicacion[0] }}
-                    </p>
-                </div>
+                                <!-- Botones de acción (solo se muestran si hay imagen) -->
+                                <div v-if="imagePreview" class="flex gap-3 mt-3">
+                                    <button
+                                        type="button"
+                                        @click="triggerFileInput"
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <i class="fa-solid fa-pen"></i>
+                                        Editar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="removeImage"
+                                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                                    >
+                                        <i class="fa-solid fa-trash"></i>
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
 
-                <div>
-                    <label class="block text-sm font-medium">Estado</label>
-                    <select
-                        v-model="form.estado"
-                        class="w-full mt-1 border-gray-300 rounded-md"
-                        :class="{ 'border-red-500': formErrors.estado }"
-                    >
-                        <option value="activo">Disponible</option>
-                        <option value="inactivo">Ocupada</option>
-                        <option value="inactivo">Mantenimiento</option>
-                        <option value="inactivo">Inactiva</option>
-                    </select>
-                    <p v-if="formErrors.estado" class="text-red-500 text-xs mt-1">
-                        {{ formErrors.estado[0] }}
-                    </p>
+                            <p v-if="formErrors.fotos" class="text-red-500 text-xs mt-2">
+                                {{ formErrors.fotos[0] }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <input
+                                type="text"
+                                v-model="form.videos"
+                                id="youtubeVideoUrl"
+                                class="w-full mt-1 border-gray-300 rounded-md"
+                            />
+                            <label for="youtubeVideoUrl" class="text-sm font-medium">
+                                URL del video de YouTube (opcional)
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4">
-                    <button type="button" @click="closeModal" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition-colors">
+                    <button type="button" @click="closeModal"
+                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition-colors">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors" :disabled="loading">
+                    <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                            :disabled="loading">
                         {{ isEditMode ? 'Actualizar' : 'Crear' }}
                     </button>
                 </div>
@@ -320,29 +345,29 @@ import {authService} from "@/Services/authService.js";
 import Modal from "@/Components/Modal.vue";
 import {createDeparments, updateDepartment} from "@/Services/deparmentsService.js";
 
-
 const colorText = ref('#2C2D2F');
 const colorButton = ref('#d93f3f');
 const showModal = ref(false);
 const isEditMode = ref(false);
 const fileInput = ref(null);
 const imagePreview = ref(null);
-    // Estado de autenticación
-    const isAuthenticated = ref(false);
+// Estado de autenticación
+const isAuthenticated = ref(false);
 
-    // Maneja cuando la autenticación es exitosa
-    const handleAuthenticated = (status) => {
-        isAuthenticated.value = status;
-    };
+// Maneja cuando la autenticación es exitosa
+const handleAuthenticated = (status) => {
+    isAuthenticated.value = status;
+};
 
 const form = ref({
     id: null,
     codigo: '',
     nombre: '',
-    capacidad: '',
+    capacidad_pupitres: '',
     ubicacion: '',
     estado: 'activo',
-    imagen: null,
+    fotos: null,
+    videos: '',
 });
 
 const formErrors = ref({});
@@ -361,7 +386,7 @@ const mensaje = ref({
 
 const filtros = ref({
     busqueda: '',
-    capacidad: 'all',
+    capacidad_pupitres: 'all',
     estado: 'all'
 });
 
@@ -369,7 +394,7 @@ onMounted(async () => {
     await authService.verifyToken(localStorage.getItem("token"));
 
     await cargarAulas();
-    isLoading.value = false;
+    // isLoading.value = false;
 });
 
 // ======| Para la paginación |======
@@ -395,10 +420,10 @@ const aulasFiltradas = computed(() => {
             aula.ubicacion.toLowerCase().includes(filtros.value.busqueda.toLowerCase());
 
         // Filtra según la capacidad
-        const capacidadAula = filtros.value.capacidad === 'all' ||
-            (filtros.value.capacidad === 'small' && aula.capacidad_pupitres <= 30) ||
-            (filtros.value.capacidad === 'medium' && aula.capacidad_pupitres > 30 && aula.capacidad_pupitres <= 100) ||
-            (filtros.value.capacidad === 'large' && aula.capacidad_pupitres > 100);
+        const capacidadAula = filtros.value.capacidad_pupitres === 'all' ||
+            (filtros.value.capacidad_pupitres === 'small' && aula.capacidad_pupitres <= 30) ||
+            (filtros.value.capacidad_pupitres === 'medium' && aula.capacidad_pupitres > 30 && aula.capacidad_pupitres <= 100) ||
+            (filtros.value.capacidad_pupitres === 'large' && aula.capacidad_pupitres > 100);
 
         // Filtrado por estado
         const estadoAula = filtros.value.estado === 'all' || aula.estado === filtros.value.estado;
@@ -422,6 +447,7 @@ const cargarAulas = async () => {
 
         if (response.data.success) {
             aulas.value = response.data.data;
+            console.log(aulas.value[0]);
 
             if (aulas.value.length === 0) {
                 mostrarMensaje('success', 'No hay aulas registradas. Ejecuta el seeder para agregar aulas de prueba.');
@@ -547,6 +573,7 @@ function openCreateModal() {
         ubicacion: '',
         estado: 'activo',
         imagen: null,
+        videos: '',
     }
     imagePreview.value = null
     formErrors.value = {}
@@ -568,39 +595,54 @@ function closeModal() {
 
 async function handleSubmit() {
     try {
-        // Limpiar errores previos
         formErrors.value = {};
 
-        if (isEditMode.value) {
-            // Actualizar departamento existente
-            await updateDepartment(form.value.id, form.value);
-            alert('Aula actualizada exitosamente');
-        } else {
-            // Crear nuevo departamento
-            console.log('Creando aula:', form.value);
-            // Validación personalizada: no permitir números en el nombre
-            const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
-            if (!nombreRegex.test(form.value.nombre)) {
-                formErrors.value.nombre = ['El nombre no debe contener números ni caracteres especiales.'];
-                return;
-            }
-
-            await createDeparments(form.value);
-            alert('Aula creada exitosamente');
+        // Validación del nombre
+        const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+        if (!nombreRegex.test(form.value.nombre)) {
+            formErrors.value.nombre = ['El nombre no debe contener números ni caracteres especiales.'];
+            return;
         }
 
-        // Recargar la tabla
+        // Crear FormData para enviar archivos
+        const formData = new FormData();
+        formData.append('codigo', form.value.codigo);
+        formData.append('nombre', form.value.nombre);
+        formData.append('capacidad_pupitres', form.value.capacidad_pupitres);
+        formData.append('ubicacion', form.value.ubicacion);
+        formData.append('estado', form.value.estado);
+        formData.append('videos', form.value.videos || '');
+
+        // Agregar la imagen si existe
+        if (form.value.fotos) {
+            formData.append('fotos', form.value.fotos);
+        }
+
+        const response = await axios.post(`/api/classrooms/new`, formData, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        const data = response.data;
+        if (!data.success) {
+            throw new Error(data.message || 'Error al crear el aula');
+        }
+
+        alert('Aula creada exitosamente');
         await cargarAulas();
         closeModal();
 
-        // Limpiar el formulario
+        // Limpiar formulario
         form.value = {
             codigo: '',
             nombre: '',
-            capacidad: '',
+            capacidad_pupitres: '',
             ubicacion: '',
             estado: 'activo',
-            imagen: null,
+            fotos: null,
+            videos: '',
         };
         imagePreview.value = null;
 
@@ -608,10 +650,8 @@ async function handleSubmit() {
         console.error('Error completo:', error);
         if (error.response?.status === 422) {
             formErrors.value = error.response.data.errors;
-            console.error('Errores de validación:', formErrors.value);
-            alert('Por favor, verifica los campos del formulario:');
+            alert('Por favor, verifica los campos del formulario');
         } else {
-            console.error('Error inesperado:', error);
             alert('Ocurrió un error al guardar: ' + (error.response?.data?.message || error.message));
         }
     }
@@ -629,7 +669,7 @@ const handleImageUpload = async (event) => {
     if (file) {
         // Validar tipo de archivo
         if (!file.type.startsWith('image/')) {
-            formErrors.value.imagen = ['Por favor selecciona un archivo de imagen válido'];
+            formErrors.value.fotos = ['Por favor selecciona un archivo de imagen válido'];
             return;
         }
 
@@ -642,7 +682,7 @@ const handleImageUpload = async (event) => {
             };
 
             const compressedFile = await browserImageCompression(file, options);
-            form.value.imagen = compressedFile;
+            form.value.fotos = compressedFile;
 
             // Crear vista previa
             const reader = new FileReader();
@@ -652,12 +692,12 @@ const handleImageUpload = async (event) => {
             reader.readAsDataURL(compressedFile);
 
             // Limpiar error si existía
-            if (formErrors.value.imagen) {
-                delete formErrors.value.imagen;
+            if (formErrors.value.fotos) {
+                delete formErrors.value.fotos;
             }
         } catch (error) {
             console.error('Error al comprimir la imagen:', error);
-            formErrors.value.imagen = ['Error al procesar la imagen'];
+            formErrors.value.fotos = ['Error al procesar la imagen'];
         }
     }
 };
@@ -665,7 +705,7 @@ const handleImageUpload = async (event) => {
 // Eliminar imagen
 const removeImage = () => {
     imagePreview.value = null;
-    form.value.imagen = null;
+    form.value.fotos = null;
     if (fileInput.value) {
         fileInput.value.value = '';
     }
@@ -676,7 +716,7 @@ function validateCapacity(event) {
     // Only allow numbers up to 150
     const regex = /^(?:1[0-4][0-9]|150|[1-9]?[0-9])$/;
     if (!regex.test(value)) {
-        form.value.capacidad = Math.min(Number(value), 150);
+        form.value.capacidad_pupitres = Math.min(Number(value), 150);
     }
 }
 

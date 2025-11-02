@@ -1,0 +1,2447 @@
+[
+    {
+        "codigo": "HYR02186",
+        "materia": "Administración y Supervisión de Obras I ( TE III ) I – B",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "HLE19873",
+        "materia": "Administración y Supervisión de Obras II-B (TE)",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "KUQ38604",
+        "materia": "Algebra Lineal",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "ARC34205",
+        "materia": "Comunicación Arquitectonica II",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "NCU06581",
+        "materia": "Comunicación Arquitectónica I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "SNO49685",
+        "materia": "Comunicación Arquitectónica III",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "IWO35724",
+        "materia": "Comunicación Básica I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "OBD73524",
+        "materia": "Dibujo Basico por Computadora II",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "LMK06235",
+        "materia": "Dibujo Básico",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "MWR43506",
+        "materia": "Dibujo Básico por Computadora I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "DNG94362",
+        "materia": "Dibujo Tecnico Asistido por Computadora",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "XJV59813",
+        "materia": "Diseño de Interiores I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "LRA49265",
+        "materia": "Diseño de Interiores II-A (TE)",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "FJA63471",
+        "materia": "Estructuras I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "OTW30276",
+        "materia": "Estructuras II",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "RLU97283",
+        "materia": "Estructuras III",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "KZA79583",
+        "materia": "Estructuras IV",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "NYF24960",
+        "materia": "Fundamentos de Arquitectura",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "EOS08365",
+        "materia": "Fundamentos de Diseño",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "DQS21753",
+        "materia": "Fundamentos de Diseño I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "PGJ58391",
+        "materia": "Física Para Arquitectura",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "GCD60312",
+        "materia": "Geometria Descriptiva",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "ENU38516",
+        "materia": "Geometría Descriptiva",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "QUL57130",
+        "materia": "Matemática I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "CZY94275",
+        "materia": "Medio Ambiente",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "XEP46238",
+        "materia": "Métodos Experimentales",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "MOC58296",
+        "materia": "Métodos Sociales I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "ROU49860",
+        "materia": "Métodos de Investigación",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "AZX42870",
+        "materia": "Pre Calculo y Calculo Diferencial",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "HUG91270",
+        "materia": "Proceso de Graduacion -Curso de Especialización-",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "JXG24735",
+        "materia": "Proceso de Graduación -Pasantía Práctica-",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "SEZ67094",
+        "materia": "Proceso de Graduación -Trabajo de Investigación-",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "XGL68175",
+        "materia": "Programa Especial de Refuerzo Académico -PERA-",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "QBS03485",
+        "materia": "TECNOLOGIA DE LA CONSTRUCCION IV-2025",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "PUL81642",
+        "materia": "Taller de Proyectación I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "XPO86329",
+        "materia": "Taller de Proyectación II",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "SHX05738",
+        "materia": "Taller de Proyectación III",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "PLQ81957",
+        "materia": "Taller de Proyectación IV",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "MTG58147",
+        "materia": "Taller de Proyectación V",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "OBF68439",
+        "materia": "Taller de Proyectación VI",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "OVL48197",
+        "materia": "Taller de Proyectación VII",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "DBV93615",
+        "materia": "Taller de Proyectación VIII",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "QKY98645",
+        "materia": "Tecnología de la Construcción II",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "IYT47956",
+        "materia": "Tecnología de la Construcción V",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "IWZ27048",
+        "materia": "Tecnología de la Construcción VI",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "KPT63849",
+        "materia": "Tecnología de la Construcción VII",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "IWQ78593",
+        "materia": "Teoría e Historia I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "KRG90276",
+        "materia": "Teoría e Historia II",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "FBW63851",
+        "materia": "Teoría e Historia III",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "FYV35427",
+        "materia": "Teoría e Historia IV",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "ROU07263",
+        "materia": "Teoría e Historia V",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "PVW07619",
+        "materia": "Teoría e Historia VI",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "XHE74218",
+        "materia": "Topografía",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "NTZ84396",
+        "materia": "Técnicas de Estudio Arquitectura",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "RAQ53780",
+        "materia": "Urbanismo I",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "WBS29061",
+        "materia": "Urbanismo II",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "ACV06139",
+        "materia": "Urbanismo III",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "ZYR85643",
+        "materia": "Urbanismo IV",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "ORU32684",
+        "materia": "Urbanismo V",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "DBH05267",
+        "materia": "Urbanismo VI",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "HNF03594",
+        "materia": "Urbanismo VII",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "SPQ23651",
+        "materia": "Urbanismo VIII",
+        "carrera": "Arquitectura"
+    },
+    {
+        "codigo": "MPJ06237",
+        "materia": "Algebra Lineal y Vectorial, Ingenierías: Mecánica&Eléctrica",
+        "carrera": "Comunes Arquitectura e Ingenierías"
+    },
+    {
+        "codigo": "YEA70924",
+        "materia": "Comunicación Espacial Grafica I, Ingenierías: Mecánica&Eléctrica",
+        "carrera": "Comunes Arquitectura e Ingenierías"
+    },
+    {
+        "codigo": "JQD62431",
+        "materia": "Matemática I, Ingenierías: Mecánica&Eléctrica",
+        "carrera": "Comunes Arquitectura e Ingenierías"
+    },
+    {
+        "codigo": "PVM41732",
+        "materia": "Métodos Experimentales, Ingenierías: Mecánica&Eléctrica",
+        "carrera": "Comunes Arquitectura e Ingenierías"
+    },
+    {
+        "codigo": "UVQ56043",
+        "materia": "Probabilidad y Estadística, Ingenierias: Mecánica+Electrica+Civil",
+        "carrera": "Comunes Arquitectura e Ingenierías"
+    },
+    {
+        "codigo": "ARD37528",
+        "materia": "Tecnología y Educación",
+        "carrera": "Comunes Licenciaturas y Profesorados"
+    },
+    {
+        "codigo": "TIJ48961",
+        "materia": "Agroclimatología",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "YUP97632",
+        "materia": "Anatomía y Fisiología Animal",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "PVK12603",
+        "materia": "Avicultura",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "JXT97384",
+        "materia": "Botánica Agrícola",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "HMO60154",
+        "materia": "Curso de Especialización",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "FSG08617",
+        "materia": "Desarrollo y Gestión del Desarrollo Local",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "KUT61987",
+        "materia": "Diseños Experimentales",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "ACB59768",
+        "materia": "Economía Agrícola",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "NKC85712",
+        "materia": "Fisica General",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "UYT03291",
+        "materia": "Fisiología Vegetal",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "YOR23916",
+        "materia": "Fitopatología",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "DXQ25970",
+        "materia": "Formulación y Evaluación de Proyectos Agropecuarios",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "HDT50734",
+        "materia": "Fruticultura",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "JSZ29758",
+        "materia": "Ganado Vacuno",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "CIG68241",
+        "materia": "Genética",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "KHA52176",
+        "materia": "Horticultura",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "PHK31209",
+        "materia": "Instalaciones Agropecuarias",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "EGS69512",
+        "materia": "Manejo de Suelos",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "DHW01863",
+        "materia": "Maquinaria Agrícola",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "ZYL32075",
+        "materia": "Métodos y Técnicas de Investigación",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "DCK36179",
+        "materia": "Parasitología",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "QWG14893",
+        "materia": "Parasitología Animal",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "CFR89620",
+        "materia": "Procesamiento de Productos Agropecuarios",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "EDK60514",
+        "materia": "Química Agrícola",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "BPF98316",
+        "materia": "Química General (Ingeniería Agronómica)",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "UJB71409",
+        "materia": "Reproducción y Mejoramiento Animal",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "RBL51803",
+        "materia": "Riegos y Drenaje",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "PDM82694",
+        "materia": "Sistemas Silvopastoriles",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "BJD14968",
+        "materia": "Sociología Rural",
+        "carrera": "Ingeniería Agronómica"
+    },
+    {
+        "codigo": "NET05473",
+        "materia": "Abastecimiento de Agua y Alcantarillado",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "WZO71240",
+        "materia": "Cimentaciones",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "CIQ68425",
+        "materia": "Comportamiento Estructural",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "SKL16394",
+        "materia": "Comunicación Espacial Gráfica I",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "YLI45310",
+        "materia": "Dibujo para Ingeniería Civil",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "BTI47093",
+        "materia": "Diseño Estructural",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "ODJ14628",
+        "materia": "Estructuras de Acero I",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "WKN04982",
+        "materia": "Estructuras de concreto (TE)",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "NXY93187",
+        "materia": "Evaluación del Impacto Ambiental (TE)",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "XDW30916",
+        "materia": "Formulación de Proyectos",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "FLT16820",
+        "materia": "Fundamentos de Economía  - Ing Civil",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "GDQ07365",
+        "materia": "Fundamentos de Ingeniería Sísmica",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "KDJ13968",
+        "materia": "Física II",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "QVX90873",
+        "materia": "Física III",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "VJW47352",
+        "materia": "Geología Aplicada",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "EKH15479",
+        "materia": "Geometria Descriptiva",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "MTF73069",
+        "materia": "Geometría Descriptiva",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "UOX28749",
+        "materia": "Gestión de Pavimentos",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "HBE90763",
+        "materia": "Hidraulica",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "IFS75926",
+        "materia": "Hidrología",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "JQR54296",
+        "materia": "Ingenieria Sanitaria",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "YHK46098",
+        "materia": "Ingeniería Económica",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "FQE74351",
+        "materia": "Ingeniería de Carreteras",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "CDY56819",
+        "materia": "Ingeniería de Materiales",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "WPX27365",
+        "materia": "Ingeniería de Pavimentos (TE)",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "HBF12387",
+        "materia": "Introducción a la Informática  CIVIL",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "LGJ60547",
+        "materia": "Introducción a la Ingeniería Civil y Medio Ambiente",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "ZMK70518",
+        "materia": "Matemática I",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "FBG10437",
+        "materia": "Matemática III",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "DJC76801",
+        "materia": "Mecanica de los Solidos II",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "UOX80923",
+        "materia": "Mecánica Estructural",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "TJW24153",
+        "materia": "Mecánica de Suelos",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "IDK50786",
+        "materia": "Mecánica de los Fluidos",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "BSD14957",
+        "materia": "Mecánica de los Solidos II",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "EGK02478",
+        "materia": "Mecánica de los Sólidos I",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "SJC35917",
+        "materia": "Mecánica de los Sólidos III",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "WXY35792",
+        "materia": "Métodos Experimentales",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "LGE13246",
+        "materia": "Planeamiento y Administración de Obras I-2025",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "WRX38256",
+        "materia": "Planeamiento y Administración de Obras II 2025",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "TOH27634",
+        "materia": "Planeamiento y Administración de Obras III - 2025",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "LDU43162",
+        "materia": "Pre Calculo y Calculo Diferencial",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "MUL46095",
+        "materia": "Proceso de Grado: Trabajo de Investigación",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "VUC70586",
+        "materia": "Proceso de Graduación -Curso de Especialización-",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "OXF17329",
+        "materia": "Proceso de Graduación -Pasantía de Práctica- Ingeniería de Carreteras",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "GER24937",
+        "materia": "Proceso de Graduación -Trabajo de Investigación-",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "CYJ67143",
+        "materia": "Programa Especial de Refuerzo Académico -PERA-",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "LGJ68391",
+        "materia": "Proyecto de Ingeniería",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "HXU15708",
+        "materia": "Psicología Social",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "GML19836",
+        "materia": "Psicología y Relaciones Socio Laborales",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "AMV32156",
+        "materia": "Química",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "HVT48761",
+        "materia": "Supervisión de Obras",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "KRW43058",
+        "materia": "Tecnologia de la Construccion I",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "FEQ85069",
+        "materia": "Tecnologia de la Construccion III",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "KDG21370",
+        "materia": "Tecnología del Concreto (TE)",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "YXI52083",
+        "materia": "Topografía I",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "IZL96142",
+        "materia": "Topografía II",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "NER74103",
+        "materia": "Técnicas de Administración en la Construcción (TE)",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "MEB40316",
+        "materia": "Técnicas de Estudio, Ingeniería Civil",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "SET13674",
+        "materia": "Álgebra Lineal y Vectorial, Ing Civil",
+        "carrera": "Ingeniería Civil"
+    },
+    {
+        "codigo": "UNX79345",
+        "materia": "Ciencia de los Materiales",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "HLX87932",
+        "materia": "Ciencia, Tecnología y Sociedad",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "AJE37140",
+        "materia": "Electromagnetismo I",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "XYC38594",
+        "materia": "Fundamentos de Economía",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "DBG85013",
+        "materia": "Introducción a la Computación y Programación",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "PCR15048",
+        "materia": "Introducción a la Ingeniería Eléctrica",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "FLQ54763",
+        "materia": "Lógica y Algoritmo",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "DUX96270",
+        "materia": "Mecánica de los Sólidos",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "PZR25871",
+        "materia": "Métodos Experimentales",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "RGM34276",
+        "materia": "Pre Calculo y Calculo Diferencial",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "CKS35790",
+        "materia": "Química",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "IAX04879",
+        "materia": "Técnicas de Estudio",
+        "carrera": "Ingeniería Eléctrica"
+    },
+    {
+        "codigo": "DFK83567",
+        "materia": "Administración Financiera",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "TPZ92107",
+        "materia": "Análisis y Diseño Organizacional",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "RJB09584",
+        "materia": "Contabilidad y Costos",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "UIN87053",
+        "materia": "Dibujo Tecnico II Industrial",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "QTJ84963",
+        "materia": "Dibujo Técnico I",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "ZRE18236",
+        "materia": "Dinámica",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "AOL48215",
+        "materia": "Distribución en Planta",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "OBC37429",
+        "materia": "Eficiencia Energética",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "DWC02968",
+        "materia": "Formulación y Evaluación de Proyectos",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "NWU18594",
+        "materia": "Fundamentos de Administración",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "EKD03746",
+        "materia": "Fundamentos de Economía",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "IRS01428",
+        "materia": "Física II",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "JWM35026",
+        "materia": "Gerencia Financiera Empresarial",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "KJT54318",
+        "materia": "Gestion Empresarial",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "SRX51087",
+        "materia": "Gestion de Cadena de Suministros",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "BNL89561",
+        "materia": "Gestion de la Implementacion de Proyectos",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "QRO13409",
+        "materia": "Gestión de Capital Humano",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "WIH46301",
+        "materia": "Gestión de la Calidad",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "LOA25630",
+        "materia": "Gestión de la Producción",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "PWN08439",
+        "materia": "Ingenieria Economica",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "ETC25680",
+        "materia": "Ingeniería de Métodos",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "NFU60981",
+        "materia": "Introducción a la Ingeniería Industrial",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "KOS68429",
+        "materia": "Investigacion de Operaciones I",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "ZPM54960",
+        "materia": "Investigación de Operaciones II",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "ILA31594",
+        "materia": "Investigación en Ingeniería",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "TPZ54032",
+        "materia": "Legislación Profesional",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "WHY45712",
+        "materia": "Lógica y Algoritmos",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "GJL41807",
+        "materia": "Lógica y Algoritmos INDUSTRIAL",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "ISM51076",
+        "materia": "Manejo de Software para Microcomputadoras",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "OTA84293",
+        "materia": "Manufactura Esbelta T.E",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "DZS70412",
+        "materia": "Matemática I",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "OTK29684",
+        "materia": "Matemática II",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "WXH39852",
+        "materia": "Matemática III",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "LCX47192",
+        "materia": "Mecánica de los Fluidos",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "ZIK23501",
+        "materia": "Medida del Trabajo",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "QKC26849",
+        "materia": "Mercadeo",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "NMS78132",
+        "materia": "Ofimática y Software para Ingeniería Industrial",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "VWN48351",
+        "materia": "PERA Industrial",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "XSQ29701",
+        "materia": "Planeación Estratégica",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "KDJ96520",
+        "materia": "Presupuesto de la Producción",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "CRK26913",
+        "materia": "Probabilidad y Estadística",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "ZLK42516",
+        "materia": "Proceso de Grado: Trabajo De Investigación",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "ITM04935",
+        "materia": "Proceso de Graduacion. Curso de Especialización",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "KFB36049",
+        "materia": "Proceso de Graduación -Pasantía de Práctica-",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "BGC01496",
+        "materia": "Proceso de Graduación -Trabajo de Investigación-",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "QCW56124",
+        "materia": "Programa Especial de Refuerzo Académico -PERA-",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "FVS18952",
+        "materia": "Programación Básica",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "DPB84791",
+        "materia": "Programación I",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "EWS06485",
+        "materia": "Protocolo de Trabajo de Graduación",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "AUD43519",
+        "materia": "Psicología y Relaciones Sociolaborales",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "UIJ45082",
+        "materia": "Química Técnica",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "YOF68140",
+        "materia": "Responsabilidad de la Ingeniería en la Economía y la Sociedad",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "GBV15380",
+        "materia": "Seguridad y Salud Ocupacional",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "YUR73681",
+        "materia": "Sólidos Deformables",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "CBW06941",
+        "materia": "Tecnologia Industrial III",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "AYK05748",
+        "materia": "Tecnología Industrial I",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "NCM47130",
+        "materia": "Tecnología Industrial II",
+        "carrera": "Ingeniería Industrial"
+    },
+    {
+        "codigo": "ASB81603",
+        "materia": "Ciencia de los Materiales I",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "YLC63271",
+        "materia": "Dibujo Mecanico Asistido por Computadora",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "GJC24513",
+        "materia": "Dibujo Mecánico",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "KYU51423",
+        "materia": "Física III",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "MVC75912",
+        "materia": "Introducción a la Informática, GT 05 MECÁNICA-ELÉCTRICA",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "ZBD52439",
+        "materia": "Introducción a la Ingeniería",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "FAR18572",
+        "materia": "Matemática III",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "KMT50293",
+        "materia": "Mecánica de los Solidos III",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "YKQ21938",
+        "materia": "Mecánica de los Sólidos I.",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "VNR57831",
+        "materia": "Métodos Experimentales",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "CVT52304",
+        "materia": "Pre Calculo y Calculo Diferencial",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "WSU91685",
+        "materia": "Programación I",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "YEV13675",
+        "materia": "Quimica para Ingeniería",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "RHM78643",
+        "materia": "Taller Mecanico",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "XAJ01459",
+        "materia": "Taller Mecánico-TAM115",
+        "carrera": "Ingeniería Mecánica"
+    },
+    {
+        "codigo": "VMI62174",
+        "materia": "Administración de Centros de Cómputo",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "OJI10659",
+        "materia": "Administración de Proyectos Informáticos",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "PEC81069",
+        "materia": "Algebra Lineal y Vectorial",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "TIN37860",
+        "materia": "Análisis Financiero",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "BEU75261",
+        "materia": "Análisis Numéricos",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "IGN14385",
+        "materia": "Arquitectura de Computadoras",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "ZMT36125",
+        "materia": "Auditoria de Sistemas (TE-VI)",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "OQL85413",
+        "materia": "Bases de Datos",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "CJI71469",
+        "materia": "Comercio Electrónico",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "VYI09573",
+        "materia": "Comunicaciones I",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "DWK15490",
+        "materia": "Comunicaciones II (T.E. V)",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "PKD42195",
+        "materia": "Consultoría Profesional",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "BLP38796",
+        "materia": "Diseño de Sistemas I",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "CIW47839",
+        "materia": "Diseño de Sistemas II",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "QEO37204",
+        "materia": "Estructura de Datos I, Plan 2025",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "GBP70532",
+        "materia": "Estructura de Datos, Plan 1998",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "HFK65847",
+        "materia": "Fisica III",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "DKF84069",
+        "materia": "Fundamento de Programación",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "GED01976",
+        "materia": "Fundamentos Empresariales",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "GEW27635",
+        "materia": "Fundamentos de Economía",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "VBD51463",
+        "materia": "Física II",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "FXQ84610",
+        "materia": "Herramientas de Productividad",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "ULO92418",
+        "materia": "Implementación de Bases de Datos (TE-VI)",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "JTP50168",
+        "materia": "Ingeniería Económica",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "QYK10594",
+        "materia": "Ingeniería de Sistemas y Sociedad",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "BRX79580",
+        "materia": "Ingeniería del Software (T E - IV)",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "UEI25497",
+        "materia": "Introducción a la Informática",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "PKW95271",
+        "materia": "Legislación Profesional",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "ZSR19382",
+        "materia": "Matemática I",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "SHK51790",
+        "materia": "Matemática III",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "SEC06951",
+        "materia": "Matemática IV",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "QCZ07852",
+        "materia": "Microprogramación",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "ZRS05186",
+        "materia": "Métodos Experimentales",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "CDF98214",
+        "materia": "Métodos de Optimización",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "XLN28147",
+        "materia": "Pre Calculo y Calculo Diferencial",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "DTH50482",
+        "materia": "Probabilidad y Estadística",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "GAN75921",
+        "materia": "Proceso de Graduacion -Pasantía de Práctica-",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "ZXL07925",
+        "materia": "Proceso de Graduacion -Trabajo de Investigación-",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "XDA43250",
+        "materia": "Proceso de Graduación -Curso de Especialización-",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "JRU43079",
+        "materia": "Programa Especial de Refuerzo Académico -PERA-",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "QCF90257",
+        "materia": "Programación II",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "OSC58269",
+        "materia": "Programación III",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "CMN60187",
+        "materia": "Programación Orientada a Objetos, Plan 2025",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "YFM07456",
+        "materia": "Programación para Dispositivos Móviles (T.E II)",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "WBC40695",
+        "materia": "Psicología Social",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "SJA94671",
+        "materia": "Recursos Humanos",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "RYQ29068",
+        "materia": "Seguridad Informática (T.E. V)",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "WLJ94123",
+        "materia": "Sistema de Información Gerencial",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "KEA96472",
+        "materia": "Sistemas Contables",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "ATY20935",
+        "materia": "Sistemas Digitales",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "YOC75983",
+        "materia": "Sistemas Operativos",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "EXR42691",
+        "materia": "Sistemas y Procedimientos",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "XAS64053",
+        "materia": "Teoría Administrativa",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "JHW27658",
+        "materia": "Teoría de Sistemas, Plan 1998",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "PTS40217",
+        "materia": "Teoría de Sistemas, Plan 2025",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "NGW97843",
+        "materia": "Tutorías Fundamentos de Programación",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "YSW47129",
+        "materia": "Técnicas de Estudio, Ingeniería Sistemas",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "CQM98135",
+        "materia": "Técnicas de Programación para Internet (T.E - I)",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "FMW25694",
+        "materia": "Técnicas de Simulación (T.E.III)",
+        "carrera": "Ingeniería de Sistemas Informáticos"
+    },
+    {
+        "codigo": "OME86035",
+        "materia": "Administración Financiera I",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "CPA98347",
+        "materia": "Administración Financiera II",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "PRN10948",
+        "materia": "Administración Publica",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "IFG18736",
+        "materia": "Administración Superior",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "BXG03591",
+        "materia": "Administración de Personal I",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "YRH96382",
+        "materia": "Administración de Personal II",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "EDM78329",
+        "materia": "Administración de Personal III",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "FCV30187",
+        "materia": "Administración de la Producción I",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "GDI78104",
+        "materia": "Administración de la Producción II",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "HZC16430",
+        "materia": "Costeo Variable",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "DQG05173",
+        "materia": "Derecho Mercantil I",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "BSG40213",
+        "materia": "Derecho Mercantil II",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "KAW42785",
+        "materia": "Estadística II",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "QIP21954",
+        "materia": "Formulación y Evaluación de Proyectos",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "FSY07214",
+        "materia": "Matemática Financiera",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "NED26710",
+        "materia": "Mercadeo Internacional",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "EGL28395",
+        "materia": "Mercadotecnia I",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "MTO16403",
+        "materia": "Mercadotecnia II",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "HUQ42967",
+        "materia": "Proceso de Graduación: Curso de Especialización",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "FXE54810",
+        "materia": "Proceso de Graduación: Pasantía de Investigación",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "ACL57012",
+        "materia": "Seminario de Finanzas",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "EXF95632",
+        "materia": "Sistemas Computacionales",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "LKU62530",
+        "materia": "Sistemas Organizacionales",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "PLK51647",
+        "materia": "Teoría Administrativa I",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "ZKP70539",
+        "materia": "Teoría Administrativa II",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "ZBL40351",
+        "materia": "Técnicas Presupuestarias",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "HXA49310",
+        "materia": "Ética y Desarrollo Profesional",
+        "carrera": "Licenciatura en Administración de Empresas"
+    },
+    {
+        "codigo": "DME53790",
+        "materia": "Química Inorganica II",
+        "carrera": "Licenciatura en Ciencias Químicas"
+    },
+    {
+        "codigo": "VUB74213",
+        "materia": "Mercadotecnia II",
+        "carrera": "Licenciatura en Ciencias de la Educación Especialidad Administración Escolar"
+    },
+    {
+        "codigo": "HXG86134",
+        "materia": "Teoría Administrativa II",
+        "carrera": "Licenciatura en Ciencias de la Educación Especialidad Administración Escolar"
+    },
+    {
+        "codigo": "IPV35207",
+        "materia": "Administración Financiera I",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "QRU70153",
+        "materia": "Administración Financiera II",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "KFP18930",
+        "materia": "Administración de la Producción",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "NEB83492",
+        "materia": "Auditoria II",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "HVK51207",
+        "materia": "Auditoría I",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "QLO37619",
+        "materia": "Auditoría de Sistemas",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "NZS83415",
+        "materia": "Contabilidad Agrícola y Ganadera",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "XAM49738",
+        "materia": "Contabilidad Bancaria",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "HJZ95237",
+        "materia": "Contabilidad Financiera I",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "SPC81793",
+        "materia": "Contabilidad Financiera II",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "ZOJ53281",
+        "materia": "Contabilidad Financiera III",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "SYR38291",
+        "materia": "Contabilidad Financiera IV",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "YQS50493",
+        "materia": "Contabilidad Financiera V",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "DGP54891",
+        "materia": "Contabilidad Gubernamental",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "EIV39475",
+        "materia": "Contabilidad de Costos I",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "NHP51249",
+        "materia": "Contabilidad de Costos II",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "YTG56918",
+        "materia": "Contabilidad de Seguros",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "OLC98476",
+        "materia": "Derecho Laboral",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "QMI94826",
+        "materia": "Derecho Mercantil II",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "LNY10439",
+        "materia": "Derecho Tributario I",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "ZMH06327",
+        "materia": "Derecho Tributario I  selección acción masiva Derecho Tributario II",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "IDM30219",
+        "materia": "Derecho Tributario II",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "ASR34509",
+        "materia": "Formulación y Evaluación de Proyectos",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "ISH17302",
+        "materia": "Legislación Aduanera",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "HLY24371",
+        "materia": "Proceso de Graduación: Curso de Especialización",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "YZU26103",
+        "materia": "Seminario de Auditoría",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "WMU70235",
+        "materia": "Seminario de Contabilidad",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "YJS92036",
+        "materia": "Sistemas Contables Computarizados",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "CRU17804",
+        "materia": "selección acción masiva",
+        "carrera": "Licenciatura en Contaduría Publica"
+    },
+    {
+        "codigo": "BMR27891",
+        "materia": "Ciencias Políticas",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "JZQ54089",
+        "materia": "Cuentas Nacionales",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "EXL79468",
+        "materia": "Econometría",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "LBA34805",
+        "materia": "Economía Política I",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "DNG25134",
+        "materia": "Economía Política II",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "QEF97586",
+        "materia": "Historia Económica",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "WXE25083",
+        "materia": "Introducción a La Economía I",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "LOQ41853",
+        "materia": "Introducción a la Economía II",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "HBQ30169",
+        "materia": "Macroeconomía I",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "MOQ65712",
+        "materia": "Macroeconomía II",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "CXG95687",
+        "materia": "Macroeconomía III",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "MOG78953",
+        "materia": "Matemática III",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "XZV89231",
+        "materia": "Microeconomía I",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "HWM54287",
+        "materia": "Microeconomía II",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "SHI01978",
+        "materia": "Métodos para el Análisis Económico",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "DOR18064",
+        "materia": "Técnicas de Investigación",
+        "carrera": "Licenciatura en Economía"
+    },
+    {
+        "codigo": "OUX15943",
+        "materia": "Tecnologías de la Información y la Comunicación Aplicadas a la Educación",
+        "carrera": "Licenciatura en Educacion Inicial y Parvularia"
+    },
+    {
+        "codigo": "CRU38269",
+        "materia": "Energías Renovables",
+        "carrera": "Licenciatura en Física"
+    },
+    {
+        "codigo": "OQY61485",
+        "materia": "Física Básica",
+        "carrera": "Licenciatura en Física"
+    },
+    {
+        "codigo": "BEZ61830",
+        "materia": "Física I",
+        "carrera": "Licenciatura en Física"
+    },
+    {
+        "codigo": "TBF76248",
+        "materia": "Programacion II",
+        "carrera": "Licenciatura en Física"
+    },
+    {
+        "codigo": "JFO36279",
+        "materia": "Composición Inglesa I",
+        "carrera": "Licenciatura en Lenguas Modernas"
+    },
+    {
+        "codigo": "VZW72105",
+        "materia": "Francés Avanzado",
+        "carrera": "Licenciatura en Lenguas Modernas"
+    },
+    {
+        "codigo": "IVY06589",
+        "materia": "Inglés Avanzado Intensivo II",
+        "carrera": "Licenciatura en Lenguas Modernas"
+    },
+    {
+        "codigo": "YAQ87046",
+        "materia": "Lectura y Conversación en Inglés II",
+        "carrera": "Licenciatura en Lenguas Modernas"
+    },
+    {
+        "codigo": "ATD92103",
+        "materia": "Literatura Francesa I",
+        "carrera": "Licenciatura en Lenguas Modernas"
+    },
+    {
+        "codigo": "ZUA39518",
+        "materia": "Phonétique Française",
+        "carrera": "Licenciatura en Lenguas Modernas"
+    },
+    {
+        "codigo": "JNH56234",
+        "materia": "Contabilidad y Costos",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "KHE15607",
+        "materia": "Estadística Informática",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "FIK06928",
+        "materia": "Filosofía de los Mercados Globales",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "CUV79501",
+        "materia": "Inglés I",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "QHW16803",
+        "materia": "Inglés II",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "RWV23967",
+        "materia": "Inglés III",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "VYC03861",
+        "materia": "Inglés IV",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "RTX36097",
+        "materia": "Inglés V",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "XTL50641",
+        "materia": "Introducción a la Economía",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "PNG42905",
+        "materia": "Investigación de Mercados Internacionales",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "FNE16258",
+        "materia": "Legislación Aduanera",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "QXP86295",
+        "materia": "Liderazgo y Técnicas de Negociación",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "DIM23680",
+        "materia": "Mercadeo Local e Internacional",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "SXB69487",
+        "materia": "Metodología de la Investigación",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "NOY76028",
+        "materia": "Metrología Logística",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "QDT51923",
+        "materia": "Microeconomía",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "PDM92103",
+        "materia": "Métodos y Técnicas de Planificación",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "KLS20795",
+        "materia": "Operaciones Financieras Internacionales",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "YML65812",
+        "materia": "Planes de Negocios y Gestión Financiera",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "NYW81643",
+        "materia": "Políticas Públicas",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "SAZ93187",
+        "materia": "Teoría Administrativa",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "YIW42763",
+        "materia": "Técnicas Gerenciales",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "FKD53271",
+        "materia": "Técnicas Presupuestarias",
+        "carrera": "Licenciatura en Logística Comercial Internacional (ED)"
+    },
+    {
+        "codigo": "HLR08237",
+        "materia": "Filosofía de las Ciencias",
+        "carrera": "Licenciatura en Matemática"
+    },
+    {
+        "codigo": "JRN27354",
+        "materia": "Introducción a la Matemática Discreta",
+        "carrera": "Licenciatura en Matemática"
+    },
+    {
+        "codigo": "MHR82309",
+        "materia": "Administración Financiera",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "CDP12380",
+        "materia": "Comercio Internacional I",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "XKE53048",
+        "materia": "Comercio Internacional II",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "NVE24591",
+        "materia": "Comportamiento del Consumidor",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "JMI28371",
+        "materia": "Decisiones Gerenciales sobre Costos",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "VIG85273",
+        "materia": "Derecho Mercantil y Aduanero",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "QPM79203",
+        "materia": "Desarrollo de Nuevos Productos",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "WAP63091",
+        "materia": "Diplomado de Especialización en Design Thinking y Emprendimiento Estratégico",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "QFT59176",
+        "materia": "Diplomado de Especialización en Marketing Digital Inteligente",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "WIZ01923",
+        "materia": "Economía Internacional",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "UZS62185",
+        "materia": "Finanzas Internacionales",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "RTJ05612",
+        "materia": "Gerencia de Marcas",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "KDL08597",
+        "materia": "Gerencia de Mercadeo",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "XWQ54962",
+        "materia": "Gerencia de Ventas",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "TQR78093",
+        "materia": "Ingles III",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "KDU27814",
+        "materia": "Ingles V",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "XCW65073",
+        "materia": "Inglés IV",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "MRI59032",
+        "materia": "Mercadeo I",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "LIM96275",
+        "materia": "Mercadeo Internacional I",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "BUG29531",
+        "materia": "Mercadeo Internacional II",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "FCN73918",
+        "materia": "Mercadeo de Servicios",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "FMB14236",
+        "materia": "Metodología de la Investigación de Mercados y Técnicas de Investigación",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "DTI20591",
+        "materia": "Planeación Estratégica de Mercadeo",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "EBQ83791",
+        "materia": "Productos y Precios en El Exterior",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "FGQ03478",
+        "materia": "Publicidad y Promoción Internacional",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "OVX16495",
+        "materia": "Seminario Integrador de Comercio Internacional",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "CQP35918",
+        "materia": "Técnicas de Negociación",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "TAL20397",
+        "materia": "Ética Profesional",
+        "carrera": "Licenciatura en Mercadeo Internacional"
+    },
+    {
+        "codigo": "PXA21650",
+        "materia": "Evaluacion y Tratamiento Psicologico Infantil",
+        "carrera": "Licenciatura en Psicología"
+    },
+    {
+        "codigo": "VMA86459",
+        "materia": "Historia de América Latina",
+        "carrera": "Licenciatura en Sociología"
+    },
+    {
+        "codigo": "KJU43096",
+        "materia": "Movimientos Sociales",
+        "carrera": "Licenciatura en Sociología"
+    },
+    {
+        "codigo": "HNL70541",
+        "materia": "Computación I",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "PEA32691",
+        "materia": "Computación I Grupo Teórico 04",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "IBX97384",
+        "materia": "Computación I Grupo Teóricos: 01 y 02",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "EBD21085",
+        "materia": "Computación II",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "PVJ67409",
+        "materia": "Estadística",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "HDU64210",
+        "materia": "Estadística I",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "RYN38756",
+        "materia": "Estadística II",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "RDC62970",
+        "materia": "Filosofía General",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "XQH13594",
+        "materia": "Inglés I",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "FYS25197",
+        "materia": "Inglés II",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "TBY80395",
+        "materia": "Matemática I",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "ARP89426",
+        "materia": "Matemática II",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "RHY73146",
+        "materia": "Matemática III",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "ZXY74159",
+        "materia": "Sociología General",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "YGC04687",
+        "materia": "Tecnicas de Investigación",
+        "carrera": "Materias Comunes"
+    },
+    {
+        "codigo": "DVY85164",
+        "materia": "Desarrollo Curricular de la Matemática III",
+        "carrera": "Profesorado en Educación Básica para Primero y Segundo Ciclos"
+    },
+    {
+        "codigo": "EHB15492",
+        "materia": "Matematica II",
+        "carrera": "Profesorado en Física para Educación Media"
+    },
+    {
+        "codigo": "SIZ35902",
+        "materia": "Aritmetica",
+        "carrera": "Profesorado en Matemática para Educación Media"
+    },
+    {
+        "codigo": "DNU03249",
+        "materia": "Calculo I",
+        "carrera": "Profesorado en Matemática para Educación Media"
+    },
+    {
+        "codigo": "QDF59781",
+        "materia": "Cálculo II",
+        "carrera": "Profesorado en Matemática para Educación Media"
+    },
+    {
+        "codigo": "OWE87056",
+        "materia": "Desarrollo Curricular De La Matemática",
+        "carrera": "Profesorado en Matemática para Educación Media"
+    },
+    {
+        "codigo": "PFA47098",
+        "materia": "Didáctica de la Matemática",
+        "carrera": "Profesorado en Matemática para Educación Media"
+    },
+    {
+        "codigo": "LXR43618",
+        "materia": "Introduccion a Logica Simbolica",
+        "carrera": "Profesorado en Matemática para Educación Media"
+    },
+    {
+        "codigo": "YLD28310",
+        "materia": "Administración y Planificación Pecuaria",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "YDT25473",
+        "materia": "Anatomía y fisiología animal",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "QXF26154",
+        "materia": "Avicultura",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "MAW38419",
+        "materia": "Biología General I",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "BQL63054",
+        "materia": "Bioquímica",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "MXL14862",
+        "materia": "Bovinotécnia",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "VJW71425",
+        "materia": "Epidemiología y Salud Pública Veterinaria",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "KGX46501",
+        "materia": "Equinos",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "WDC39527",
+        "materia": "Especies Menores",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "PXV51629",
+        "materia": "Farmacología Veterinaria",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "JZW43176",
+        "materia": "Forrajes Tropicales y Plantas Tóxicas",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "KRE15496",
+        "materia": "Inocuidad de Productos Pecuarios",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "QJA49238",
+        "materia": "Mascotas Domesticas",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "VDE70189",
+        "materia": "Microbiología",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "RHX47086",
+        "materia": "Nutrición Animal",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "OSX38506",
+        "materia": "Parasitología Animal",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "ITD78106",
+        "materia": "Patología Veterinaria Mo",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "OPS97062",
+        "materia": "Porcinocultura",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "BOZ74183",
+        "materia": "Practica Veterinaria IV",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "HGY17395",
+        "materia": "Práctica Veterinaria I",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "LOM75692",
+        "materia": "Práctica Veterinaria II",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "WNH07628",
+        "materia": "Práctica Veterinaria III",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "VSP20943",
+        "materia": "Química General 02 SAN MIGUEL",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "ZTS39574",
+        "materia": "Reproducción Animal",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    },
+    {
+        "codigo": "RNO32479",
+        "materia": "Virología e Inmunología",
+        "carrera": "Técnico en Veterinaria y Zootecnia"
+    }
+]

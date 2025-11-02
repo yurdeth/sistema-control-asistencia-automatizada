@@ -24,7 +24,7 @@ class MateriasController extends Controller {
         }
 
         try {
-            $materias = Cache::remember('materias_all', 60, function () {
+            $materias = Cache::remember('materias_all', 5, function () {
                 return materias::limit(50)->get();
             });
 

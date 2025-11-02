@@ -11,7 +11,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AulasController extends Controller {
     public function index(): JsonResponse {
@@ -322,6 +324,7 @@ class AulasController extends Controller {
     }
 
     public function store(Request $request): JsonResponse {
+        Log::info($request);
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -399,13 +402,20 @@ class AulasController extends Controller {
             DB::beginTransaction();
 
             //genera el uuid
-            $validation['qr_code'] = \Illuminate\Support\Str::uuid()->toString();
+            $validation['qr_code'] = Str::uuid()->toString();
 
             $aula = aulas::create($validation);
 
             // Guardar fotos si existen
             if ($request->hasFile('fotos')) {
-                foreach ($request->file('fotos') as $foto) {
+                $fotos = $request->file('fotos');
+
+                // Si es un solo archivo, convertirlo en array
+                if (!is_array($fotos)) {
+                    $fotos = [$fotos];
+                }
+
+                foreach ($fotos as $foto) {
                     $ruta = $foto->store('aulas', 'public');
                     AulaFoto::create([
                         'aula_id' => $aula->id,
@@ -415,14 +425,24 @@ class AulasController extends Controller {
             }
 
             // Guardar videos si existen
-            if ($request->has('videos')) {
-                foreach ($request->videos as $video_url) {
-                    if (!empty($video_url)) {
-                        AulaVideo::create([
-                            'aula_id' => $aula->id,
-                            'url' => $video_url
-                        ]);
-                    }
+            if ($request->has('videos') && !empty($request->videos)) {
+                $videos = $request->videos;
+
+                // Si es un string (una sola URL), convertirlo en array
+                if (is_string($videos)) {
+                    $videos = array_filter([$videos]); // Filtra vacíos
+                }
+
+                // Si ya es array, filtrar vacíos
+                if (is_array($videos)) {
+                    $videos = array_filter($videos);
+                }
+
+                foreach ($videos as $video_url) {
+                    AulaVideo::create([
+                        'aula_id' => $aula->id,
+                        'url' => $video_url
+                    ]);
                 }
             }
 

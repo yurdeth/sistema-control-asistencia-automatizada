@@ -11,14 +11,15 @@ class DepartamentosSeeder extends Seeder {
      */
 
     /*
-     * Ingenieria y arquitectura
+     * Ingenieria y Arquitectura
      * Medicina
-     * Economía
+     * Ciencias Económicas
      * Ciencias y humanidades
      * Jurisprudencia y ciencias sociales
-     * Agronomía
+     * Ciencias Económicas
      * Departamento de ciencias naturales y matemática
-     * Quimica y farmacia
+     * Química y Farmacia
+     * Ciencias Agronómicas
      * */
 
     public function run(): void {
@@ -38,7 +39,7 @@ class DepartamentosSeeder extends Seeder {
                 'updated_at' => now(),
             ],
             [
-                'nombre' => 'Economía',
+                'nombre' => 'Ciencias Económicas',
                 'descripcion' => 'Departamento dedicado a las ciencias económicas y administrativas, ofreciendo programas en economía, administración de empresas, contabilidad y finanzas.',
                 'estado' => 'activo',
                 'created_at' => now(),
@@ -59,7 +60,7 @@ class DepartamentosSeeder extends Seeder {
                 'updated_at' => now(),
             ],
             [
-                'nombre' => 'Agronomía',
+                'nombre' => 'Ciencias Agronómicas',
                 'descripcion' => 'Departamento especializado en ciencias agrícolas y ambientales, con programas en agronomía, ingeniería agrícola y gestión ambiental.',
                 'estado' => 'activo',
                 'created_at' => now(),
@@ -89,6 +90,20 @@ class DepartamentosSeeder extends Seeder {
             [
                 'nombre' => 'Guest',
                 'descripcion' => 'Guest.',
+                'estado' => 'activo',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Capacitaciones Varias',
+                'descripcion' => 'Departamento para capacitaciones y prácticas varias.',
+                'estado' => 'activo',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Escuela de Carreras Técnicas. Sede Morazán',
+                'descripcion' => 'Escuela de carreras técnicas ubicada en la Sede Morazán.',
                 'estado' => 'activo',
                 'created_at' => now(),
                 'updated_at' => now(),
