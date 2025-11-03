@@ -25,7 +25,7 @@ class RolesSeeder extends Seeder {
             [
                 'id' => 1,
                 'nombre' => 'root',
-                'descripcion' => 'Super usuario con todos los permisos del sistema',
+                'descripcion' => 'Super usuario con la mayoría de permisos del sistema',
                 'created_at' => now(),
                 'updated_at' => now()
             ],
