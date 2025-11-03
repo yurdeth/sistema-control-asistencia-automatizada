@@ -76,6 +76,7 @@ class CiclosAcademicosController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
         ];
 
@@ -214,6 +215,7 @@ class CiclosAcademicosController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
         ];
 
@@ -308,8 +310,12 @@ class CiclosAcademicosController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+        ];
 
-        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false

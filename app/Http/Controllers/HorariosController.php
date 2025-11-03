@@ -96,7 +96,10 @@ class HorariosController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -197,7 +200,10 @@ class HorariosController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -303,6 +309,7 @@ class HorariosController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
         ];
 
