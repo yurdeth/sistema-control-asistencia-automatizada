@@ -35,9 +35,9 @@ class UserSeeder extends Seeder
 
         DB::table('users')->insert([
             'nombre_completo' => 'root',
-            'email' => env('ADMIN_EMAIL'),
+            'email' => config('admin.email'),
             'telefono' => '+503 0000-0000',
-            'password' => Hash::make(env('ADMIN_PASSWORD')),
+            'password' => Hash::make(config('admin.password')),
             'departamento_id' => null,
             'carrera_id' => null,
             'email_verificado' => true,
