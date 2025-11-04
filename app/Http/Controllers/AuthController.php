@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordMail;
+use App\Mail\ResetPasswordMobileMail;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -394,7 +395,8 @@ class AuthController extends Controller {
         $rules = [
             'email' => ['required', 'email'],
             'token' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'min:5', 'confirmed'],
+            'password_confirmation' => ['required', 'string'],
         ];
 
         $messages = [
@@ -405,6 +407,8 @@ class AuthController extends Controller {
             'password.required' => 'La contraseña es requerida',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres',
             'password.confirmed' => 'Las contraseñas no coinciden',
+            'password_confirmation.required' => 'La confirmación de contraseña es requerida',
+            'password_confirmation.string' => 'La confirmación de contraseña debe ser una cadena de texto',
         ];
 
 
@@ -494,6 +498,183 @@ class AuthController extends Controller {
 
             return response()->json([
                 'message' => 'Error al restablecer la contraseña',
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Solicitar restablecimiento de contraseña para apps móviles
+     * Genera un código de 6 dígitos y envía email solo con el código
+     */
+    public function forgotPasswordMobile(Request $request): JsonResponse {
+        // Reglas de validación
+        $rules = [
+            'email' => ['required', 'email', 'exists:users,email'],
+        ];
+
+        // Mensajes personalizados
+        $messages = [
+            'email.required' => 'El correo es requerido',
+            'email.email' => 'El correo no es válido',
+            'email.exists' => 'El correo no está registrado en el sistema',
+        ];
+
+        // Validación de entrada
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+
+        try {
+            // Obtener el usuario
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'El correo no está registrado',
+                    'success' => false
+                ], 404);
+            }
+
+            // Verificar que el usuario esté activo
+            if ($user->estado !== 'activo') {
+                return response()->json([
+                    'message' => 'Esta cuenta está inactiva o suspendida',
+                    'success' => false
+                ], 403);
+            }
+
+            // Generar código de 6 dígitos y token largo
+            $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $token = Str::random(64);
+
+            // Eliminar tokens anteriores para este email
+            DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->delete();
+
+            // Crear nuevo registro con código y token
+            DB::table('password_reset_tokens')
+                ->insert([
+                    'email' => $email,
+                    'token' => $token,
+                    'code' => $code,
+                    'created_at' => Carbon::now(),
+                ]);
+
+            // Enviar email solo con el código (para apps móviles)
+            Mail::to($email)->send(new ResetPasswordMobileMail($code, $user->nombre_completo));
+
+            Log::info('Reset password code generado (mobile)', [
+                'email' => $email,
+                'timestamp' => Carbon::now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Se ha enviado un código de verificación a tu correo'
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error en forgot password mobile', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Error al procesar la solicitud',
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * Verificar código de verificación y retornar token largo
+     * Para apps móviles: El usuario ingresa el código de 6 dígitos
+     * y el sistema retorna el token largo que necesita para resetear
+     */
+    public function verifyResetCode(Request $request): JsonResponse {
+        // Reglas de validación
+        $rules = [
+            'email' => ['required', 'email'],
+            'code' => ['required', 'string', 'size:6'],
+        ];
+
+        // Mensajes personalizados
+        $messages = [
+            'email.required' => 'El correo es requerido',
+            'email.email' => 'El correo no es válido',
+            'code.required' => 'El código es requerido',
+            'code.string' => 'El código debe ser una cadena de texto',
+            'code.size' => 'El código debe tener exactamente 6 dígitos',
+        ];
+
+        // Validación de entrada
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+        $code = $request->input('code');
+
+        try {
+            // Buscar el registro del código
+            $passwordReset = DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->where('code', $code)
+                ->first();
+
+            if (!$passwordReset) {
+                return response()->json([
+                    'message' => 'El código de verificación es inválido',
+                    'success' => false
+                ], 400);
+            }
+
+            // Verificar que el código no haya expirado (1 hora = 3600 segundos)
+            $tokenAge = Carbon::now()->diffInSeconds(Carbon::parse($passwordReset->created_at));
+
+            if ($tokenAge > 3600) {
+                // Eliminar código expirado
+                DB::table('password_reset_tokens')
+                    ->where('email', $email)
+                    ->where('code', $code)
+                    ->delete();
+
+                return response()->json([
+                    'message' => 'El código de verificación ha expirado. Por favor, solicita uno nuevo',
+                    'success' => false
+                ], 400);
+            }
+
+            // Retornar el token largo para usar en reset-password
+            return response()->json([
+                'success' => true,
+                'message' => 'Código verificado correctamente',
+                'token' => $passwordReset->token
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error al verificar código', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Error al verificar el código',
                 'success' => false
             ], 500);
         }
