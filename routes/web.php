@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Ruta principal - siempre accesible para todos
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -16,13 +17,16 @@ Route::get('/', function () {
     ]);
 });
 
+// Ruta de login - redirige a dashboard si ya está autenticado
 Route::get('/login', function () {
     return Inertia::render('Auth/Login', [
         'canResetPassword' => true,
     ]);
-})->name('login');
+})->middleware('guest.passport')->name('login');
 
-Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
+// Grupo de rutas protegidas - requieren autenticación con Passport
+Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])->group(function () {
+    // Dashboard - accesible para todos los usuarios autenticados
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard', [
             'mustCheckAuth' => true
@@ -30,11 +34,12 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class])->group(function () {
     })->name('dashboard');
 
     // Rutas de administración
+
     Route::get('/catalogo', function () {
         return Inertia::render('Administration/classroomManagement/catalogo', [
             'mustCheckAuth' => true
         ]);
-    });
+    })->middleware('role:1,6'); // Roles específicos o permitidos por rutas
 
     Route::get('/docentes', function () {
         return Inertia::render('Administration/General/docentes', [

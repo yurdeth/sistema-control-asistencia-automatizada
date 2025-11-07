@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Middleware\CheckPassportToken;
+use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
+use App\Http\Middleware\RedirectIfAuthenticatedPassport;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -25,7 +28,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ShareErrorsFromSession::class
         ]);
 
-        //
+        $middleware->alias([
+            'auth.passport' => CheckPassportToken::class,
+            'guest.passport' => RedirectIfAuthenticatedPassport::class,
+            'role' => CheckRole::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
