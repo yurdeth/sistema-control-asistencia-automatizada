@@ -36,13 +36,22 @@
         const token = localStorage.getItem('token')
         const user = localStorage.getItem('user')
 
-        // Si ya está autenticado, redirigir al dashboard INMEDIATAMENTE
+        // Si ya está autenticado, redirigir INMEDIATAMENTE
         if (token && user) {
             try {
                 // Verificar que el token sea válido
                 await authService.verifyToken(token)
-                // Si el token es válido, redirigir al dashboard
-                router.visit('/dashboard')
+
+                // Verificar si hay un parámetro 'redirect' en la URL
+                const urlParams = new URLSearchParams(window.location.search)
+                const redirectTo = urlParams.get('redirect')
+
+                // Si hay un redirect, ir a esa ruta; si no, ir al dashboard
+                if (redirectTo) {
+                    router.visit(redirectTo)
+                } else {
+                    router.visit('/dashboard')
+                }
                 return // No mostrar el formulario
             } catch (error) {
                 localStorage.removeItem('token')
@@ -76,14 +85,15 @@
             const tokenGuardado = authService.getToken()
 
             if (tokenGuardado) {
-                //Almacenamos el rol del usuario
-                const roleId = user.role_id
+                // Verificar si hay un parámetro 'redirect' en la URL
+                const urlParams = new URLSearchParams(window.location.search)
+                const redirectTo = urlParams.get('redirect')
 
-                //Verificando el rol del usuario para la redirección
-                if (roleId === 1) {
-                    router.visit('/dashboard');
-                } else if (roleId === 2){
-                    router.visit('#');
+                // Si hay un redirect, ir a esa ruta; si no, ir al dashboard
+                if (redirectTo) {
+                    router.visit(redirectTo)
+                } else {
+                    router.visit('/dashboard')
                 }
             } else {
                 console.error('ERROR: El token NO se guardó')

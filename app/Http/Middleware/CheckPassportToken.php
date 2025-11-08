@@ -22,13 +22,11 @@ class CheckPassportToken
     {
         // Verificar si el usuario está autenticado con Passport (auth:api)
         if (!Auth::guard('api')->check()) {
-            // Si es una petición de Inertia, redirigir
-            if ($request->header('X-Inertia')) {
-                return redirect('/login');
-            }
+            // Guardar la ruta solicitada (solo el path, sin el dominio completo)
+            $intendedPath = $request->path();
 
-            // Si es una petición normal, también redirigir
-            return redirect('/login');
+            // Redirigir a login con el parámetro redirect
+            return redirect('/login?redirect=' . urlencode('/' . $intendedPath));
         }
 
         return $next($request);

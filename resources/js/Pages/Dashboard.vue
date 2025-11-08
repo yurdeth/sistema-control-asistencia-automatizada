@@ -1,48 +1,20 @@
 <script setup>
 //Imports
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue'
-import { authService } from '@/Services/authService'
 
 //Estados reactivos
 const isLoading = ref(true)
 const isAuthenticated = ref(false)
 
 //Verificación de autenticación
-onMounted(async () => {
-    //Obteniendo el token guardado en localStorage
-    const token = authService.getToken()
-    const user = authService.getUser()
-
-    // Si no hay token, redirigir INMEDIATAMENTE al login
-    if (!token || !user) {
-        // Limpiar cualquier dato corrupto
-        authService.logout()
-        // Redirigir SIN setTimeout para evitar flash
-        router.visit('/login')
-        return
-    }
-
-    try {
-        // Verificación ligera del token
-        await authService.verifyToken(token);
-
-        // Token válido, mostrar dashboard
-        isAuthenticated.value = true
-        console.log('Usuario autenticado correctamente')
-
-    } catch (error) {
-        console.error('Error al verificar token:', error)
-
-        // Token inválido, limpiar y redirigir INMEDIATAMENTE
-        authService.logout()
-        router.visit('/login')
-        return
-
-    } finally {
-        isLoading.value = false
-    }
+onMounted(() => {
+    // Si llegamos a este componente, el middleware del backend YA verificó el token
+    // Solo mostramos el contenido sin hacer verificaciones redundantes
+    isAuthenticated.value = true
+    isLoading.value = false
+    console.log('Dashboard cargado correctamente')
 });
 </script>
 
