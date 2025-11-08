@@ -116,6 +116,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/groups/get/professor/{id}', [GruposController::class, 'getGroupsByProfessor'])->name('grupos.getByProfessor');
     Route::get('/groups/get/status/{estado}', [GruposController::class, 'getGroupsByStatus'])->name('grupos.getByStatus');
     Route::get('/groups/get/available/all', [GruposController::class, 'getAvailableGroups'])->name('grupos.getAvailable');
+    Route::post('/groups/get/professor/', [GruposController::class, 'getGroupProfessor'])->name('grupos.getGroupProfessor');
 
     //************************************ MANAGE CLASSROOMS ************************************//
     Route::get('/classrooms/get/all', [AulasController::class, 'index'])->name('aulas.index');

@@ -157,7 +157,7 @@ class User extends Authenticatable {
             ->get();
     }
 
-    public function getUsersBySubject(int $subject_id, int $rol_id): Collection {
+    public function getUsersBySubject(int $subject_id): Collection {
         return DB::table('users')
             ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
             ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')

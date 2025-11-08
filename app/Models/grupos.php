@@ -138,6 +138,19 @@ class grupos extends Model {
             ->get();
     }
 
+    public function getGroupProfessorBySubject($grupoId, $materiaId): ?object {
+        return DB::table("grupos")
+            ->join('users', 'grupos.docente_id', '=', 'users.id')
+            ->join('materias', 'grupos.materia_id', '=', 'materias.id')
+            ->select(
+                'users.id as id',
+                'users.nombre_completo as nombre_docente',
+            )
+            ->where('grupos.id', $grupoId)
+            ->where('grupos.materia_id', $materiaId)
+            ->first();
+    }
+
     public function materia()
     {
         return $this->belongsTo(materias::class, 'materia_id');

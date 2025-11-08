@@ -615,6 +615,77 @@ class GruposController extends Controller {
         }
     }
 
+    public function getGroupProfessor(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        $rules = [
+            'grupo_id' => 'required|exists:grupos,id',
+            'materia_id' => 'required|exists:materias,id',
+        ];
+
+        $messages = [
+            'grupo_id.required' => 'El campo grupo_id es obligatorio.',
+            'grupo_id.exists' => 'El grupo especificado no existe.',
+            'materia_id.required' => 'El campo materia_id es obligatorio.',
+            'materia_id.exists' => 'La materia especificada no existe.',
+        ];
+
+        try {
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors(),
+                    'success' => false
+                ], 422);
+            }
+
+            $grupo_id = $this->sanitizeInput($request->grupo_id);
+            $materia_id = $this->sanitizeInput($request->materia_id);
+            $profesor = (new grupos())->getGroupProfessorBySubject($grupo_id, $materia_id);
+
+            if (!$profesor) {
+                return response()->json([
+                    'message' => 'No se encontró el profesor para este grupo',
+                    'success' => true
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Profesor obtenido exitosamente',
+                'success' => true,
+                'data' => $profesor
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener el profesor',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
     private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
