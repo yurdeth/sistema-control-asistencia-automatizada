@@ -28,7 +28,7 @@
                     <button
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#ff9966'}"
+                        :style="{background: '#D93F3F'}"
                     >
                         <span class="text-xl">+</span>
                         Agregar Departamento
@@ -52,9 +52,9 @@
                 <div v-if="!loading" class="bg-white rounded-lg overflow-hidden">
                     <!-- Vista Desktop/Laptop-->
                     <div class="hidden lg:block overflow-x-auto">
-                        <table class="w-full" :style="{ border: '1px solid #d93f3f' }">
+                        <table class="w-full" :style="{ border: '1px solid #BD3838' }">
                             <thead class="bg-gray-50 border-b-2 border-gray-200"
-                                :style="{background: '#d93f3f', height: '40px'}">
+                                :style="{background: '#BD3838', height: '40px'}">
                             <tr>
                                 <th class="text-white">Id</th>
                                 <th class="text-white">Nombre</th>
@@ -113,7 +113,8 @@
                                         <div class="flex gap-2 justify-center items-center">
                                             <button
                                                 @click="openEditModal(department)"
-                                                class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
+                                                class="text-white px-4 py-2 rounded-lg transition-colors"
+                                                :style="{background: '#FF204E'}"
                                                 :disabled="loading"
                                             >
                                                 Editar
@@ -121,7 +122,7 @@
                                             <button
                                                 @click="deleteItem(department.id)"
                                                 class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                                :style="{ background: '#9b3b3e' }"
+                                                :style="{ background: '#A0153E' }"
                                                 :disabled="loading"
                                             >
                                                 Eliminar
@@ -129,7 +130,7 @@
                                             <button
                                                 @click="openCarreraModal(department.id)"
                                                 class="text-white px-4 py-2 rounded-lg"
-                                                :style="{background:'#eb9733'}"
+                                                :style="{background:'#F05941'}"
                                             >
                                                 Carreras
                                             </button>

@@ -2,52 +2,62 @@
 	<Head title="Grupos" />
 
 	<MainLayoutDashboard>
-		<div class="p-6">
-			<div class="mb-6 flex justify-between items-center">
+		<div class="p-4 md:p-6">
+			<div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
 				<h1 class="text-2xl font-semibold">Grupos</h1>
-				<div class="flex items-center gap-2">
+				<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
 					<input v-model="searchTerm" type="text" placeholder="Buscar..." class="border rounded px-3 py-1" />
-					<button @click="openCreateModal" class="bg-blue-600 text-white px-4 py-2 rounded">Nuevo</button>
+					<button @click="openCreateModal" class=" text-white px-4 py-2 rounded" :style="{background: '#BD3838'}">Nuevo</button>
 				</div>
 			</div>
 
 			<div class="bg-white rounded-lg shadow p-4">
-				<table class="w-full table-auto">
-					<thead>
-						<tr class="text-left border-b">
-							<th class="py-2">Materia</th>
-							<th class="py-2">Nº Grupo</th>
-							<th class="py-2">Docente</th>
-							<th class="py-2">Capacidad</th>
-							<th class="py-2">Inscritos</th>
-							<th class="py-2">Ciclo</th>
-							<th class="py-2">Estado</th>
-							<th class="py-2">Acciones</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr v-for="g in paginated" :key="g.id" class="border-b">
-							<td class="py-2">{{ g.materia_nombre || ('#' + g.materia_id) }}</td>
-							<td class="py-2">{{ g.numero_grupo || '-' }}</td>
-							<td class="py-2">{{ g.docente_nombre || ('#' + g.docente_id) }}</td>
-							<td class="py-2">{{ g.capacidad_maxima ?? '-' }}</td>
-							<td class="py-2">{{ g.estudiantes_inscrito ?? '-' }}</td>
-							<td class="py-2">{{ g.ciclo_nombre || ('#' + g.ciclo_id) }}</td>
-							<td class="py-2">{{ g.estado }}</td>
-							<td class="py-2">
-								<button @click="openEditModal(g)" class="text-yellow-600 mr-2">Editar</button>
-								<button @click="deleteItem(g.id)" class="text-red-600">Eliminar</button>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+                <div class="overflow-x-auto">
+                    <div class="p-4 min-w-[640px]">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="text-left border-b">
+                                    <th class="py-2 px-2">Materia</th>
+                                    <th class="py-2 px-2">Nº Grupo</th>
+                                    <th class="py-2 px-2">Docente</th>
+                                    <th class="py-2 px-2">Capacidad</th>
+                                    <th class="py-2 px-2">Inscritos</th>
+                                    <th class="py-2 px-2">Ciclo</th>
+                                    <th class="py-2 px-2">Estado</th>
+                                    <th class="py-2 px-2">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="g in paginated" :key="g.id" class="border-b">
+                                    <td class="py-2 px-2">{{ g.materia_nombre || ('#' + g.materia_id) }}</td>
+                                    <td class="py-2 px-2">{{ g.numero_grupo || '-' }}</td>
+                                    <td class="py-2 px-2">{{ g.docente_nombre || ('#' + g.docente_id) }}</td>
+                                    <td class="py-2 px-2">{{ g.capacidad_maxima ?? '-' }}</td>
+                                    <td class="py-2 px-2">{{ g.estudiantes_inscrito ?? '-' }}</td>
+                                    <td class="py-2 px-2">{{ g.ciclo_nombre || ('#' + g.ciclo_id) }}</td>
+                                    <td class="py-2 px-2">{{ g.estado }}</td>
+                                    <td class="py-2 px-2">
+                                        <button @click="openEditModal(g)" class="text-yellow-600 mr-2">Editar</button>
+                                        <button @click="deleteItem(g.id)" class="text-red-600">Eliminar</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-				<div class="flex justify-between items-center mt-4">
+				<div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t">
 					<div>Mostrando {{ paginated.length }} de {{ filtered.length }}</div>
 					<div class="space-x-2">
-						<button @click="prevPage" :disabled="currentPage===1">Anterior</button>
-						<button v-for="p in totalPages" :key="p" @click="goToPage(p)" :class="{ 'font-bold': p===currentPage }">{{ p }}</button>
-						<button @click="nextPage" :disabled="currentPage===totalPages">Siguiente</button>
+						<button @click="prevPage" :disabled="currentPage===1" class="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
+						<button v-for="p in totalPages" :key="p" @click="goToPage(p)"
+                                :style="{background: '#BD3838'}"
+                                :class="{
+                                    'font-bold text-white': p===currentPage,
+                                    'border': p!==currentPage
+                                }"
+							class="px-3 py-1 rounded min-w-[40px]">{{ p }}</button>
+						<button @click="nextPage" :disabled="currentPage===totalPages" class="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed">Siguiente</button>
 					</div>
 				</div>
 			</div>
@@ -132,7 +142,7 @@ const fetchAll = async () => {
 		const res = await axios.get(`${API_URL}/groups/get/all`, getAuthHeaders());
 		list.value = res.data.data || [];
 		// populate related names when missing
-        
+
 		await populateRelatedNames(list.value);
 	} catch (e) { console.error(e); list.value = []; } finally { loading.value = false; }
 };
@@ -151,7 +161,7 @@ const populateRelatedNames = async (items) => {
             else{
                 log(i.docente_nombre);
                 console.log(i.docente_nombre);
-                
+
             };
 			if (!i.ciclo_nombre && i.ciclo_id) ciclos.add(i.ciclo_id);
 		});
@@ -189,7 +199,7 @@ const populateRelatedNames = async (items) => {
 		const docentesMap = await fetchMap(docentes, 'users/get/{id}', 'nombre_completo');
 		const ciclosMap = await fetchMap(ciclos, 'academic-terms/get/{id}', 'nombre');
 
-        
+
 		// attach names back to items
 		items.forEach(i => {
 			if (!i.materia_nombre && i.materia_id && materiasMap[i.materia_id]) i.materia_nombre = materiasMap[i.materia_id];
