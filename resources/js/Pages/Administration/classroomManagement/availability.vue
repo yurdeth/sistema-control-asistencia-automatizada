@@ -607,7 +607,7 @@ const fetchAula = async (id) => {
         console.debug(data.message);
     }
 
-    aula = data.data;
+    aula.value = data.data;
 };
 
 const fetchSubjects = async () => {
