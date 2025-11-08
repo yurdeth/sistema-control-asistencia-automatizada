@@ -18,6 +18,14 @@ class grupos extends Model {
 
     protected $table = 'grupos';
 
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\GruposFactory::new();
+    }
+
     protected $fillable = [
         'materia_id',
         'ciclo_id',
