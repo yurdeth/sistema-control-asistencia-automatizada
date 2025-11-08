@@ -45,7 +45,7 @@
                     <button
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#ff9966'}"
+                        :style="{background: '#D93F3F'}"
                     >
                         <span class="text-xl">+</span>
                         Agregar Materia
@@ -84,7 +84,7 @@
                                 <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">{{ materia.descripcion }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ materia.carrera_nombre || 'N/A' }}</td>
                                 <td class="px-6 py-4 text-sm">
-                                    <span 
+                                    <span
                                         class="px-3 py-1 rounded-full text-xs font-semibold"
                                         :class="materia.estado === 'activa' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
                                     >

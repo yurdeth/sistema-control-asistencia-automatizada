@@ -28,7 +28,7 @@
                     <button
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#ff9966'}"
+                        :style="{background: '#D93F3F'}"
                     >
                         <span class="text-xl">+</span>
                         Agregar Rol
@@ -49,8 +49,8 @@
 
                 <div v-if="!loading && rolesFiltrados.length" class="bg-white rounded-lg overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="w-full" :style="{ border: '1px solid #d93f3f' }">
-                            <thead class="bg-gray-50 border-b-2 border-gray-200 text-center" :style="{background: '#d93f3f', height: '40px'}">
+                        <table class="w-full" :style="{ border: '1px solid #BD3838' }">
+                            <thead class="bg-gray-50 border-b-2 border-gray-200 text-center" :style="{background: '#BD3838', height: '40px'}">
                             <tr>
                                 <th class="text-white px-4 py-2">Id</th>
                                 <th class="text-white px-4 py-2">Nombre</th>
@@ -67,7 +67,8 @@
                                     <div class="flex justify-center gap-2">
                                         <button
                                             @click="openEditModal(rol)"
-                                            class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
+                                            class="text-white px-4 py-2 rounded-lg transition-colors"
+                                            :style="{background: '#FF204E'}"
                                             :disabled="loading"
                                         >
                                             Editar
@@ -75,7 +76,7 @@
                                         <button
                                             @click="deleteItem(rol.id)"
                                             class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                            :style="{ background: '#9b3b3e' }"
+                                            :style="{ background: '#A0153E' }"
                                             :disabled="loading"
                                         >
                                             Eliminar

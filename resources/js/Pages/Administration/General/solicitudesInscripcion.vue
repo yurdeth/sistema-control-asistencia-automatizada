@@ -2,47 +2,56 @@
 	<Head title="Solicitudes de Inscripción" />
 
 	<MainLayoutDashboard>
-		<div class="p-6">
-			<div class="mb-6 flex justify-between items-center">
+		<div class="p-4 md:p-6">
+			<div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
 				<h1 class="text-2xl font-semibold">Solicitudes de Inscripción</h1>
-				<div class="flex items-center gap-2">
+				<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
 					<input v-model="searchTerm" type="text" placeholder="Buscar..." class="border rounded px-3 py-1" />
-					<button @click="openCreateModal" class="bg-blue-600 text-white px-4 py-2 rounded">Nueva</button>
+					<button @click="openCreateModal" class="text-white px-4 py-2 rounded" :style="{background: '#BD3838'}">Nueva</button>
 				</div>
 			</div>
 
 			<div class="bg-white rounded-lg shadow p-4">
-				<table class="w-full table-auto">
-					<thead>
-						<tr class="text-left border-b">
-							<th class="py-2">Estudiante</th>
-							<th class="py-2">Grupo</th>
-							<th class="py-2">Tipo</th>
-							<th class="py-2">Estado</th>
-							<th class="py-2">Acciones</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr v-for="s in paginated" :key="s.id" class="border-b">
-							<td class="py-2">{{ s.estudiante_nombre || s.estudiante_id }}</td>
-							<td class="py-2">{{ s.grupo_nombre || s.grupo_id }}</td>
-							<td class="py-2">{{ s.tipo_solicitud }}</td>
-							<td class="py-2">{{ s.estado }}</td>
-							<td class="py-2">
-								<button @click="openEditModal(s)" class="text-yellow-600 mr-2">Editar</button>
-								<button @click="acceptRequest(s.id)" class="text-green-600 mr-2">Aceptar</button>
-								<button @click="rejectRequest(s.id)" class="text-red-600">Rechazar</button>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+                <div class="overflow-x-auto">
+                    <div class="p-4 min-w-[640px]">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="text-left border-b">
+                                    <th class="py-2 px-2">Estudiante</th>
+                                    <th class="py-2 px-2">Grupo</th>
+                                    <th class="py-2 px-2">Tipo</th>
+                                    <th class="py-2 px-2">Estado</th>
+                                    <th class="py-2 px-2">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="s in paginated" :key="s.id" class="border-b">
+                                    <td class="py-2 px-2">{{ s.estudiante_nombre || s.estudiante_id }}</td>
+                                    <td class="py-2 px-2">{{ s.grupo_nombre || s.grupo_id }}</td>
+                                    <td class="py-2 px-2">{{ s.tipo_solicitud }}</td>
+                                    <td class="py-2 px-2">{{ s.estado }}</td>
+                                    <td class="py-2 px-2">
+                                        <button @click="openEditModal(s)" class="text-yellow-600 mr-2">Editar</button>
+                                        <button @click="acceptRequest(s.id)" class="text-green-600 mr-2">Aceptar</button>
+                                        <button @click="rejectRequest(s.id)" class="text-red-600">Rechazar</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-				<div class="flex justify-between items-center mt-4">
+				<div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t">
 					<div>Mostrando {{ paginated.length }} de {{ filtered.length }}</div>
 					<div class="space-x-2">
-						<button @click="prevPage" :disabled="currentPage===1">Anterior</button>
-						<button v-for="p in totalPages" :key="p" @click="goToPage(p)" :class="{ 'font-bold': p===currentPage }">{{ p }}</button>
-						<button @click="nextPage" :disabled="currentPage===totalPages">Siguiente</button>
+						<button @click="prevPage" :disabled="currentPage===1" class="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
+						<button v-for="p in totalPages" :key="p" @click="goToPage(p)"
+                                :class="{
+                                    'font-bold text-white': p===currentPage,
+                                    'border': p!==currentPage
+                                }"
+							class="px-3 py-1 rounded min-w-[40px]" :style="{background: '#BD3838'}">{{ p }}</button>
+						<button @click="nextPage" :disabled="currentPage===totalPages" class="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed">Siguiente</button>
 					</div>
 				</div>
 			</div>
