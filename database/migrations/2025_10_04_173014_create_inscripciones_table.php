@@ -20,7 +20,12 @@ return new class extends Migration {
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->enum('estado', ['activo', 'retirado', 'finalizado'])->default('activo');
+            $table->timestamp('fecha_retiro')->nullable();
+            $table->text('motivo_retiro')->nullable();
+            $table->decimal('nota_final', 5, 2)->nullable();
             $table->timestamps();
+            $table->unique(['estudiante_id', 'grupo_id'], 'uq_inscripciones_estudiante_grupo');
+            $table->index(['grupo_id', 'estado'], 'idx_inscripciones_grupo_estado');
         });
     }
 
