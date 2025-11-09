@@ -388,20 +388,10 @@
                     name="schedule"
                 >
                     <option disabled selected value="">Seleccione el horario</option>
-                    <option value="1">7-9</option>
-                    <option value="2">10-12</option>
-                    <option value="3">13-15</option>
+                    <option v-for="schedule in schedules" :key="schedule.id" :value="schedule.id">
+                        {{ schedule.dia_semana }} - {{schedule.hora_inicio}} a {{schedule.hora_fin}}
+                    </option>
                 </select>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1" for="date">Horario</label>
-                <input
-                    id="date"
-                    :min="new Date().toISOString().split('T')[0]"
-                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    name="date"
-                    type="date"
-                />
             </div>
             <div class="flex justify-end">
                 <button
@@ -691,6 +681,7 @@ const fetchSchedules = async (id) => {
         });
 
         const data = response.data;
+        console.log(data);
         if (!data.success) {
             alert("No se encontraron horarios");
             return;

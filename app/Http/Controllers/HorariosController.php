@@ -390,7 +390,8 @@ class HorariosController extends Controller {
 
             return response()->json([
                 'message' => 'Horarios obtenidos exitosamente',
-                'data' => $horarios
+                'data' => $horarios,
+                'success' => true
             ], 200);
         } catch (Exception $e) {
             return response()->json([
