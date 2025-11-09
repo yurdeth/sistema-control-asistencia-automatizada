@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->time('hora_registro');
             $table->enum('estado', ['presente', 'tarde', 'ausente'])->default('presente');
             $table->boolean('validado_por_qr')->default(true);
+            $table->unique(['sesion_clase_id', 'estudiante_id'], 'uq_asistencias_sesion_estudiante');
             $table->timestamps();
         });
     }
