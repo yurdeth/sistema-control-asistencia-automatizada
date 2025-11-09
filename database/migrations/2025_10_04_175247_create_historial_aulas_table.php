@@ -24,6 +24,9 @@ return new class extends Migration {
             $table->text('valor_nuevo');
             $table->enum('tipo_operacion', ['creacion', 'actualizacion', 'cambio_estado']);
             $table->timestamps();
+
+            $table->index(['aula_id'], 'idx_historial_aulas_aula_id');
+            $table->index(['usuario_modificacion_id'], 'idx_historial_aulas_usuario_id');
         });
     }
 
