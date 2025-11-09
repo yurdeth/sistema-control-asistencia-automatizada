@@ -402,10 +402,10 @@ class GruposController extends Controller {
         try {
             $grupos = (new grupos())->getGruposByMateria($id);
 
-            if ($grupos->isEmpty()) {
+            if ($grupos->isEmpty() || $grupos == null) {
                 return response()->json([
                     'message' => 'No hay grupos disponibles para esta materia',
-                    'success' => true
+                    'success' => false
                 ], 404);
             }
 

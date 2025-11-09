@@ -165,22 +165,12 @@
                                 </div>
                             </td>
 
-                            <!--                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                                                    {{ aula.sector }}
-                                                                </span>
-                                                            </td>-->
-
                             <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-1">
                                     <i class="fa-solid fa-people-group text-xs sm:text-sm"></i>
                                     <span class="text-xs sm:text-sm text-gray-900">{{ aula.capacidad_pupitres }}</span>
                                 </div>
                             </td>
-
-                            <!--                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden md:table-cell">
-                                                                {{ aula.tipo }}
-                                                            </td>-->
 
                             <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
                                     <span v-if="aula.disponible"
@@ -192,14 +182,6 @@
                                         Ocupada
                                     </span>
                             </td>
-
-                            <!--                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 hidden lg:table-cell">
-                                                                <div class="flex flex-wrap gap-1">
-                                                                    <span v-for="equipo in aula.equipamiento" :key="equipo" class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                                                                        {{ equipo }}
-                                                                    </span>
-                                                                </div>
-                                                            </td>-->
 
                             <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
                                 <button
@@ -334,6 +316,7 @@
 
     <Modal :show="assignClassrooms" class="p-50 max-w-lg m-5" @close="cerrarModal">
         <h2 class="text-xl font-bold mb-4">Asignar Aula: {{ aula.nombre }}</h2>
+        <input type="hidden" v-model="aula_id" /> {{aula.id}}
         <form class="space-y-4">
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1" for="subject">Materia</label>
@@ -384,14 +367,26 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1" for="schedule">Horario</label>
                 <select
                     id="schedule"
+                    v-model="selectedSchedule"
                     class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     name="schedule"
                 >
                     <option disabled selected value="">Seleccione el horario</option>
                     <option v-for="schedule in schedules" :key="schedule.id" :value="schedule.id">
-                        {{ schedule.dia_semana }} - {{schedule.hora_inicio}} a {{schedule.hora_fin}}
+                        {{ schedule.dia_semana }} - {{ schedule.hora_inicio }} a {{ schedule.hora_fin }}
                     </option>
                 </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="date">Fecha de la Clase</label>
+                <input
+                    type="date"
+                    id="date"
+                    v-model="selectedDate"
+                    :min="new Date().toISOString().split('T')[0]"
+                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    name="date"
+                />
             </div>
             <div class="flex justify-end">
                 <button
@@ -457,8 +452,9 @@ const groups = ref([]);
 const responsible = ref({});
 const selectedResponsible = ref('');
 const schedules = ref([]);
-const selectedSchedule = ref('');
+const selectedSchedule = ref([]);
 const selectedDate = ref('');
+const aula_id = ref('');
 
 //Parte donde se trabaja el filtrado de las aulas
 const aulasFiltradas = computed(() => {
@@ -585,19 +581,33 @@ const fetchAllAvailableClassrooms = async () => {
 }
 
 const fetchAula = async (id) => {
-    const response = await axios.get(`/api/classrooms/get/${id}`, {
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    try {
+        const response = await axios.get(`/api/classrooms/get/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            }
+        });
+
+        const data = response.data;
+        if (!data.success) {
+            alert("No se pudo obtener la información del aula");
+            console.debug(data.message);
+            return;
         }
-    });
 
-    const data = response.data;
-    if (!data.success) {
-        alert("No se pudo obtener la información del aula");
-        console.debug(data.message);
+        aula.value = data.data;
+        // Clear selected values when fetching a new classroom
+        selectedSubject.value = '';
+        selectedGroup.value = '';
+        selectedResponsible.value = '';
+        selectedSchedule.value = '';
+        selectedDate.value = '';
+    } catch (error) {
+        console.error('Error fetching classroom:', error);
+        const errorMessage = error.response?.data?.message || "Error al obtener el aula";
+        alert(errorMessage);
+        aula.value = {};
     }
-
-    aula.value = data.data;
 };
 
 const fetchSubjects = async () => {
@@ -633,14 +643,16 @@ const fetchGroups = async (id) => {
         const data = response.data;
 
         if (!data.success) {
-            alert("No se encontraron grupos");
+            alert(data.message || "Error al obtener grupos");
             return;
         }
 
         groups.value = data.data;
     } catch (error) {
         console.error('Error fetching groups:', error);
-        subjects.value = [];
+        const errorMessage = error.response?.data?.message || "Error al obtener grupos";
+        alert(errorMessage);
+        groups.value = [];
     }
 };
 
@@ -681,29 +693,27 @@ const fetchSchedules = async (id) => {
         });
 
         const data = response.data;
-        console.log(data);
+
         if (!data.success) {
-            alert("No se encontraron horarios");
+            alert(data.message || "Error al obtener los horarios");
             return;
         }
 
         schedules.value = data.data;
     } catch (error) {
         console.error('Error fetching schedules:', error);
+        const errorMessage = error.response?.data?.message || "Error al obtener grupos";
+        alert(errorMessage);
         schedules.value = [];
     }
 };
 
 const sendReservation = async () => {
-    if (!selectedSchedule.value || !selectedDate.value) {
-        alert("Por favor, complete todos los campos requeridos");
-        return;
-    }
-
     try {
-        const response = await axios.post(`/class-sessions/new`, {
+        const response = await axios.post('/api/class-sessions/new', {
+            aula_id: aula.id,
             horario_id: selectedSchedule.value,
-            fecha_clase: selectedDate.value,
+            fecha_clase: selectedDate.value
         }, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -713,18 +723,18 @@ const sendReservation = async () => {
 
         const data = response.data;
 
-        if(!data.success){
-            alert("No se pudo crear la reserva");
-            console.debug(data.message);
-            return;
+        if (!data.success) {
+            alert(data.message || "No se pudo crear la reserva");
+            return false;
         }
 
         alert("Reserva creada exitosamente");
+        cerrarModal();
+        return true;
     } catch (error) {
         console.error('Error creating reservation:', error);
-        alert("Ocurrió un error al crear la reserva");
-    } finally {
-        cerrarModal();
+        alert(error.response?.data?.message || "Ocurrió un error al crear la reserva");
+        return false;
     }
 };
 

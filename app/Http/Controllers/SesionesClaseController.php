@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class SesionesClaseController extends Controller {
@@ -118,6 +119,8 @@ class SesionesClaseController extends Controller {
             ], 403);
         }
 
+        Log::info($request);
+
         $request->merge([
             'horario_id' => $this->sanitizeInput($request->input('horario_id')),
             'fecha_clase' => $this->sanitizeInput($request->input('fecha_clase')),
@@ -151,6 +154,8 @@ class SesionesClaseController extends Controller {
                 'fecha_clase' => $request->fecha_clase,
                 'estado' => 'programada'
             ]);
+
+            // Cambiar estado de aula a 'ocupada' si es necesario
 
             Cache::forget('sesiones_clase_all');
 
