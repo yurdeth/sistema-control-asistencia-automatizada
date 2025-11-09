@@ -22,6 +22,8 @@ return new class extends Migration {
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->timestamps();
+
+            $table->index(['categoria'], 'idx_configuracion_categoria');
         });
     }
 
