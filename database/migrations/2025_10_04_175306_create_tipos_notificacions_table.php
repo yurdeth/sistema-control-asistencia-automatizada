@@ -12,7 +12,9 @@ return new class extends Migration {
         Schema::create('tipos_notificacion', function (Blueprint $table) {
             $table->id();
             $table->string('nombre')->unique();
+            $table->text('descripcion')->nullable();
             $table->enum('prioridad', ['baja', 'media', 'alta', 'urgente'])->default('media');
+            $table->enum('estado', ['activo', 'inactivo'])->default('activo');
             $table->timestamps();
         });
     }
