@@ -122,6 +122,14 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])->gr
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+
+//Ruta de prueba para el correo de restablecimiento de contraseña (móvil)
+Route::get('/preview-reset-mobile-email', function () {
+    $code = '123456'; // Código de ejemplo
+    $userName = 'Usuario de Prueba'; // Nombre de usuario de ejemplo
+    return view('emails.reset-password-mobile', compact('code', 'userName'));
+});
+
 // en routes/web.php
 
 
