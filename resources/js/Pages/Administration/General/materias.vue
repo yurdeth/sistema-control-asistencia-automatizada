@@ -11,8 +11,8 @@
     </div>
 
     <MainLayoutDashboard>
-        <div class="p-6">
-            <div class="mb-6">
+        <div class="p-4 md:p-6">
+            <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <h1 class="text-2xl font-bold text-gray-900 mb-1" :style="{color:colorText}">Materias</h1>
                 <p class="text-gray-600 text-sm">Listado de materias del sistema</p>
             </div>
@@ -27,7 +27,7 @@
                     />
                     <select
                         v-model="filterCarrera"
-                        class="px-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
                     >
                         <option value="">Todas las carreras</option>
                         <option v-for="carrera in carreras" :key="carrera.id" :value="carrera.id">

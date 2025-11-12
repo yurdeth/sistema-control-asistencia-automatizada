@@ -17,6 +17,10 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/activation', function () {
+    return view('auth.userActivation');
+});
+
 // Ruta de login - redirige a dashboard si ya está autenticado
 Route::get('/login', function () {
     return Inertia::render('Auth/Login', [
