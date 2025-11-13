@@ -125,8 +125,8 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])->gr
 
 //Ruta de prueba para el correo de restablecimiento de contraseña (móvil)
 Route::get('/preview-reset-mobile-email', function () {
-    $code = '123456'; // Código de ejemplo
-    $userName = 'Usuario de Prueba'; // Nombre de usuario de ejemplo
+    $code = '123456';
+    $userName = 'Usuario de Prueba';
     return view('emails.reset-password-mobile', compact('code', 'userName'));
 });
 
@@ -144,6 +144,170 @@ Route::get('/preview-inscripcion-aprobada', function () {
     ];
 
     return view('emails.inscripcion-aprobada', compact('usuario', 'mensaje', 'materiaNombre', 'grupoNombre', 'docenteNombre', 'horarios'));
+});
+
+
+//Ruta de prueba para la vista blade inscripcion-rechazada.blade
+Route::get('/preview-inscripcion-rechazada', function () {
+    // Datos de ejemplo para la vista
+    $usuario = (object)['nombre_completo' => 'María López'];
+    $mensaje = 'Tu solicitud de inscripción ha sido rechazada.';
+    $materiaNombre = 'Física I';
+    $grupoNombre = 'Grupo B';
+    $docenteNombre = 'Dra. Ana Torres';
+    $motivoRechazo = 'Cupo lleno en el grupo.';
+
+    return view('emails.inscripcion-rechazada', compact('usuario', 'mensaje', 'materiaNombre', 'grupoNombre', 'docenteNombre', 'motivoRechazo'));
+});
+
+//Ruta de prueba para la vista blade integridad-datos.blade.php
+Route::get('/preview-integridad-datos', function () {
+    // Datos de ejemplo para la vista
+    $usuario = (object)['nombre_completo' => 'Administrador del Sistema'];
+    $mensaje = 'Se ha completado la validación semanal de la integridad de los datos del sistema. A continuación, se presenta un resumen de los hallazgos.';
+    $inconsistencias = [
+        [
+            'severidad' => 'critica',
+            'tipo' => 'Registros Huérfanos',
+            'tabla' => 'asistencias_estudiantes',
+            'registros_afectados' => 5,
+            'descripcion' => 'Existen 5 registros de asistencia que apuntan a sesiones de clase que ya no existen en la base de datos.',
+        ],
+        [
+            'severidad' => 'alta',
+            'tipo' => 'Inconsistencia de Horarios',
+            'tabla' => 'horarios',
+            'registros_afectados' => 2,
+            'descripcion' => 'Se detectaron 2 horarios con conflictos de solapamiento en la misma aula.',
+        ],
+        [
+            'severidad' => 'media',
+            'tipo' => 'Datos Faltantes',
+            'tabla' => 'users',
+            'registros_afectados' => 12,
+            'descripcion' => 'Hay 12 usuarios que no han completado su información de perfil (departamento o carrera).',
+        ],
+    ];
+
+    return view('emails.integridad-datos', [
+        'usuario' => $usuario,
+        'mensaje' => $mensaje,
+        'totalInconsistencias' => count($inconsistencias),
+        'fechaValidacion' => now()->format('d/m/Y H:i:s'),
+        'inconsistencias' => $inconsistencias,
+    ]);
+});
+
+// Ruta de prueba para la vista blade mantenimiento-pendiente.blade.php
+Route::get('/preview-mantenimiento-pendiente', function () {
+    $usuario = (object)['nombre_completo' => 'Gestor de Mantenimiento'];
+    $mensaje = 'Este es un reporte semanal de los mantenimientos pendientes en tu departamento.';
+    $departamentoNombre = 'Departamento de Ingeniería';
+    $mantenimientos = [
+        [
+            'aula_nombre' => 'Aula 101',
+            'recurso_tipo' => 'Proyector',
+            'prioridad' => 'alta',
+            'descripcion' => 'El proyector del aula 101 no enciende. Urgente.',
+        ],
+        [
+            'aula_nombre' => 'Laboratorio B',
+            'recurso_tipo' => 'Computadora',
+            'prioridad' => 'media',
+            'descripcion' => 'Una de las computadoras del laboratorio tiene problemas de rendimiento.',
+        ],
+        [
+            'aula_nombre' => 'Sala de Conferencias',
+            'recurso_tipo' => 'Aire Acondicionado',
+            'prioridad' => 'baja',
+            'descripcion' => 'El aire acondicionado hace un ruido extraño, pero funciona.',
+        ],
+    ];
+    $totalPendientes = count($mantenimientos);
+
+    return view('emails.mantenimiento-pendiente', compact('usuario', 'mensaje', 'totalPendientes', 'departamentoNombre', 'mantenimientos'));
+});
+
+// Ruta de prueba para la vista blade recordatorio-clase-proxima.blade.php
+Route::get('/preview-recordatorio-clase-proxima', function () {
+    $usuario = (object)['nombre_completo' => 'Estudiante Ejemplo'];
+    $mensaje = 'Tu clase de Matemáticas Discretas está a punto de comenzar.';
+    $materiaNombre = 'Matemáticas Discretas';
+    $grupoNombre = 'Grupo A';
+    $aulaNombre = 'Aula 101';
+    $horaInicio = '08:00';
+    $horaFin = '09:30';
+    $minutosRestantes = 10; // Ejemplo: 10 minutos para que inicie
+
+    return view('emails.recordatorio-clase-proxima', compact('usuario', 'mensaje', 'materiaNombre', 'grupoNombre', 'aulaNombre', 'horaInicio', 'horaFin', 'minutosRestantes'));
+});
+
+// Ruta de prueba para la vista blade reporte-estadisticas.blade.php
+Route::get('/preview-reporte-estadisticas', function () {
+    $usuario = (object)['nombre_completo' => 'Administrador de Estadísticas'];
+    $mensaje = 'Aquí tienes el reporte de estadísticas del sistema para el período seleccionado.';
+    $periodo = 'Semanal';
+    $fechaInicio = now()->subDays(7)->format('d/m/Y');
+    $fechaFin = now()->format('d/m/Y');
+    $estadisticas = [
+        'total_sesiones' => 150,
+        'total_asistencias' => 2500,
+        'promedio_asistencia' => 85.75,
+        'aulas_mas_usadas' => [
+            ['nombre' => 'Aula 101', 'sesiones' => 30],
+            ['nombre' => 'Laboratorio C', 'sesiones' => 25],
+            ['nombre' => 'Aula Magna', 'sesiones' => 20],
+            ['nombre' => 'Aula 205', 'sesiones' => 18],
+            ['nombre' => 'Laboratorio A', 'sesiones' => 15],
+        ],
+        'materias_mejor_asistencia' => [
+            ['nombre' => 'Cálculo I', 'porcentaje' => 92.10],
+            ['nombre' => 'Programación Avanzada', 'porcentaje' => 89.50],
+            ['nombre' => 'Bases de Datos', 'porcentaje' => 88.00],
+            ['nombre' => 'Redes de Computadoras', 'porcentaje' => 87.20],
+            ['nombre' => 'Inteligencia Artificial', 'porcentaje' => 85.00],
+        ],
+    ];
+
+    return view('emails.reporte-estadisticas', compact('usuario', 'mensaje', 'periodo', 'fechaInicio', 'fechaFin', 'estadisticas'));
+});
+
+// Ruta de prueba para la vista blade sesion-no-cerrada.blade.php
+Route::get('/preview-sesion-no-cerrada', function () {
+    $usuario = (object)['nombre_completo' => 'Docente Prueba'];
+    $mensaje = 'Se ha detectado que una de tus sesiones de clase no fue cerrada correctamente.';
+    $materiaNombre = 'Física Cuántica';
+    $grupoNombre = 'Grupo Z';
+    $aulaNombre = 'Laboratorio de Física';
+    $fechaClase = now()->subHours(2)->format('d/m/Y');
+    $horaInicioReal = now()->subHours(2)->format('H:i');
+    $tiempoTranscurrido = 120; // 2 horas
+
+    return view('emails.sesion-no-cerrada', compact('usuario', 'mensaje', 'materiaNombre', 'grupoNombre', 'aulaNombre', 'fechaClase', 'horaInicioReal', 'tiempoTranscurrido'));
+});
+
+// Ruta de prueba para la vista blade solicitud-expirada.blade.php
+Route::get('/preview-solicitud-expirada', function () {
+    $usuario = (object)['nombre_completo' => 'Estudiante Solicitante'];
+    $mensaje = 'Lamentamos informarte que tu solicitud de inscripción ha expirado.';
+    $diasTranscurridos = 30;
+    $materiaNombre = 'Historia del Arte';
+    $grupoNombre = 'Grupo Nocturno';
+    $fechaSolicitud = now()->subDays(30)->format('d/m/Y');
+
+    return view('emails.solicitud-expirada', compact('usuario', 'mensaje', 'diasTranscurridos', 'materiaNombre', 'grupoNombre', 'fechaSolicitud'));
+});
+
+// Ruta de prueba para la vista blade usuario-inactivo-alerta.blade.php
+Route::get('/preview-usuario-inactivo-alerta', function () {
+    $usuario = (object)['nombre_completo' => 'Usuario Inactivo', 'email' => 'inactivo@example.com'];
+    $mensaje = 'Hemos notado que tu cuenta ha estado inactiva por un tiempo.';
+    $diasInactivo = 60;
+    $diasRestantes = 15;
+    $ultimoLogin = now()->subDays(60)->format('d/m/Y H:i:s');
+    $fechaEliminacion = now()->addDays(15)->format('d/m/Y');
+
+    return view('emails.usuario-inactivo-alerta', compact('usuario', 'mensaje', 'diasInactivo', 'diasRestantes', 'ultimoLogin', 'fechaEliminacion'));
 });
 
 // en routes/web.php
