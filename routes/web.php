@@ -130,6 +130,22 @@ Route::get('/preview-reset-mobile-email', function () {
     return view('emails.reset-password-mobile', compact('code', 'userName'));
 });
 
+//Ruta de prueba para la vista blade inscripcion-aprobada.blade.php
+Route::get('/preview-inscripcion-aprobada', function () {
+    // Datos de ejemplo para la vista
+    $usuario = (object)['nombre_completo' => 'Juan Pérez'];
+    $mensaje = '¡Tu inscripción ha sido aprobada!';
+    $materiaNombre = 'Matemáticas Discretas';
+    $grupoNombre = 'Grupo A';
+    $docenteNombre = 'Dr. Carlos García';
+    $horarios = [
+        ['dia' => 'Lunes', 'hora_inicio' => '08:00', 'hora_fin' => '09:30', 'aula' => 'Aula 101'],
+        ['dia' => 'Miércoles', 'hora_inicio' => '08:00', 'hora_fin' => '09:30', 'aula' => 'Aula 101'],
+    ];
+
+    return view('emails.inscripcion-aprobada', compact('usuario', 'mensaje', 'materiaNombre', 'grupoNombre', 'docenteNombre', 'horarios'));
+});
+
 // en routes/web.php
 
 
