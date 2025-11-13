@@ -18,6 +18,7 @@ use App\Http\Controllers\MantenimientosController;
 use App\Http\Controllers\MateriasController;
 use App\Http\Controllers\NotificacionesController;
 use App\Http\Controllers\RecursosTipoController;
+use App\Http\Controllers\ReportesProblemasAulasController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\SesionesClaseController;
 use App\Http\Controllers\SolicitudesInscripcionController;
@@ -326,4 +327,16 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/careers/get/status/{estado}', [CarrerasController::class, 'getCareersByStatus'])->name('carreras.by.status');
     Route::post('/careers/disable/{id}', [CarrerasController::class, 'disableCareer'])->name('carreras.disable');
     Route::post('/careers/enable/{id}', [CarrerasController::class, 'enableCareer'])->name('carreras.enable');
+
+    //************************************ MANAGE CLASSROOM PROBLEM REPORTS ************************************//
+    Route::post('/classroom-reports/new', [ReportesProblemasAulasController::class, 'store'])->name('classroomReports.store');
+    Route::get('/classroom-reports/get/all', [ReportesProblemasAulasController::class, 'index'])->name('classroomReports.index');
+    Route::get('/classroom-reports/get/{id}', [ReportesProblemasAulasController::class, 'show'])->name('classroomReports.show');
+    Route::get('/classroom-reports/get/classroom/{aula_id}', [ReportesProblemasAulasController::class, 'getByAula'])->name('classroomReports.getByAula');
+    Route::get('/classroom-reports/get/status/{estado}', [ReportesProblemasAulasController::class, 'getByEstado'])->name('classroomReports.getByEstado');
+    Route::get('/classroom-reports/get/category/{categoria}', [ReportesProblemasAulasController::class, 'getByCategoria'])->name('classroomReports.getByCategoria');
+    Route::get('/classroom-reports/get/my/all', [ReportesProblemasAulasController::class, 'getMyReports'])->name('classroomReports.getMyReports');
+    Route::patch('/classroom-reports/change-status/{id}', [ReportesProblemasAulasController::class, 'cambiarEstado'])->name('classroomReports.cambiarEstado');
+    Route::patch('/classroom-reports/assign-user/{id}', [ReportesProblemasAulasController::class, 'asignarUsuario'])->name('classroomReports.asignarUsuario');
+    Route::post('/classroom-reports/mark-resolved/{id}', [ReportesProblemasAulasController::class, 'marcarResuelto'])->name('classroomReports.marcarResuelto');
 });
