@@ -53,6 +53,7 @@ Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode'])->n
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
     Route::get('/verify-token', [AuthController::class, 'verifyToken']);
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
 
     //************************************ MANAGE ROLES ************************************//
     Route::get('/roles/get/all', [RolesController::class, 'index'])->name('roles.index');
