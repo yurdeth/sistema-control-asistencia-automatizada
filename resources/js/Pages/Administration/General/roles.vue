@@ -28,10 +28,10 @@
                     <button
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#D93F3F'}"
+                        :style="{background: '#d93f68'}"
                     >
                         <span class="text-xl">+</span>
-                        Agregar Rol
+                        Agregar Usuario
                     </button>
                 </div>
                 <br>
@@ -74,12 +74,12 @@
                                             Editar
                                         </button>
                                         <button
-                                            @click="deleteItem(rol.id)"
+                                            @click="getUsersByRol(rol.id)"
                                             class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
                                             :style="{ background: '#A0153E' }"
                                             :disabled="loading"
                                         >
-                                            Eliminar
+                                            Ver usuarios
                                         </button>
                                     </div>
                                 </td>
@@ -121,7 +121,7 @@
     </MainLayoutDashboard>
 
     <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl sm:max-w-2xl w-full overflow-y-auto">
             <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-gray-900">
                     {{ isEditMode ? 'Editar Rol' : 'Agregar Nuevo Rol' }}
@@ -132,36 +132,205 @@
             </div>
 
             <form @submit.prevent="submitForm" class="p-6 space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Nombre del Rol <span class="text-red-500">*</span>
-                    </label>
-                    <input
-                        v-model="formData.nombre"
-                        type="text"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        :class="{'border-red-500': formErrors.nombre}"
-                        required
-                    />
-                    <p v-if="formErrors.nombre" class="text-red-500 text-sm mt-1">
-                        {{ formErrors.nombre[0] }}
-                    </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" v-if="isEditMode">
+                    <!-- ID (solo en modo edición) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            ID
+                        </label>
+                        <input
+                            type="text"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.id}"
+                            :value="currentRolId"
+                            :disabled="formData.nombre === 'root' || currentRolId === 1"
+                            required
+                        />
+                    </div>
+
+                    <!-- Nombre -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Nombre <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            v-model="formData.nombre"
+                            type="text"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.nombre}"
+                            :disabled="formData.nombre === 'root' || currentRolId === 1"
+                            required
+                        />
+                        <p v-if="formErrors.nombre" class="text-red-500 text-sm mt-1">
+                            {{ formErrors.nombre[0] }}
+                        </p>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Descripción <span class="text-red-500">*</span>
-                    </label>
-                    <textarea
-                        v-model="formData.descripcion"
-                        rows="3"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        :class="{'border-red-500': formErrors.descripcion}"
-                        required
-                    ></textarea>
-                    <p v-if="formErrors.descripcion" class="text-red-500 text-sm mt-1">
-                        {{ formErrors.descripcion[0] }}
-                    </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" v-else>
+                    <!-- Columna 1 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Nombre completo <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            v-model="userFormData.nombre_completo"
+                            type="text"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.nombre_completo}"
+                            required
+                        />
+                        <p v-if="formErrors.nombre_completo" class="text-red-500 text-sm mt-1">
+                            {{ formErrors.nombre_completo[0] }}
+                        </p>
+                    </div>
+
+                    <!-- Columna 2 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Correo electrónico <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            v-model="userFormData.email"
+                            type="email"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.email}"
+                            placeholder="nombre.apellido@ues.edu.sv"
+                            required
+                        />
+                        <p v-if="formErrors.email" class="text-red-500 text-sm mt-1">
+                            {{ formErrors.email[0] }}
+                        </p>
+                    </div>
+
+                    <!-- Columna 1 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Teléfono <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            v-model="userFormData.telefono"
+                            type="tel"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.telefono}"
+                            placeholder="0000-0000"
+                            @input="formatPhone"
+                            required
+                        />
+                        <p v-if="formErrors.telefono" class="text-red-500 text-sm mt-1">
+                            {{ formErrors.telefono[0] }}
+                        </p>
+                    </div>
+
+                    <!-- Columna 2 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Rol <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            v-model.number="userFormData.rol_id"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.rol_id}"
+                            required
+                        >
+                            <option value="" disabled>Seleccione un rol</option>
+                            <option
+                                v-for="rol in allRoles"
+                                :key="rol.id"
+                                :value="rol.id"
+                            >
+                                {{ rol.nombre }}
+                            </option>
+                        </select>
+                        <p v-if="formErrors.rol_id" class="text-red-500 text-sm mt-1">
+                            {{ formErrors.rol_id[0] }}
+                        </p>
+                    </div>
+
+                    <!-- Columna 1 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Contraseña <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            v-model="userFormData.password"
+                            type="password"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.password}"
+                            required
+                        />
+                        <p v-if="formErrors.password" class="text-red-500 text-sm mt-1">
+                            {{ formErrors.password[0] }}
+                        </p>
+                    </div>
+
+                    <!-- Columna 2 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Repita la contraseña <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            v-model="userFormData.password_confirmation"
+                            type="password"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.password_confirmation}"
+                            required
+                        />
+                        <p v-if="formErrors.password_confirmation" class="text-red-500 text-sm mt-1">
+                            {{ formErrors.password_confirmation[0] }}
+                        </p>
+                    </div>
+
+                    <!-- Columna 1 -->
+                    <div v-if="[3, 4, 5, 6].includes(userFormData.rol_id)">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Departamento <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            v-model.number="userFormData.departamento_id"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.departamento_id}"
+                            required
+                            @change="fetchCarreras(userFormData.departamento_id)"
+                        >
+                            <option value="" disabled>Seleccione un departamento</option>
+                            <option
+                                v-for="departamento in allDepartments"
+                                :key="departamento.id"
+                                :value="departamento.id"
+                            >
+                                {{ departamento.nombre }}
+                            </option>
+                        </select>
+                        <p v-if="formErrors.departamento_id" class="text-red-500 text-sm mt-1">
+                            {{ formErrors.departamento_id[0] }}
+                        </p>
+                    </div>
+
+                    <!-- Columna 2 -->
+                    <div v-if="[4, 5, 6].includes(userFormData.rol_id)" :class="{'display': display}">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Carrera <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            v-model.number="userFormData.carrera_id"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :class="{'border-red-500': formErrors.carrera_id}"
+                            required
+                        >
+                            <option value="" disabled>Seleccione una carrera</option>
+                            <option
+                                v-for="carrera in allCarreras"
+                                :key="carrera.id"
+                                :value="carrera.id"
+                            >
+                                {{ carrera.nombre }}
+                            </option>
+                        </select>
+                        <p v-if="formErrors.carrera_id" class="text-red-500 text-sm mt-1">
+                            {{ formErrors.carrera_id[0] }}
+                        </p>
+                    </div>
                 </div>
 
                 <div v-if="formErrors.general" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -189,6 +358,65 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal de Usuarios por Rol -->
+    <div v-if="showUsersModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-full w-full overflow-hidden">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-900">
+                    Usuarios con rol: {{ currentRoleName }}
+                </h2>
+                <button @click="closeUsersModal" class="text-gray-500 hover:text-gray-700">
+                    <span class="text-2xl">&times;</span>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <div v-if="usersInRole.length === 0" class="text-center py-8 text-gray-500">
+                    No hay usuarios con este rol
+                </div>
+
+                <div v-else class="overflow-x-auto">
+                    <table class="w-full border border-gray-300">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left border-b">Nombre</th>
+                                <th class="px-4 py-2 text-left border-b">Email</th>
+                                <th class="px-4 py-2 text-left border-b">Teléfono</th>
+                                <th class="px-4 py-2 text-left border-b">Departamento</th>
+                                <th class="px-4 py-2 text-left border-b">Carrera</th>
+                                <th class="px-4 py-2 text-left border-b">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="user in usersInRole" :key="user.email" class="hover:bg-gray-50">
+                                <td class="px-4 py-2 border-b">{{ user.nombre_completo }}</td>
+                                <td class="px-4 py-2 border-b">{{ user.email }}</td>
+                                <td class="px-4 py-2 border-b">{{ user.telefono }}</td>
+                                <td class="px-4 py-2 border-b">{{ user.nombre_departamento || 'N/A' }}</td>
+                                <td class="px-4 py-2 border-b">{{ user.nombre_carrera || 'N/A' }}</td>
+                                <td class="px-4 py-2 border-b">
+                                    <span :class="user.estado === 'activo' ? 'text-green-600' : 'text-red-600'">
+                                        {{ user.estado }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="sticky bottom-0 bg-white border-t px-6 py-4 flex justify-end">
+                <button
+                    @click="closeUsersModal"
+                    class="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                >
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
 </template>
 
 <script setup>
@@ -198,6 +426,7 @@
     import axios from 'axios';
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
     import { authService } from "@/Services/authService.js";
+    import {getDeparmentsAll} from '@/Services/deparmentsService';
 
     const isLoading = ref(true);
     const colorText = ref('#1F2937');
@@ -206,6 +435,27 @@
     const error = ref(null);
     const allRoles = ref([]);
     const isAuthenticated = localStorage.getItem('isAuthenticated');
+
+    const userFormData = ref({
+        nombre_completo: '',
+        email: '',
+        telefono: '',
+        password: '',
+        password_confirmation: '',
+        departamento_id: null,
+        carrera_id: null,
+        rol_id: null,
+        estado: 'activo',
+    });
+
+    const allDepartments = ref([]);
+    const display = ref(false);
+
+    const allCarreras = ref([]);
+
+    const showUsersModal = ref(false);
+    const usersInRole = ref([]);
+    const currentRoleName = ref('');
 
     // Paginación
     const currentPage = ref(1);
@@ -296,6 +546,17 @@
 
     const closeModal = () => {
         showModal.value = false;
+        userFormData.value = {
+            nombre_completo: '',
+            email: '',
+            telefono: '',
+            password: '',
+            password_confirmation: '',
+            departamento_id: null,
+            carrera_id: null,
+            rol_id: null,
+            estado: 'activo',
+        };
         resetForm();
     };
 
@@ -305,31 +566,47 @@
         submitting.value = true;
 
         try {
-            const payload = {
+            const payloadEdit = {
                 nombre: formData.value.nombre,
                 descripcion: formData.value.descripcion,
             };
 
-            console.log("📦 Payload enviado:", JSON.stringify(payload, null, 2));
+            const payloadCreate = {
+                nombre_completo: userFormData.value.nombre_completo,
+                email: userFormData.value.email,
+                telefono: userFormData.value.telefono,
+                password: userFormData.value.password,
+                password_confirmation: userFormData.value.password_confirmation,
+                departamento_id: userFormData.value.departamento_id,
+                carrera_id: userFormData.value.carrera_id,
+                rol_id: userFormData.value.rol_id,
+                estado: userFormData.value.estado,
+            };
 
-            const url = isEditMode.value
-                ? `${API_URL}/roles/edit/${currentRolId.value}` : `${API_URL}/roles/new`;
+            if (isEditMode.value){
+                const response = await axios.patch(`${API_URL}/roles/edit/${currentRolId.value}`, payloadEdit, getAuthHeaders());
 
-            const response = isEditMode.value
-                ? await axios.patch(url, payload, getAuthHeaders())
-                : await axios.post(url, payload, getAuthHeaders());
+                const data = response.data;
 
-            if (response.data.success || response.status === 200 || response.status === 201) {
-                closeModal();
-                await fetchRoles();
-                alert(
-                    isEditMode.value
-                        ? "Rol actualizado exitosamente"
-                        : "Rol creado exitosamente"
-                );
+                if(!data.success) {
+                    throw new Error(data.message || 'Error al actualizar el rol');
+                }
+
+                alert('Rol actualizado exitosamente');
+
+            } else{
+                const response = await axios.post(`${API_URL}/users/new`, payloadCreate, getAuthHeaders());
+
+                const data = response.data;
+
+                if(!data.success) {
+                    throw new Error(data.message || 'Error al crear el usuario');
+                }
+
+                alert('Usuario creado exitosamente');
             }
         } catch (err) {
-            console.error("❌ Error al guardar rol:", err);
+            console.error("Error al guardar rol:", err);
 
             const data = err.response?.data || {};
 
@@ -341,30 +618,45 @@
             }
         } finally {
             submitting.value = false;
+            closeModal();
         }
     };
 
-    const deleteItem = async (id) => {
-        if (!confirm('¿Está seguro de eliminar este rol? Esta acción no se puede deshacer.')) return;
-
+    const getUsersByRol = async (id) => {
         try {
-            loading.value = true;
-            console.log('Eliminando rol ID:', id);
-
-            const response = await axios.delete(`${API_URL}/roles/delete/${id}`, getAuthHeaders());
-
-            console.log('Respuesta eliminación:', response.data);
-
-            if (response.data.success || response.status === 200) {
-                alert('Rol eliminado exitosamente');
-                await fetchRoles();
+            if (id === 5) {
+                window.location.href = '/docentes';
+                return;
             }
+
+            if (id === 6) {
+                window.location.href = '/estudiantes';
+                return;
+            }
+
+            const response = await axios.get(`${API_URL}/roles/get/users/${id}`, getAuthHeaders());
+
+            const data = response.data;
+            if(!data.success) {
+                alert(data.message || 'Error al obtener usuarios del rol');
+                return;
+            }
+
+            usersInRole.value = data.data;
+            const rol = allRoles.value.find(r => r.id === id);
+            currentRoleName.value = rol?.nombre || 'Rol';
+            showUsersModal.value = true;
+
         } catch (err) {
-            console.error('Error al eliminar rol:', err);
-            alert(err.response?.data?.message || 'Error al eliminar el rol');
-        } finally {
-            loading.value = false;
+            console.error('Error al obtener usuarios:', err);
+            alert(err.response?.data?.message || 'Error al obtener usuarios del rol');
         }
+    };
+
+    const closeUsersModal = () => {
+        showUsersModal.value = false;
+        usersInRole.value = [];
+        currentRoleName.value = '';
     };
 
     // Paginación
@@ -423,10 +715,67 @@
         }
     }
 
+    async function fetchDepartments() {
+        try {
+            loading.value = true;
+            error.value = null;
+            const response = await getDeparmentsAll();
+            allDepartments.value = Array.isArray(response) ? response : response.data;
+        } catch (error) {
+            console.error('Error al obtener los departamentos:', error);
+            error.value = 'Error al cargar los departamentos';
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function fetchCarreras(departamento_id) {
+        try {
+            const response = await axios.get(`/api/careers/get/by-departament/${departamento_id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            const data = response.data;
+            allCarreras.value = Array.isArray(data) ? data : data.data;
+            display.value = true;
+        } catch (err) {
+            console.error('Error al cargar carreras:', err);
+            console.error('Error completo:', err.response?.data);
+            formErrors.value.general = 'Error al cargar carreras';
+            return [];
+        }
+    }
+
+    const formatPhone = () => {
+        // Eliminar cualquier carácter que no sea dígito
+        let value = userFormData.value.telefono.replace(/\D/g, '');
+
+        // Verificar si el primer dígito es 2, 6 o 7
+        if (value.length > 0 && !/^[267]/.test(value)) {
+            // Si el primer dígito no es 2, 6 ni 7, borrar todo
+            userFormData.value.telefono = '';
+        } else {
+            // Si hay más de 8 dígitos, truncar a 8
+            if (value.length > 8) {
+                value = value.slice(0, 8);
+            }
+            // Formatear el número de teléfono con guion después de 4 dígitos
+            if (value.length > 4) {
+                userFormData.value.telefono = `${value.slice(0, 4)}-${value.slice(4)}`;
+            } else {
+                userFormData.value.telefono = value;
+            }
+        }
+    };
+
     onMounted(async () => {
         await authService.verifyToken(localStorage.getItem("token"));
         searchTerm.value = '';
         await fetchRoles();
+        await fetchDepartments();
         isLoading.value = false;
     });
 

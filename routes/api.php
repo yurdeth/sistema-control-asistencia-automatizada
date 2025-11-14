@@ -60,6 +60,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/roles/new', [RolesController::class, 'store'])->name('roles.store');
     Route::delete('/roles/delete/{id}', [RolesController::class, 'destroy'])->name('roles.delete');
     Route::patch('/roles/edit/{id}', [RolesController::class, 'edit'])->name('roles.edit');
+    Route::get('/roles/get/users/{id}', [RolesController::class, 'getUsersWithRolId'])->name('roles.getUserRoleName');
 
     //************************************ MANAGE USERS ************************************//
     Route::get('/users/get/all', [UserController::class, 'index'])->name('users.index');
