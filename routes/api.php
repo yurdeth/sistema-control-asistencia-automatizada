@@ -331,6 +331,12 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/careers/enable/{id}', [CarrerasController::class, 'enableCareer'])->name('carreras.enable');
 
     //************************************ MANAGE CLASSROOM PROBLEM REPORTS ************************************//
+    // Catálogos y estadísticas
+    Route::get('/classroom-reports/catalogs/categories', [ReportesProblemasAulasController::class, 'getCategorias'])->name('classroomReports.getCategorias');
+    Route::get('/classroom-reports/catalogs/statuses', [ReportesProblemasAulasController::class, 'getEstados'])->name('classroomReports.getEstados');
+    Route::get('/classroom-reports/statistics', [ReportesProblemasAulasController::class, 'getEstadisticas'])->name('classroomReports.getEstadisticas');
+
+    // CRUD y operaciones
     Route::post('/classroom-reports/new', [ReportesProblemasAulasController::class, 'store'])->name('classroomReports.store');
     Route::get('/classroom-reports/get/all', [ReportesProblemasAulasController::class, 'index'])->name('classroomReports.index');
     Route::get('/classroom-reports/get/{id}', [ReportesProblemasAulasController::class, 'show'])->name('classroomReports.show');

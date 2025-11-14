@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -570,20 +571,212 @@ class ReportesProblemasAulasController extends Controller
     }
 
     /**
+     * Obtener lista de categorías disponibles
+     */
+    public function getCategorias(): JsonResponse
+    {
+        $categorias = [
+            [
+                'value' => 'recurso_defectuoso',
+                'label' => 'Recurso Defectuoso',
+                'descripcion' => 'Problemas con recursos del aula (proyector, aire acondicionado, pizarra, etc.)'
+            ],
+            [
+                'value' => 'qr_danado',
+                'label' => 'Código QR Dañado',
+                'descripcion' => 'Código QR ilegible, rayado o dañado'
+            ],
+            [
+                'value' => 'limpieza',
+                'label' => 'Limpieza',
+                'descripcion' => 'Problemas de limpieza en el aula'
+            ],
+            [
+                'value' => 'infraestructura',
+                'label' => 'Infraestructura',
+                'descripcion' => 'Daños en infraestructura (puertas, ventanas, paredes, etc.)'
+            ],
+            [
+                'value' => 'conectividad',
+                'label' => 'Conectividad',
+                'descripcion' => 'Problemas de internet o conectividad'
+            ],
+            [
+                'value' => 'otro',
+                'label' => 'Otro',
+                'descripcion' => 'Otros problemas no categorizados'
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $categorias
+        ], 200);
+    }
+
+    /**
+     * Obtener lista de estados disponibles
+     */
+    public function getEstados(): JsonResponse
+    {
+        $estados = [
+            [
+                'value' => 'reportado',
+                'label' => 'Reportado',
+                'descripcion' => 'Reporte recién creado',
+                'color' => '#3B82F6' // Azul
+            ],
+            [
+                'value' => 'en_revision',
+                'label' => 'En Revisión',
+                'descripcion' => 'El reporte está siendo revisado',
+                'color' => '#F59E0B' // Amarillo/Naranja
+            ],
+            [
+                'value' => 'asignado',
+                'label' => 'Asignado',
+                'descripcion' => 'Se asignó un responsable',
+                'color' => '#8B5CF6' // Púrpura
+            ],
+            [
+                'value' => 'en_proceso',
+                'label' => 'En Proceso',
+                'descripcion' => 'El problema está siendo atendido',
+                'color' => '#06B6D4' // Cyan
+            ],
+            [
+                'value' => 'resuelto',
+                'label' => 'Resuelto',
+                'descripcion' => 'El problema fue solucionado',
+                'color' => '#10B981' // Verde
+            ],
+            [
+                'value' => 'rechazado',
+                'label' => 'Rechazado',
+                'descripcion' => 'El reporte fue rechazado',
+                'color' => '#EF4444' // Rojo
+            ],
+            [
+                'value' => 'cerrado',
+                'label' => 'Cerrado',
+                'descripcion' => 'El reporte fue cerrado',
+                'color' => '#6B7280' // Gris
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $estados
+        ], 200);
+    }
+
+    /**
+     * Obtener estadísticas generales de reportes
+     * Accesible por: Administradores y Gestores
+     */
+    public function getEstadisticas(): JsonResponse
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            // Conteo por estado
+            $porEstado = ReporteProblemaAula::selectRaw('estado, COUNT(*) as total')
+                ->groupBy('estado')
+                ->get()
+                ->mapWithKeys(function ($item) {
+                    return [$item->estado => $item->total];
+                });
+
+            // Conteo por categoría
+            $porCategoria = ReporteProblemaAula::selectRaw('categoria, COUNT(*) as total')
+                ->groupBy('categoria')
+                ->get()
+                ->mapWithKeys(function ($item) {
+                    return [$item->categoria => $item->total];
+                });
+
+            // Total de reportes
+            $totalReportes = ReporteProblemaAula::count();
+
+            // Reportes del mes actual
+            $reportesMesActual = ReporteProblemaAula::whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year)
+                ->count();
+
+            // Reportes pendientes (no resueltos ni cerrados)
+            $reportesPendientes = ReporteProblemaAula::whereNotIn('estado', ['resuelto', 'cerrado', 'rechazado'])
+                ->count();
+
+            // Reportes resueltos
+            $reportesResueltos = ReporteProblemaAula::where('estado', 'resuelto')
+                ->count();
+
+            // Top 5 aulas con más reportes
+            $topAulas = ReporteProblemaAula::with('aula')
+                ->selectRaw('aula_id, COUNT(*) as total')
+                ->groupBy('aula_id')
+                ->orderByDesc('total')
+                ->limit(5)
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'aula_id' => $item->aula_id,
+                        'aula_nombre' => $item->aula->nombre ?? 'N/A',
+                        'total_reportes' => $item->total
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_reportes' => $totalReportes,
+                    'reportes_mes_actual' => $reportesMesActual,
+                    'reportes_pendientes' => $reportesPendientes,
+                    'reportes_resueltos' => $reportesResueltos,
+                    'por_estado' => $porEstado,
+                    'por_categoria' => $porCategoria,
+                    'top_aulas_con_reportes' => $topAulas
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las estadísticas',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Obtener el nombre del rol del usuario autenticado
      */
-    private function getUserRoleName()
+    private function getUserRoleName(): string|null
     {
-        $user = Auth::user();
-        if (!$user) {
-            return null;
-        }
-
-        $userRole = $user->usuarioRoles()->first();
-        if (!$userRole) {
-            return null;
-        }
-
-        return RolesEnum::tryFrom($userRole->rol_id);
+        return DB::table('usuario_roles')
+            ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
+            ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+            ->where('users.id', Auth::id())
+            ->value('roles.nombre');
     }
 }
