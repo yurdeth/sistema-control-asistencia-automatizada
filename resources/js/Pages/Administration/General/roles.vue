@@ -66,14 +66,6 @@
                                 <td class="px-6 py-4 text-sm">
                                     <div class="flex justify-center gap-2">
                                         <button
-                                            @click="openEditModal(rol)"
-                                            class="text-white px-4 py-2 rounded-lg transition-colors"
-                                            :style="{background: '#FF204E'}"
-                                            :disabled="loading"
-                                        >
-                                            Editar
-                                        </button>
-                                        <button
                                             @click="getUsersByRol(rol.id)"
                                             class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
                                             :style="{ background: '#A0153E' }"
@@ -252,13 +244,22 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Contraseña <span class="text-red-500">*</span>
                         </label>
-                        <input
-                            v-model="userFormData.password"
-                            type="password"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            :class="{'border-red-500': formErrors.password}"
-                            required
-                        />
+                        <div class="relative">
+                            <input
+                                v-model="userFormData.password"
+                                :type="showPassword ? 'text' : 'password'"
+                                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                :class="{'border-red-500': formErrors.password}"
+                                required
+                            />
+                            <button
+                                type="button"
+                                @click="showPassword = !showPassword"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            >
+                                <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                            </button>
+                        </div>
                         <p v-if="formErrors.password" class="text-red-500 text-sm mt-1">
                             {{ formErrors.password[0] }}
                         </p>
@@ -269,13 +270,22 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Repita la contraseña <span class="text-red-500">*</span>
                         </label>
-                        <input
-                            v-model="userFormData.password_confirmation"
-                            type="password"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            :class="{'border-red-500': formErrors.password_confirmation}"
-                            required
-                        />
+                        <div class="relative">
+                            <input
+                                v-model="userFormData.password_confirmation"
+                                :type="showPasswordConfirmation ? 'text' : 'password'"
+                                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                :class="{'border-red-500': formErrors.password_confirmation}"
+                                required
+                            />
+                            <button
+                                type="button"
+                                @click="showPasswordConfirmation = !showPasswordConfirmation"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            >
+                                <i :class="showPasswordConfirmation ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                            </button>
+                        </div>
                         <p v-if="formErrors.password_confirmation" class="text-red-500 text-sm mt-1">
                             {{ formErrors.password_confirmation[0] }}
                         </p>
@@ -457,6 +467,9 @@
     const usersInRole = ref([]);
     const currentRoleName = ref('');
 
+    const showPassword = ref(false);
+    const showPasswordConfirmation = ref(false);
+
     // Paginación
     const currentPage = ref(1);
     const perPage = ref(5); // Número de registros por página
@@ -566,10 +579,10 @@
         submitting.value = true;
 
         try {
-            const payloadEdit = {
+            /*const payloadEdit = {
                 nombre: formData.value.nombre,
                 descripcion: formData.value.descripcion,
-            };
+            };*/
 
             const payloadCreate = {
                 nombre_completo: userFormData.value.nombre_completo,
@@ -583,7 +596,7 @@
                 estado: userFormData.value.estado,
             };
 
-            if (isEditMode.value){
+            /*if (isEditMode.value){
                 const response = await axios.patch(`${API_URL}/roles/edit/${currentRolId.value}`, payloadEdit, getAuthHeaders());
 
                 const data = response.data;
@@ -595,16 +608,21 @@
                 alert('Rol actualizado exitosamente');
 
             } else{
-                const response = await axios.post(`${API_URL}/users/new`, payloadCreate, getAuthHeaders());
 
-                const data = response.data;
+            }*/
 
-                if(!data.success) {
-                    throw new Error(data.message || 'Error al crear el usuario');
-                }
+            const response = await axios.post(`${API_URL}/users/new`, payloadCreate, getAuthHeaders());
 
-                alert('Usuario creado exitosamente');
+            const data = response.data;
+
+            if(!data.success) {
+                formErrors.value.general = data.message || 'Error al crear el usuario';
+                alert(data.message || 'Error al crear el usuario');
+                return;
             }
+
+            alert('Usuario creado exitosamente');
+            closeModal();
         } catch (err) {
             console.error("Error al guardar rol:", err);
 
@@ -618,7 +636,6 @@
             }
         } finally {
             submitting.value = false;
-            closeModal();
         }
     };
 

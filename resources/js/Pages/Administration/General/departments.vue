@@ -29,6 +29,7 @@
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
                         :style="{background: '#D93F3F'}"
+                        v-if="['root', 'administrador_academico', 'jefe_departamento'].includes(currentUserRolName)"
                     >
                         <span class="text-xl">+</span>
                         Agregar Departamento
@@ -116,6 +117,7 @@
                                                 class="text-white px-4 py-2 rounded-lg transition-colors"
                                                 :style="{background: '#FF204E'}"
                                                 :disabled="loading"
+                                                v-if="['root', 'administrador_academico', 'jefe_departamento'].includes(currentUserRolName)"
                                             >
                                                 Editar
                                             </button>
@@ -124,6 +126,7 @@
                                                 class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
                                                 :style="{ background: '#A0153E' }"
                                                 :disabled="loading"
+                                                v-if="['root', 'administrador_academico', 'jefe_departamento'].includes(currentUserRolName)"
                                             >
                                                 Eliminar
                                             </button>
@@ -348,6 +351,7 @@ const error = ref(null)
 const showCarreraModal = ref(false);
 const selectedDepartment = ref(null);
 const carreras = ref([]);
+const currentUserRolName = ref(null);
 
 const props = defineProps({
     departments: {
@@ -400,11 +404,17 @@ async function fetchDepartments() {
     }
 }
 
+// Remove the computed (it's incorrect usage)
+// Use onMounted to set the value directly
+
 onMounted(async () => {
     await authService.verifyToken(localStorage.getItem("token"));
 
+    // Set currentUserRolName here
+    const local = JSON.parse(localStorage.getItem('user'));
+    currentUserRolName.value = local?.role_nombre || null;
+
     await fetchDepartments();
-    // isLoading.value = false;
 });
 
 // parte donde se trabaja lo del modal
