@@ -250,7 +250,7 @@ import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
 import axios from 'axios';
 import { authService } from '@/Services/authService';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = '/api';
 const getAuthHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
 /* --- Añadido: variables de estado y color para coincidir con docentes.vue --- */
@@ -304,12 +304,12 @@ const fetchSelectOptions = async () => {
 			axios.get(`${API_URL}/users/get/professors/all`, getAuthHeaders()),
 			axios.get(`${API_URL}/academic-terms/get/all`, getAuthHeaders())
 		]);
-		
+
 		materias.value = materiasRes.data.data || [];
 		docentes.value = docentesRes.data.data || [];
 		ciclos.value = ciclosRes.data.data || [];
-	} catch (e) { 
-		console.error('Error fetching select options:', e); 
+	} catch (e) {
+		console.error('Error fetching select options:', e);
 	}
 };
 
@@ -733,5 +733,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Rely on Tailwind; se han adap
-
+/* Rely on Tailwind; se han adap */
+</style>
