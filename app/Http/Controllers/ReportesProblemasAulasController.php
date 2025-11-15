@@ -197,6 +197,16 @@ class ReportesProblemasAulasController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
+            //En caso de no exitencia de registros, validar
+            if ($reportes->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron reportes para el aula especificada',
+                    'data' => []
+                ]);
+            }
+
+
             return response()->json([
                 'success' => true,
                 'data' => $reportes
@@ -237,6 +247,15 @@ class ReportesProblemasAulasController extends Controller
                 ->where('estado', $estado)
                 ->orderBy('created_at', 'desc')
                 ->get();
+
+            //En caso de no exitencia de registros, validar
+            if ($reportes->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron reportes para el estado especificado',
+                    'data' => []
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
@@ -279,6 +298,15 @@ class ReportesProblemasAulasController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
+            //En caso de no exitencia de registros, validar
+            if ($reportes->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron reportes para la categoría especificada',
+                    'data' => []
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $reportes
@@ -310,6 +338,15 @@ class ReportesProblemasAulasController extends Controller
                 ->where('usuario_reporta_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->get();
+
+            //En caso de no exitencia de registros, validar con el status correspondiente
+            if ($reportes->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron reportes creados por este usuario',
+                    'data' => []
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
