@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class escaneos_qr extends Model 
+class escaneos_qr extends Model
 {
     use HasFactory;
 
@@ -19,11 +19,11 @@ class escaneos_qr extends Model
         'resultado',
         'motivo_fallo',
         'ip_address',
-       
+        'dispositivo'
     ];
 
 
-    
+
     public function aula()
     {
         return $this->belongsTo(aulas::class, 'aula_id');

@@ -624,6 +624,77 @@ class AsistenciasEstudiantesController extends Controller {
         }
     }
 
+    /**
+     * Registrar asistencia mediante escaneo QR (usando RegistrarAsistenciaAction)
+     *
+     * Endpoint optimizado para apps móviles que delega toda la lógica al Action:
+     * - Valida el código QR del aula
+     * - Verifica que existe una sesión activa en el aula
+     * - Valida que el estudiante esté inscrito en el grupo
+     * - Registra la asistencia (idempotente - no duplica)
+     * - Registra el escaneo del QR para auditoría
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function registerAttendanceQR(Request $request): JsonResponse
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Validación de parámetros
+        $rules = [
+            'codigo_qr' => 'required|string',
+            'dispositivo' => 'nullable|string|max:255',
+        ];
+
+        $messages = [
+            'codigo_qr.required' => 'El código QR es obligatorio.',
+            'codigo_qr.string' => 'El código QR debe ser una cadena de texto.',
+            'dispositivo.string' => 'El dispositivo debe ser una cadena de texto.',
+            'dispositivo.max' => 'El dispositivo no puede exceder 255 caracteres.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errores de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Ejecutar Action - toda la lógica de negocio está ahí
+            $resultado = app(\App\Actions\RegistrarAsistenciaAction::class)->execute(
+                codigoQr: $request->codigo_qr,
+                estudianteId: Auth::id(),
+                datosAdicionales: [
+                    'dispositivo' => $request->dispositivo ?? null,
+                ]
+            );
+
+            // Código de respuesta: 201 si es nueva, 200 si se actualizó
+            $statusCode = $resultado['es_nueva'] ? 201 : 200;
+
+            return response()->json([
+                'success' => true,
+                'message' => $resultado['mensaje'],
+                'data' => $resultado,
+                'es_nueva' => $resultado['es_nueva'],
+            ], $statusCode);
+
+        } catch (\App\Exceptions\BusinessException $e) {
+            // BusinessException ya tiene método render() que formatea la respuesta
+            throw $e;
+        }
+    }
+
     private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')

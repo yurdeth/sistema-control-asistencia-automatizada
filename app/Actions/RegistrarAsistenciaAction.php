@@ -10,7 +10,7 @@ use App\Models\aulas;
 use App\Models\escaneos_qr;
 use App\Models\inscripciones;
 use App\Models\sesiones_clase;
-use App\Models\usuarios;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -49,7 +49,7 @@ class RegistrarAsistenciaAction
 
         if (!$aula) {
             // Registrar intento fallido
-            $this->registrarEscaneoFallido($codigoQr, $estudianteId, 'QR_NO_RECONOCIDO');
+            $this->registrarEscaneoFallido($estudianteId, 'QR_NO_RECONOCIDO');
 
             throw QRInvalidoException::noReconocido($codigoQr);
         }
@@ -65,13 +65,13 @@ class RegistrarAsistenciaAction
 
         if (!$sesion) {
             // Registrar intento fallido
-            $this->registrarEscaneoFallido($codigoQr, $estudianteId, 'SIN_SESION_ACTIVA', $aula->id);
+            $this->registrarEscaneoFallido($estudianteId, 'SIN_SESION_ACTIVA', $aula->id);
 
             throw SesionNoActivaException::enAula($aula->id, $aula->nombre);
         }
 
         // 3. Validar que el estudiante esté inscrito en el grupo
-        $estudiante = usuarios::findOrFail($estudianteId);
+        $estudiante = User::findOrFail($estudianteId);
 
         $inscrito = inscripciones::where('estudiante_id', $estudianteId)
             ->where('grupo_id', $sesion->horario->grupo_id)
@@ -80,7 +80,6 @@ class RegistrarAsistenciaAction
         if (!$inscrito) {
             // Registrar intento fallido
             $this->registrarEscaneoFallido(
-                $codigoQr,
                 $estudianteId,
                 'ESTUDIANTE_NO_INSCRITO',
                 $aula->id,
@@ -105,10 +104,9 @@ class RegistrarAsistenciaAction
                     'estudiante_id' => $estudianteId
                 ],
                 [
-                    'hora_registro' => now(),
-                    'metodo_registro' => 'qr',
-                    'latitud' => $datosAdicionales['latitud'] ?? null,
-                    'longitud' => $datosAdicionales['longitud'] ?? null
+                    'hora_registro' => now()->format('H:i:s'),
+                    'estado' => 'presente',
+                    'validado_por_qr' => true
                 ]
             );
 
@@ -116,11 +114,10 @@ class RegistrarAsistenciaAction
 
             // Registrar escaneo exitoso
             $this->registrarEscaneoExitoso(
-                $codigoQr,
                 $estudianteId,
                 $sesion->horario->aula_id,
                 $sesion->id,
-                $asistencia->id
+                $datosAdicionales
             );
 
             // Log de auditoría
@@ -131,8 +128,8 @@ class RegistrarAsistenciaAction
                 'grupo_id' => $sesion->horario->grupo_id,
                 'materia_id' => $sesion->horario->grupo->materia_id,
                 'aula_id' => $sesion->horario->aula_id,
-                'hora_registro' => $asistencia->hora_registro->format('H:i:s'),
-                'metodo' => 'qr',
+                'hora_registro' => $asistencia->hora_registro,
+                'validado_por_qr' => true,
                 'es_nueva' => $esNuevaAsistencia
             ]);
 
@@ -158,8 +155,9 @@ class RegistrarAsistenciaAction
                     'codigo' => $sesion->horario->aula->codigo
                 ],
                 'hora_clase_inicio' => $sesion->hora_inicio_real->format('H:i:s'),
-                'hora_registro' => $asistencia->hora_registro->format('H:i:s'),
-                'metodo_registro' => 'qr',
+                'hora_registro' => $asistencia->hora_registro,
+                'estado' => $asistencia->estado,
+                'validado_por_qr' => $asistencia->validado_por_qr,
                 'es_nueva' => $esNuevaAsistencia,
                 'mensaje' => $esNuevaAsistencia
                     ? 'Asistencia registrada correctamente'
@@ -171,58 +169,54 @@ class RegistrarAsistenciaAction
     /**
      * Registrar escaneo exitoso de QR
      *
-     * @param string $codigoQr
      * @param int $estudianteId
      * @param int $aulaId
      * @param int $sesionId
-     * @param int $asistenciaId
+     * @param array $datosAdicionales
      * @return void
      */
     private function registrarEscaneoExitoso(
-        string $codigoQr,
         int $estudianteId,
         int $aulaId,
         int $sesionId,
-        int $asistenciaId
+        array $datosAdicionales = []
     ): void {
         escaneos_qr::create([
-            'codigo_qr' => $codigoQr,
-            'usuario_id' => $estudianteId,
             'aula_id' => $aulaId,
+            'usuario_id' => $estudianteId,
             'sesion_clase_id' => $sesionId,
-            'asistencia_estudiante_id' => $asistenciaId,
-            'exitoso' => true,
-            'razon_fallo' => null,
-            'fecha_hora_escaneo' => now()
+            'tipo_escaneo' => 'asistencia_estudiante',
+            'resultado' => 'exito',
+            'motivo_fallo' => null,
+            'dispositivo' => $datosAdicionales['dispositivo'] ?? null,
+            'ip_address' => request()->ip()
         ]);
     }
 
     /**
      * Registrar intento fallido de escaneo QR
      *
-     * @param string $codigoQr
      * @param int $estudianteId
-     * @param string $razonFallo
+     * @param string $motivoFallo
      * @param int|null $aulaId
      * @param int|null $sesionId
      * @return void
      */
     private function registrarEscaneoFallido(
-        string $codigoQr,
         int $estudianteId,
-        string $razonFallo,
+        string $motivoFallo,
         ?int $aulaId = null,
         ?int $sesionId = null
     ): void {
         escaneos_qr::create([
-            'codigo_qr' => $codigoQr,
-            'usuario_id' => $estudianteId,
             'aula_id' => $aulaId,
+            'usuario_id' => $estudianteId,
             'sesion_clase_id' => $sesionId,
-            'asistencia_estudiante_id' => null,
-            'exitoso' => false,
-            'razon_fallo' => $razonFallo,
-            'fecha_hora_escaneo' => now()
+            'tipo_escaneo' => 'asistencia_estudiante',
+            'resultado' => 'fallo',
+            'motivo_fallo' => $motivoFallo,
+            'dispositivo' => null,
+            'ip_address' => request()->ip()
         ]);
     }
 

@@ -38,11 +38,11 @@ class FinalizarSesionClaseAction
     public function execute(int $sesionId, int $usuarioId): array
     {
         // 1. Buscar sesión con relaciones necesarias
-        $sesion = sesiones_clase::with(['horario.grupo.usuario', 'horario.aula'])
+        $sesion = sesiones_clase::with(['horario.grupo.docente', 'horario.aula'])
             ->findOrFail($sesionId);
 
         // 2. Validar que el usuario sea el docente asignado
-        if ($sesion->horario->grupo->usuario_id !== $usuarioId) {
+        if ($sesion->horario->grupo->docente_id !== $usuarioId) {
             throw UnauthorizedException::notAssignedTeacher();
         }
 
@@ -91,7 +91,7 @@ class FinalizarSesionClaseAction
 
             // Calcular estadísticas de asistencia
             $totalAsistencias = $sesion->asistencias()->count();
-            $totalInscritos = $sesion->horario->grupo->estudiantes_inscritos ?? 0;
+            $totalInscritos = $sesion->horario->grupo->estudiantes_inscrito ?? 0;
             $porcentajeAsistencia = $totalInscritos > 0
                 ? round(($totalAsistencias / $totalInscritos) * 100, 2)
                 : 0;
@@ -101,7 +101,7 @@ class FinalizarSesionClaseAction
                 'sesion_id' => $sesion->id,
                 'horario_id' => $sesion->horario_id,
                 'aula_id' => $sesion->horario->aula_id,
-                'docente_id' => $sesion->horario->grupo->usuario_id,
+                'docente_id' => $sesion->horario->grupo->docente_id,
                 'fecha' => $sesion->fecha_clase,
                 'hora_fin' => $sesion->hora_fin_real->format('H:i:s'),
                 'duracion_minutos' => $sesion->duracion_minutos,
@@ -120,7 +120,6 @@ class FinalizarSesionClaseAction
                 ],
                 'grupo' => [
                     'id' => $sesion->horario->grupo->id,
-                    'nombre' => $sesion->horario->grupo->nombre
                 ],
                 'materia' => [
                     'id' => $sesion->horario->grupo->materia->id,

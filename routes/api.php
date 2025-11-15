@@ -218,6 +218,10 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/class-sessions/get/date/{fecha}', [SesionesClaseController::class, 'getByDate'])->name('classSessions.getByDate');
     Route::patch('/class-sessions/change-status/{id}', [SesionesClaseController::class, 'changeStatus'])->name('classSessions.changeStatus');
 
+    // V2 Endpoints - Using Actions (Improved)
+    Route::post('/class-sessions/v2/start', [SesionesClaseController::class, 'startSessionV2'])->name('classSessions.startV2');
+    Route::post('/class-sessions/v2/finish/{id}', [SesionesClaseController::class, 'finishSessionV2'])->name('classSessions.finishV2');
+
     //************************************ MANAGE STUDENT ATTENDANCE ************************************//
     Route::get('/student-attendance/get/all', [AsistenciasEstudiantesController::class, 'index'])->name('studentAttendance.index');
     Route::get('/student-attendance/get/{id}', [AsistenciasEstudiantesController::class, 'show'])->name('studentAttendance.show');
@@ -230,6 +234,9 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/student-attendance/register', [AsistenciasEstudiantesController::class, 'registerAttendance'])->name('studentAttendance.register');
     Route::get('/student-attendance/get/student/{student_id}/group/{group_id}', [AsistenciasEstudiantesController::class, 'getAttendanceReport'])->name('studentAttendance.getReport');
     Route::get('/student-attendance/get/student/{student_id}/statistics', [AsistenciasEstudiantesController::class, 'getStudentStatistics'])->name('studentAttendance.getStatistics');
+
+    // V2 Endpoint - Using RegistrarAsistenciaAction (Improved for Mobile)
+    Route::post('/student-attendance/v2/register-qr', [AsistenciasEstudiantesController::class, 'registerAttendanceQR'])->name('studentAttendance.registerQR');
 
     //************************************ MANAGE MAINTENANCE ************************************//
     Route::get('/maintenance/get/all', [MantenimientosController::class, 'index'])->name('maintenance.index');
