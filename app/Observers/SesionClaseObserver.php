@@ -85,7 +85,7 @@ class SesionClaseObserver
 
             // Si la diferencia es negativa, significa que empezó antes (sin retraso)
             // Si es positiva, es el retraso en minutos
-            return max(0, (int)$diferencia);
+            return ((int)$diferencia);
 
         } catch (\Exception $e) {
             Log::warning('Error al calcular retraso', [

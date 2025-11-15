@@ -7,6 +7,7 @@ use App\Exceptions\Business\Sistema\SesionClaseException;
 use App\Models\aulas;
 use App\Models\horarios;
 use App\Models\sesiones_clase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -39,11 +40,11 @@ class IniciarSesionClaseAction
     public function execute(int $horarioId, int $usuarioId): array
     {
         // 1. Buscar horario con relaciones necesarias
-        $horario = horarios::with(['grupo.usuario', 'aula'])
+        $horario = horarios::with(['grupo.docente', 'aula'])
             ->findOrFail($horarioId);
 
         // 2. Validar que el usuario sea el docente asignado
-        if ($horario->grupo->usuario_id !== $usuarioId) {
+        if ($horario->grupo->docente_id !== $usuarioId) {
             throw UnauthorizedException::notAssignedTeacher();
         }
 
@@ -58,8 +59,8 @@ class IniciarSesionClaseAction
         if ($sesionExistente && $sesionExistente->estado === 'en_curso') {
             throw SesionClaseException::yaIniciada(
                 $sesionExistente->id,
-                $sesionExistente->hora_inicio_real->format('H:i'),
-                $horario->grupo->usuario->nombre_completo
+                (new Carbon($sesionExistente->hora_inicio_real))->format('H:i'),
+                $horario->grupo->docente->nombre_completo
             );
         }
 
@@ -75,7 +76,7 @@ class IniciarSesionClaseAction
                     'duracion_minutos' => null,
                     'retraso_minutos' => null
                 ]);
-                $sesion = $sesionExistente;
+                $sesion = $sesionExistente->fresh(); // Usar fresh() para obtener el modelo actualizado con casts
             } else {
                 // Crear nueva sesión
                 $sesion = sesiones_clase::create([
@@ -89,6 +90,9 @@ class IniciarSesionClaseAction
             // Actualizar estado del aula a 'ocupada'
             $horario->aula->update(['estado' => 'ocupada']);
 
+            // Asegurarse de que la hora de inicio es un objeto Carbon
+            $horaInicioReal = new Carbon($sesion->hora_inicio_real);
+
             // Log de auditoría
             Log::info('Sesión de clase iniciada', [
                 'sesion_id' => $sesion->id,
@@ -96,7 +100,7 @@ class IniciarSesionClaseAction
                 'aula_id' => $horario->aula_id,
                 'docente_id' => $horario->grupo->usuario_id,
                 'fecha' => $fechaHoy,
-                'hora_inicio' => $sesion->hora_inicio_real->format('H:i:s')
+                'hora_inicio' => $horaInicioReal->format('H:i:s')
             ]);
 
             return [
@@ -116,7 +120,7 @@ class IniciarSesionClaseAction
                     'nombre' => $horario->grupo->materia->nombre
                 ],
                 'hora_inicio_programada' => $horario->hora_inicio,
-                'hora_inicio_real' => $sesion->hora_inicio_real->format('H:i:s'),
+                'hora_inicio_real' => $horaInicioReal->format('H:i:s'),
                 'estado' => $sesion->estado,
                 'mensaje' => 'Sesión de clase iniciada correctamente'
             ];

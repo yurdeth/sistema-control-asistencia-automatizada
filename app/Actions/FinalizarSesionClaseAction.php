@@ -6,6 +6,7 @@ use App\Exceptions\Business\Auth\UnauthorizedException;
 use App\Exceptions\Business\Sistema\SesionClaseException;
 use App\Models\horarios;
 use App\Models\sesiones_clase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -50,7 +51,7 @@ class FinalizarSesionClaseAction
         if ($sesion->estado === 'finalizada') {
             throw SesionClaseException::yaFinalizada(
                 $sesion->id,
-                $sesion->hora_fin_real->format('H:i')
+                (new Carbon($sesion->hora_fin_real))->format('H:i')
             );
         }
 
@@ -96,6 +97,10 @@ class FinalizarSesionClaseAction
                 ? round(($totalAsistencias / $totalInscritos) * 100, 2)
                 : 0;
 
+            // Asegurarse de que las fechas son objetos Carbon
+            $horaFinReal = new Carbon($sesion->hora_fin_real);
+            $horaInicioReal = new Carbon($sesion->hora_inicio_real);
+
             // Log de auditoría
             Log::info('Sesión de clase finalizada', [
                 'sesion_id' => $sesion->id,
@@ -103,7 +108,7 @@ class FinalizarSesionClaseAction
                 'aula_id' => $sesion->horario->aula_id,
                 'docente_id' => $sesion->horario->grupo->docente_id,
                 'fecha' => $sesion->fecha_clase,
-                'hora_fin' => $sesion->hora_fin_real->format('H:i:s'),
+                'hora_fin' => $horaFinReal->format('H:i:s'),
                 'duracion_minutos' => $sesion->duracion_minutos,
                 'retraso_minutos' => $sesion->retraso_minutos,
                 'total_asistencias' => $totalAsistencias,
@@ -126,9 +131,9 @@ class FinalizarSesionClaseAction
                     'nombre' => $sesion->horario->grupo->materia->nombre
                 ],
                 'hora_inicio_programada' => $sesion->horario->hora_inicio,
-                'hora_inicio_real' => $sesion->hora_inicio_real->format('H:i:s'),
+                'hora_inicio_real' => $horaInicioReal->format('H:i:s'),
                 'hora_fin_programada' => $sesion->horario->hora_fin,
-                'hora_fin_real' => $sesion->hora_fin_real->format('H:i:s'),
+                'hora_fin_real' => $horaFinReal->format('H:i:s'),
                 'duracion_minutos' => $sesion->duracion_minutos,
                 'retraso_minutos' => $sesion->retraso_minutos,
                 'estadisticas' => [
