@@ -1,3 +1,4 @@
+
 <template>
 	<Head title="Solicitudes de Inscripción" />
 
@@ -108,7 +109,7 @@ import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
 import axios from 'axios';
 import { authService } from '@/Services/authService';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = '/api';
 const getAuthHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
 const list = ref([]);
@@ -188,4 +189,3 @@ onMounted(async () => {
 <style scoped>
 /* Minimal, Tailwind present */
 </style>
-
