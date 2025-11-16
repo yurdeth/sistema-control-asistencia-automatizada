@@ -126,18 +126,55 @@
                 />
             </div>
 
+            <!-- Sin resultados -->
+            <div v-if="aulasFiltradas.length === 0 && (filtros.busqueda || filtros.capacidad_pupitres !== 'all' || filtros.estado !== 'all')"
+                 class="text-center py-12 bg-gray-50 rounded-lg">
+                <div class="flex flex-col items-center gap-3">
+                    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-gray-600 text-lg font-medium">No se encontraron resultados</p>
+                    <p class="text-gray-500 text-sm max-w-md mx-auto px-4">
+                        <span v-if="filtros.busqueda">No hay aulas que coincidan con <strong>"{{ filtros.busqueda }}"</strong></span>
+                        <span v-if="filtros.capacidad_pupitres !== 'all'">
+                            {{ filtros.busqueda ? '<br>' : '' }}
+                            Con capacidad: {{ filtros.capacidad_pupitres === 'small' ? 'Pequeña (≤30 personas)' :
+                                            filtros.capacidad_pupitres === 'medium' ? 'Mediana (31-100 personas)' : 'Grande (>100 personas)' }}
+                        </span>
+                        <span v-if="filtros.estado !== 'all'">
+                            {{ (filtros.busqueda || filtros.capacidad_pupitres !== 'all') ? '<br>' : '' }}
+                            Estado: <strong>{{ filtros.estado }}</strong>
+                        </span>
+                    </p>
+                    <button
+                        @click="limpiarFiltros"
+                        class="mt-4 px-6 py-2.5 text-white rounded-lg transition-colors flex items-center gap-2 font-medium"
+                        :style="{backgroundColor: colorButton}"
+                    >
+                        <i class="fa-solid fa-xmark"></i>
+                        Limpiar filtros
+                    </button>
+                </div>
+            </div>
+
             <!-- Sin aulas -->
-            <div v-else class="text-center py-12 bg-gray-50 rounded-lg">
-                <i class="fa-solid fa-door-open text-6xl text-gray-300 mb-4"></i>
-                <p class="text-gray-600 text-lg">No hay aulas registradas</p>
-                <p class="text-gray-500 text-sm mt-2">Comienza agregando tu primera aula</p>
+            <div v-else-if="aulas.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
+                <div class="flex flex-col items-center gap-3">
+                    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-gray-600 text-lg font-medium">No hay aulas registradas</p>
+                    <p class="text-gray-500 text-sm">Comienza agregando tu primera aula</p>
+                </div>
             </div>
             <!-- Controles de paginación -->
-            <div class="flex justify-center mt-6 space-x-2">
+            <div v-if="aulasFiltradas.length > 0" class="flex justify-center mt-6 space-x-2">
                 <button
                     @click="paginaActual--"
-                    :disabled="paginaActual ===1"
-                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                    :disabled="paginaActual === 1"
+                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
@@ -146,7 +183,7 @@
                 <button
                     @click="paginaActual++"
                     :disabled="paginaActual === totalPaginas"
-                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
@@ -371,6 +408,16 @@ const form = ref({
 });
 
 const formErrors = ref({});
+
+// Función para limpiar filtros
+const limpiarFiltros = () => {
+    filtros.value = {
+        busqueda: '',
+        capacidad_pupitres: 'all',
+        estado: 'all'
+    };
+    paginaActual.value = 1;
+};
 
 // ======| Estados |======
 const aulas = ref([]);
