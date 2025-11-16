@@ -169,13 +169,15 @@ class GenerarEstadisticasDiariasJob implements ShouldQueue
                 [
                     'aula_id' => $aula->id,
                     'fecha' => $fechaStr,
-                ],
+                ]
+
+                /*,
                 [
                     'sesiones_realizadas' => $sesionesRealizadas,
                     'tiempo_uso_minutos' => $tiempoUsoMinutos,
                     'estudiantes_unicos' => $estudiantesUnicos,
                     'tasa_ocupacion' => $tasaOcupacion,
-                ]
+                ]*/
             );
 
             $stats[] = [

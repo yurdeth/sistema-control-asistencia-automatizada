@@ -1,6 +1,6 @@
 <template>
     <Head title="SICA" />
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-gray-50 flex flex-col">
 
         <!--Navbar-->
         <div :style="{ backgroundColor: colorNavbar , color: colorText}" class="shadow-md sticky top-0 z-50" >
@@ -92,7 +92,7 @@
         </div>
 
         <!--Contenido principal-->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="text-center">
                 <p class="text-xl text-gray-600 mb-8">
                     Gestione y controle las aulas de manera más eficiente con la plataforma SICA
@@ -135,7 +135,7 @@
 
 
         <!-- Footer -->
-        <footer class=" border-t border-gray-200 mt-20 text-white"
+        <footer class="border-t border-gray-200 mt-20 text-white"
             :style="{backgroundColor:colorButton}"
         >
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
