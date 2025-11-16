@@ -660,9 +660,27 @@ async function handleSubmit() {
         formData.append('estado', form.value.estado);
         formData.append('videos', form.value.videos || '');
 
-        // Agregar la imagen si existe
-        if (form.value.fotos) {
+        // Depuración: Verificar que tenemos la imagen
+        console.log("=== DEPURACIÓN FORMULARIO ===");
+        console.log("form.value.fotos:", form.value.fotos);
+        console.log("Tipo de form.value.fotos:", typeof form.value.fotos);
+        console.log("¿Es File?:", form.value.fotos instanceof File);
+
+        // Agregar la imagen si existe (aceptar File o Blob)
+        if (form.value.fotos && (form.value.fotos instanceof File || form.value.fotos instanceof Blob)) {
             formData.append('fotos', form.value.fotos);
+            console.log("✅ Imagen agregada al FormData:", form.value.fotos.name);
+            console.log("✅ Tipo de archivo:", form.value.fotos.constructor.name);
+            console.log("✅ Tamaño:", form.value.fotos.size, "bytes");
+        } else {
+            console.log("❌ No hay imagen válida para enviar");
+            console.log("form.value.fotos es:", form.value.fotos);
+        }
+
+        // Verificar contenido del FormData
+        console.log("=== CONTENIDO FORMDATA ===");
+        for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
         }
 
         const response = await axios.post(`/api/classrooms/new`, formData, {
@@ -721,6 +739,11 @@ const handleImageUpload = async (event) => {
         }
 
         try {
+            console.log("=== INICIO PROCESAMIENTO DE IMAGEN ===");
+            console.log("Archivo original:", file);
+            console.log("Tamaño original:", file.size, "bytes");
+            console.log("Tipo original:", file.type);
+
             // Comprimir la imagen
             const options = {
                 maxSizeMB: 1,
@@ -728,13 +751,23 @@ const handleImageUpload = async (event) => {
                 useWebWorker: true
             };
 
+            console.log("Opciones de compresión:", options);
             const compressedFile = await browserImageCompression(file, options);
+
+            console.log("Archivo comprimido:", compressedFile);
+            console.log("Tamaño comprimido:", compressedFile.size, "bytes");
+            console.log("Tipo comprimido:", compressedFile.type);
+            console.log("¿Es File después de compresión?:", compressedFile instanceof File);
+
+            // Asignar al formulario
             form.value.fotos = compressedFile;
+            console.log("✅ form.value.fotos asignado:", form.value.fotos);
 
             // Crear vista previa
             const reader = new FileReader();
             reader.onload = (e) => {
                 imagePreview.value = e.target.result;
+                console.log("✅ Vista previa generada");
             };
             reader.readAsDataURL(compressedFile);
 
@@ -743,8 +776,30 @@ const handleImageUpload = async (event) => {
                 delete formErrors.value.fotos;
             }
         } catch (error) {
-            console.error('Error al comprimir la imagen:', error);
-            formErrors.value.fotos = ['Error al procesar la imagen'];
+            console.error('❌ Error al comprimir la imagen:', error);
+            console.error('Error details:', error.message);
+            console.error('Error stack:', error.stack);
+
+            // Si hay error de compresión, usar el archivo original
+            if (file && file.type.startsWith('image/')) {
+                console.log("⚠️ Usando archivo original como fallback");
+                form.value.fotos = file;
+
+                // Crear vista previa con el archivo original
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.value = e.target.result;
+                    console.log("✅ Vista previa generada con archivo original");
+                };
+                reader.readAsDataURL(file);
+
+                // Limpiar error si existía
+                if (formErrors.value.fotos) {
+                    delete formErrors.value.fotos;
+                }
+            } else {
+                formErrors.value.fotos = ['Error al procesar la imagen: ' + error.message];
+            }
         }
     }
 };
