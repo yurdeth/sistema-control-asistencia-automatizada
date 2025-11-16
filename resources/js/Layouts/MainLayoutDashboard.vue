@@ -101,23 +101,24 @@
         <!-- navbar -->
         <div class="flex-1 flex flex-col min-w-0">
             <header :style="{ backgroundColor: colorNavbar }" class="text-white p-3 sm:p-4 h-auto">
-                <nav class="flex items-center justify-between">
+                <nav class="flex items-center justify-between flex-wrap gap-2">
                     <!--Button para el responsive-->
                     <button
                         @click="sidebarOpen = !sidebarOpen"
-                        class="lg:hidden p-2 rounded-md hover:bg-white/10 transition-colors"
+                        class="lg:hidden p-3 rounded-md hover:bg-white/10 transition-colors"
                         :style="{ color: colorText }"
                     >
-                        <i class="fa-solid fa-bars"></i>
+                        <i class="fa-solid fa-bars text-lg"></i>
                     </button>
-                    <div></div>
+
+                    <div class="hidden lg:block"></div>
 
                     <div class="flex items-center gap-2 sm:gap-4" v-if="user && user.nombre_completo">
                         <!-- Notificaciones -->
                         <Link
                         href="#"
-                        class="sidebar-link flex items-center gap-1 sm:gap-2 p-2 rounded-lg transition-colors duration-300
-                                hover:text-white shadow-lg hover:shadow-md relative"
+                        class="sidebar-link flex items-center gap-2 p-3 rounded-lg transition-colors duration-300
+                                hover:text-white shadow-lg hover:shadow-md relative min-w-[44px] min-h-[44px]"
                         :style="{ color: colorText }"
                         >
                             <i class="fa-solid fa-bell text-base sm:text-lg"></i>
@@ -125,7 +126,7 @@
                             <!-- Badge de notificación -->
                             <span
                                 v-if="notificationCount > 0"
-                                class="absolute -top-1 left-6 sm:left-8 text-white text-xs font-bold px-2 py-0.5 rounded-full
+                                class="absolute -top-1 -right-1 sm:left-6 sm:left-8 text-white text-xs font-bold px-2 py-0.5 rounded-full
                                     transform hover:-translate-y-0.5 transition-all duration-200 shadow-md"
                                 :style="{background:'#eb6238'}"
                             >
@@ -139,10 +140,10 @@
                             <button
                                 @click="toggleDropdown"
                                 type="button"
-                                class="inline-flex items-center rounded-md border border-transparent bg-[#76180D] text-white px-3 py-2 text-sm font-medium leading-4 transition duration-150 ease-in-out hover:bg-[#5f130b] focus:outline-none"
+                                class="inline-flex items-center justify-between w-full sm:w-auto rounded-md border border-transparent bg-[#76180D] text-white px-3 sm:px-4 py-2 sm:py-3 text-sm font-medium leading-4 transition duration-150 ease-in-out hover:bg-[#5f130b] focus:outline-none min-w-[44px] min-h-[44px] truncate"
                             >
-                                {{ user.nombre_completo }}
-                                <svg class="ms-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <span class="truncate max-w-[120px] sm:max-w-none">{{ user.nombre_completo }}</span>
+                                <svg class="ms-2 h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                     <path
                                         fill-rule="evenodd"
                                         d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -154,7 +155,7 @@
                             <!-- Dropdown Menu -->
                             <div
                                 v-if="dropdownOpen"
-                                class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-lg z-50"
+                                class="absolute right-0 mt-2 w-48 sm:w-56 bg-white text-black rounded-md shadow-lg z-50"
                             >
                                 <div class="px-4 py-2 text-xs text-gray-500 border-b">
                                     {{ user.nombre_completo }}
@@ -162,8 +163,9 @@
 
                                 <button
                                     @click="handleLogout"
-                                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                                    class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
                                 >
+                                    <i class="fa-solid fa-sign-out-alt"></i>
                                     Cerrar sesión
                                 </button>
                             </div>

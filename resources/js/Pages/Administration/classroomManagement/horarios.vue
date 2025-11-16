@@ -18,34 +18,43 @@
 				<p class="text-gray-600 text-sm">Listado de horarios por grupo y aula</p>
 			</div>
 
-			<div class="bg-white rounded-lg shadow p-6 mb-6">
-				<!-- Controles: búsqueda, limpiar, nuevo, subir excel -->
-				<div class="flex flex-col sm:flex-row gap-4">
-					<input
-						v-model="searchTerm"
-						type="text"
-						placeholder="Buscar por grupo, aula, día o hora"
-						class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					/>
+			<div class="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+			<!-- Controles: búsqueda, limpiar, nuevo, subir excel -->
+				<div class="flex flex-col gap-3 sm:gap-4">
+					<!-- Fila de búsqueda y botones -->
+					<div class="flex flex-col sm:flex-row gap-3">
+						<!-- Búsqueda -->
+						<input
+							v-model="searchTerm"
+							type="text"
+							placeholder="Buscar por grupo, aula, día o hora"
+							class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base min-w-0"
+						/>
 
-					<button
-						@click="performCleanSearch"
-						v-if="searchTerm"
-						class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-						:style="{background: '#ff6678'}"
-					>
-						<span class="text-xl"><i class="fa-solid fa-trash"></i></span>
-						Limpiar Búsqueda
-					</button>
+						<!-- Botones de acción -->
+						<div class="flex gap-3">
+						<button
+							@click="performCleanSearch"
+							v-if="searchTerm"
+							class="text-white px-4 py-3 sm:px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+							:style="{background: '#ff6678'}"
+						>
+							<i class="fa-solid fa-trash text-sm sm:text-xl"></i>
+							<span class="hidden sm:inline">Limpiar</span>
+							<span class="sm:hidden">×</span>
+						</button>
 
-					<button
-						@click="openCreateModal"
-						class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-						:style="{background: '#ff9966'}"
-					>
-						<span class="text-xl">+</span>
-						Nuevo
-					</button>
+						<button
+							@click="openCreateModal"
+							class="text-white px-4 py-3 sm:px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+							:style="{background: '#ff9966'}"
+						>
+							<i class="fa-solid fa-plus text-sm sm:text-xl"></i>
+							<span class="hidden sm:inline">Nuevo</span>
+							<span class="sm:hidden">+</span>
+						</button>
+						</div>
+					</div>
 				</div>
 
 				<br>
@@ -59,77 +68,93 @@
 				<!-- Tabla de datos -->
 				<div v-else-if="!loading && filtered.length" class="bg-white rounded-lg overflow-hidden">
 					<div class="overflow-x-auto">
-						<table class="w-full" :style="{ border: '1px solid #d93f3f' }">
-							<thead class="bg-gray-50 border-b-2 border-gray-200 text-center" :style="{background: '#d93f3f', height: '40px'}">
+						<table class="w-full min-w-[600px]" :style="{ border: '1px solid #d93f3f' }">
+							<thead class="bg-gray-50 border-b-2 border-gray-200 text-center" :style="{background: '#d93f3f', height: '40px' }">
 								<tr>
-									<th class="text-white px-4 py-2">Grupo</th>
-									<th class="text-white px-4 py-2">Materia</th>
-									<th class="text-white px-4 py-2">Docente</th>
-									<th class="text-white px-4 py-2">Aula</th>
-									<th class="text-white px-4 py-2">Día</th>
-									<th class="text-white px-4 py-2">Inicio</th>
-									<th class="text-white px-4 py-2">Fin</th>
-									<th class="text-white px-4 py-2">Opciones</th>
+									<th class="text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Grupo</th>
+									<th class="text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Materia</th>
+									<th class="text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Docente</th>
+									<th class="text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Aula</th>
+									<th class="text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Día</th>
+									<th class="text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Inicio</th>
+									<th class="text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Fin</th>
+									<th class="text-white px-2 sm:px-4 py-2 text-xs sm:text-sm">Opciones</th>
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-gray-200 text-center align-middle">
 								<tr v-for="h in paginated" :key="h.id" class="hover:bg-gray-50 transition-colors">
-									<td class="px-6 py-4 text-sm text-gray-900">{{ h.numero_grupo ?? ('#' + h.grupo_id) }}</td>
-									<td class="px-6 py-4 text-sm text-gray-900">{{ h.materia_nombre ?? ('#' + (h.materia_id || '')) }}</td>
-									<td class="px-6 py-4 text-sm text-gray-600">{{ h.docente_nombre ?? ('#' + (h.docente_id || '')) }}</td>
-									<td class="px-6 py-4 text-sm text-gray-600">{{ h.aula_nombre || h.nombre_aula || ('#' + h.aula_id) }}</td>
-									<td class="px-6 py-4 text-sm font-medium text-gray-900">{{ h.dia_semana }}</td>
-									<td class="px-6 py-4 text-sm font-medium text-gray-900">{{ h.hora_inicio }}</td>
-									<td class="px-6 py-4 text-sm font-medium text-gray-900">{{ h.hora_fin }}</td>
-									<td class="px-6 py-4 text-sm">
-										<div class="flex justify-center gap-2">
+									<td class="px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-900">{{ h.numero_grupo ?? ('#' + h.grupo_id) }}</td>
+									<td class="px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-900">{{ h.materia_nombre ?? ('#' + (h.materia_id || '')) }}</td>
+									<td class="px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-600">{{ h.docente_nombre ?? ('#' + (h.docente_id || '')) }}</td>
+									<td class="px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-600">{{ h.aula_nombre || h.nombre_aula || ('#' + h.aula_id) }}</td>
+									<td class="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-gray-900">{{ h.dia_semana }}</td>
+									<td class="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-gray-900">{{ h.hora_inicio }}</td>
+									<td class="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-gray-900">{{ h.hora_fin }}</td>
+									<td class="px-2 sm:px-4 py-3 text-xs sm:text-sm">
+										<div class="flex justify-center gap-1 flex-wrap">
 											<button
 												@click="openEditModal(h)"
-												class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
+												class="bg-green-500 hover:bg-green-800 text-white px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm transition-colors min-w-[60px] flex items-center justify-center"
 												:disabled="loading"
 											>
-												Editar
+												<i class="fa-solid fa-edit sm:mr-1"></i>
+												<span class="hidden sm:inline">Editar</span>
 											</button>
 											<button
 												@click="deleteItem(h.id)"
-												class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+												class="hover:bg-red-600 text-white px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm transition-colors min-w-[60px] flex items-center justify-center"
 												:style="{ background: '#9b3b3e' }"
 												:disabled="loading"
 											>
-												Eliminar
+												<i class="fa-solid fa-trash sm:mr-1"></i>
+												<span class="hidden sm:inline">Eliminar</span>
 											</button>
 										</div>
 									</td>
 								</tr>
 							</tbody>
 						</table>
+					</div>
 
-						<!-- Paginación (estilo grupos.vue) -->
-						<div class="flex justify-center items-center space-x-2 p-4 border-t border-gray-200">
+					<!-- Paginación fija (fuera del scroll) -->
+					<div class="bg-gray-50 p-4 border-t border-gray-200">
+						<div class="flex justify-center items-center space-x-2">
 							<button
 								@click="prevPage"
 								:disabled="currentPage === 1"
 								class="p-2 border rounded-lg transition-colors"
 								:class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }">
-								<i class="fas fa-chevron-left"></i></button>
-
-							<button
-								v-for="p in totalPages"
-								:key="p"
-								@click="goToPage(p)"
-								class="px-4 py-2 border rounded-lg font-bold text-white transition-colors"
-								:style="{ background: p===currentPage ? '#d93f3f' : 'transparent' }">
-								{{ p }}
+								<i class="fas fa-chevron-left"></i>
 							</button>
+
+							<!-- Botones de paginación inteligente -->
+							<template v-for="(page, index) in visiblePages" :key="index">
+								<!-- Puntos suspensivos -->
+								<span v-if="page === '...'" class="px-2 text-gray-500">...</span>
+
+								<!-- Botón de página -->
+								<button
+									v-else
+									@click="goToPage(page)"
+									class="px-4 py-2 border rounded-lg font-bold transition-colors"
+									:class="[
+										page===currentPage
+											? 'text-white'
+											: 'text-gray-700 hover:bg-gray-100'
+									]"
+									:style="{ background: page===currentPage ? '#d93f3f' : 'transparent' }">
+									{{ page }}
+								</button>
+							</template>
 
 							<button
 								@click="nextPage"
 								:disabled="currentPage === totalPages"
 								class="p-2 border rounded-lg transition-colors"
 								:class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }">
-								<i class="fas fa-chevron-right"></i></button>
+								<i class="fas fa-chevron-right"></i>
+							</button>
 						</div>
-
 					</div>
 				</div>
 
@@ -142,30 +167,30 @@
 
 				<!-- Modal sticky header (igual que en grupos.vue) -->
 				<div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-					<div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-						<div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
-							<h2 class="text-lg font-semibold">{{ isEditMode ? 'Editar horario' : 'Nuevo horario' }}</h2>
-							<button @click="closeModal" class="text-gray-500 hover:text-gray-700">Cerrar</button>
+					<div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+						<div class="sticky top-0 bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center z-10">
+							<h2 class="text-base sm:text-lg font-semibold">{{ isEditMode ? 'Editar horario' : 'Nuevo horario' }}</h2>
+							<button @click="closeModal" class="text-gray-500 hover:text-gray-700 text-sm sm:text-base p-1 sm:p-0">Cerrar</button>
 						</div>
 
 						<!-- server/global error -->
-						<div v-if="serverErrorMessage" class="mb-3 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+						<div v-if="serverErrorMessage" class="mb-3 mx-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
 							{{ serverErrorMessage }}
 						</div>
 
 						<!-- Agregado: mostrar errores generales del servidor como lista -->
-						<div v-if="serverErrors && serverErrors.length" class="mb-3 p-2 rounded bg-red-50 text-red-800">
+						<div v-if="serverErrors && serverErrors.length" class="mb-3 mx-4 p-2 rounded bg-red-50 text-red-800 text-sm">
 							<ul class="list-disc pl-5">
 								<li v-for="(msg, idx) in serverErrors" :key="idx">{{ msg }}</li>
 							</ul>
 						</div>
 
-						<form @submit.prevent="submitForm" class="space-y-3 p-4">
-							<div class="grid grid-cols-2 gap-3">
+						<form @submit.prevent="submitForm" class="space-y-3 sm:space-y-4 p-4 sm:p-6">
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 								<!-- Materia select (nuevo) -->
 								<div>
-									<label class="block text-sm">Materia</label>
-									<select v-model="selectedMateriaId" @change="onMateriaChange" class="w-full border rounded px-2 py-1">
+									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Materia</label>
+									<select v-model="selectedMateriaId" @change="onMateriaChange" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
 										<option value="">Seleccione materia...</option>
 										<option v-for="m in materias" :key="m.id" :value="m.id">{{ m.nombre }}</option>
 									</select>
@@ -173,34 +198,34 @@
 
 								<!-- Grupo select dependiente -->
 								<div>
-									<label class="block text-sm">Grupo</label>
-									<select ref="grupoRef" v-model="form.grupo_id" class="w-full border rounded px-2 py-1">
+									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Grupo</label>
+									<select ref="grupoRef" v-model="form.grupo_id" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
 										<option value="">Seleccione</option>
 										<option v-for="g in subjectGroups" :key="g.id" :value="g.id">
 											{{ g.numero_grupo ?? g.nombre ?? ('#' + g.id) }}
 										</option>
 									</select>
-									<ul v-if="errors.grupo_id && errors.grupo_id.length" class="text-red-600 text-sm mt-1 list-disc ml-4">
+									<ul v-if="errors.grupo_id && errors.grupo_id.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
 										<li v-for="(m, idx) in errors.grupo_id" :key="idx">{{ m }}</li>
 									</ul>
 								</div>
 
 								<div>
-									<label class="block text-sm">Aula</label>
-									<select ref="aulaRef" v-model="form.aula_id" class="w-full border rounded px-2 py-1">
+									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Aula</label>
+									<select ref="aulaRef" v-model="form.aula_id" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
 										<option value="">Seleccione</option>
 										<option v-for="a in classrooms" :key="a.id" :value="a.id">
 											{{ a.nombre ?? a.nombre_aula ?? a.codigo ?? ('#' + a.id) }}
 										</option>
 									</select>
-									<ul v-if="errors.aula_id && errors.aula_id.length" class="text-red-600 text-sm mt-1 list-disc ml-4">
+									<ul v-if="errors.aula_id && errors.aula_id.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
 										<li v-for="(m, idx) in errors.aula_id" :key="idx">{{ m }}</li>
 									</ul>
 								</div>
 
 								<div>
-									<label class="block text-sm">Día</label>
-									<select ref="diaRef" v-model="form.dia_semana" class="w-full border rounded px-2 py-1">
+									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Día</label>
+									<select ref="diaRef" v-model="form.dia_semana" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
 										<option value="">Seleccione</option>
 										<option>Lunes</option>
 										<option>Martes</option>
@@ -210,30 +235,35 @@
 										<option>Sabado</option>
 										<option>Domingo</option>
 									</select>
-									<ul v-if="errors.dia_semana && errors.dia_semana.length" class="text-red-600 text-sm mt-1 list-disc ml-4">
+									<ul v-if="errors.dia_semana && errors.dia_semana.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
 										<li v-for="(m, idx) in errors.dia_semana" :key="idx">{{ m }}</li>
 									</ul>
 								</div>
 
 								<div>
-									<label class="block text-sm">Hora Inicio</label>
-									<input ref="horaInicioRef" type="time" v-model="form.hora_inicio" step="60" class="w-full border rounded px-2 py-1" />
-									<ul v-if="errors.hora_inicio && errors.hora_inicio.length" class="text-red-600 text-sm mt-1 list-disc ml-4">
+									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Hora Inicio</label>
+									<input ref="horaInicioRef" type="time" v-model="form.hora_inicio" step="60" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]" />
+									<ul v-if="errors.hora_inicio && errors.hora_inicio.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
 										<li v-for="(m, idx) in errors.hora_inicio" :key="idx">{{ m }}</li>
 									</ul>
 								</div>
 
 								<div>
-									<label class="block text-sm">Hora Fin</label>
-									<input ref="horaFinRef" type="time" v-model="form.hora_fin" step="60" class="w-full border rounded px-2 py-1" />
-									<ul v-if="errors.hora_fin && errors.hora_fin.length" class="text-red-600 text-sm mt-1 list-disc ml-4">
+									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Hora Fin</label>
+									<input ref="horaFinRef" type="time" v-model="form.hora_fin" step="60" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]" />
+									<ul v-if="errors.hora_fin && errors.hora_fin.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
 										<li v-for="(m, idx) in errors.hora_fin" :key="idx">{{ m }}</li>
 									</ul>
 								</div>
 							</div>
 
-							<div class="flex justify-end">
-								<button type="submit" :disabled="submitting" class="bg-green-600 text-white px-4 py-2 rounded">Guardar</button>
+							<div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t">
+								<button type="button" @click="closeModal" class="w-full sm:w-auto px-4 py-2 text-sm sm:text-base text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors order-2 sm:order-1">
+									Cancelar
+								</button>
+								<button type="submit" :disabled="submitting" class="w-full sm:w-auto px-4 py-2 text-sm sm:text-base text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 order-1 sm:order-2">
+									{{ submitting ? 'Guardando...' : 'Guardar' }}
+								</button>
 							</div>
 						</form>
 					</div>
@@ -505,6 +535,50 @@ const paginated = computed(() => {
 	return filtered.value.slice(start, start + perPage.value);
 });
 watch(filtered, () => { currentPage.value = 1; });
+
+// Calcular qué páginas mostrar en la paginación
+const visiblePages = computed(() => {
+	const total = totalPages.value;
+	const current = currentPage.value;
+	const pages = [];
+
+	// Si hay pocas páginas (7 o menos), mostrar todas
+	if (total <= 7) {
+		for (let i = 1; i <= total; i++) {
+			pages.push(i);
+		}
+		return pages;
+	}
+
+	// Lógica para muchas páginas
+	pages.push(1); // Siempre mostrar la primera página
+
+	// Páginas alrededor de la actual
+	const startPage = Math.max(2, current - 2);
+	const endPage = Math.min(total - 1, current + 2);
+
+	// Si no estamos cerca del inicio, agregar puntos suspensivos
+	if (startPage > 2) {
+		pages.push('...');
+	}
+
+	// Agregar páginas alrededor de la actual
+	for (let i = startPage; i <= endPage; i++) {
+		pages.push(i);
+	}
+
+	// Si no estamos cerca del final, agregar puntos suspensivos
+	if (endPage < total - 1) {
+		pages.push('...');
+	}
+
+	// Siempre mostrar la última página (si es diferente de la primera)
+	if (total > 1) {
+		pages.push(total);
+	}
+
+	return pages;
+});
 
 /* CRUD UI handlers */
 const performCleanSearch = () => { searchTerm.value = ''; debouncedSearch.value = ''; };
