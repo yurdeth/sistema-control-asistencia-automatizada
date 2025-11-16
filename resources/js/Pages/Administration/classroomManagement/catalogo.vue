@@ -297,23 +297,40 @@
                             >
                                 <!-- Botón para agregar imágenes -->
                                 <div
-                                    @click="triggerFileInput"
-                                    class="w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-all"
+                                    @click="handleImageAreaClick"
+                                    class="w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-all relative"
                                     :class="[
                                         imagePreviews.length > 0 ? 'border-gray-300 bg-gray-50' : 'border-gray-300 bg-gray-100',
-                                        isDragging ? 'border-blue-500 bg-blue-50 border-4' : 'hover:border-blue-500 hover:bg-blue-50'
+                                        isDragging ? 'border-blue-500 bg-blue-50 border-4' : 'hover:border-blue-500 hover:bg-blue-50',
+                                        isProcessing ? 'cursor-not-allowed opacity-75' : ''
                                     ]"
                                 >
-                                    <div class="text-center">
+                                    <!-- Overlay de procesamiento -->
+                                    <div v-if="isProcessing" class="absolute inset-0 bg-white bg-opacity-90 rounded-lg flex items-center justify-center z-10">
+                                        <div class="text-center">
+                                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mb-3"></div>
+                                            <p class="text-blue-600 font-medium text-sm">{{ processingText }}</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Contenido normal -->
+                                    <div class="text-center" :class="{ 'opacity-0': isProcessing }">
                                         <i
                                             class="text-4xl mb-2 transition-colors"
-                                            :class="isDragging ? 'fa-solid fa-cloud-arrow-down text-blue-500' : 'fa-solid fa-images text-gray-400'"
+                                            :class="[
+                                                isProcessing ? 'text-blue-300' :
+                                                isDragging ? 'fa-solid fa-cloud-arrow-down text-blue-500' : 'fa-solid fa-images text-gray-400'
+                                            ]"
                                         ></i>
                                         <p class="text-gray-500 font-medium">
-                                            {{ isDragging ? 'Suelta las imágenes aquí' : (imagePreviews.length > 0 ? 'Agregar más imágenes' : 'Seleccionar imágenes del aula') }}
+                                            {{ isProcessing ? 'Procesando imágenes...' :
+                                               (isDragging ? 'Suelta las imágenes aquí' :
+                                                (imagePreviews.length > 0 ? 'Agregar más imágenes' : 'Seleccionar imágenes del aula')) }}
                                         </p>
                                         <p class="text-gray-400 text-sm mt-1">
-                                            {{ isDragging ? 'Arrastra y suelta para agregar' : (imagePreviews.length > 0 ? `${imagePreviews.length} imagen(es) seleccionada(s)` : 'Haz clic o arrastra imágenes aquí') }}
+                                            {{ isProcessing ? processingText :
+                                               (isDragging ? 'Arrastra y suelta para agregar' :
+                                                (imagePreviews.length > 0 ? `${imagePreviews.length} imagen(es) seleccionada(s)` : 'Haz clic o arrastra imágenes aquí')) }}
                                         </p>
                                     </div>
                                 </div>
@@ -436,6 +453,8 @@ const imagePreviews = ref([]);
 const imagePreviewVisible = ref(false);
 const currentImageIndex = ref(0);
 const isDragging = ref(false);
+const isProcessing = ref(false);
+const processingText = ref('');
 // Estado de autenticación
 const isAuthenticated = ref(false);
 
@@ -770,6 +789,12 @@ const triggerFileInput = () => {
     fileInput.value.click();
 };
 
+const handleImageAreaClick = () => {
+    if (!isProcessing.value) {
+        triggerFileInput();
+    }
+};
+
 // Generar hash SHA-256 de un archivo para detectar duplicados
 const getFileHash = (file) => {
     return new Promise((resolve, reject) => {
@@ -798,115 +823,8 @@ const handleImageUpload = async (event) => {
 
     console.log("Procesando", files.length, "archivos seleccionados");
 
-    // Validar límite de archivos (máximo 10 para no sobrecargar el sistema)
-    if (imagePreviews.value.length + files.length > 10) {
-        formErrors.value.fotos = ['Máximo 10 imágenes permitidas'];
-        event.target.value = '';
-        return;
-    }
-
-    // Obtener hashes originales de las imágenes ya seleccionadas (almacenados en imagePreviews)
-    const existingHashes = new Set();
-
-    for (let i = 0; i < imagePreviews.value.length; i++) {
-        if (imagePreviews.value[i].hash) {
-            existingHashes.add(imagePreviews.value[i].hash);
-        }
-    }
-
-    // Validar y procesar cada archivo
-    const validFiles = [];
-    const newPreviews = [];
-    const skippedFiles = [];
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-
-        // Validar tipo de archivo
-        if (!file.type.startsWith('image/')) {
-            continue;
-        }
-
-        // Validar tamaño (5MB = 5 * 1024 * 1024 bytes)
-        const maxSize = 5 * 1024 * 1024;
-        if (file.size > maxSize) {
-            formErrors.value.fotos = [`El archivo ${file.name} excede el límite de 5MB`];
-            event.target.value = '';
-            return;
-        }
-
-        try {
-            // Generar hash del archivo actual (antes de compresión)
-            const currentHash = await getFileHash(file);
-
-            // Verificar si ya existe (duplicado) - comparar con hash original
-            if (existingHashes.has(currentHash)) {
-                skippedFiles.push(file.name);
-                continue;
-            }
-
-            // Comprimir la imagen
-            const options = {
-                maxSizeMB: 1,
-                maxWidthOrHeight: 800,
-                useWebWorker: true
-            };
-
-            const compressedFile = await browserImageCompression(file, options);
-
-            // Agregar el hash del archivo original a los existentes
-            existingHashes.add(currentHash);
-
-            // Crear vista previa
-            const preview = URL.createObjectURL(compressedFile);
-
-            validFiles.push(compressedFile);
-            newPreviews.push({
-                url: preview,
-                name: compressedFile.name,
-                size: compressedFile.size,
-                file: compressedFile,
-                hash: currentHash // Guardar hash del archivo original
-            });
-
-        } catch (error) {
-            // Si hay error de compresión, usar el archivo original
-            if (file.type.startsWith('image/')) {
-                try {
-                    const preview = URL.createObjectURL(file);
-                    const originalHash = await getFileHash(file);
-                    existingHashes.add(originalHash);
-
-                    validFiles.push(file);
-                    newPreviews.push({
-                        url: preview,
-                        name: file.name,
-                        size: file.size,
-                        file: file,
-                        hash: originalHash // Guardar hash del archivo original
-                    });
-                } catch (fallbackError) {
-                    console.error(`Error crítico con archivo ${file.name}:`, fallbackError);
-                }
-            }
-        }
-    }
-
-    // Agregar archivos válidos al formulario
-    if (validFiles.length > 0) {
-        form.value.fotos = [...form.value.fotos, ...validFiles];
-        imagePreviews.value = [...imagePreviews.value, ...newPreviews];
-    }
-
-    // Mostrar mensaje de archivos omitidos si existen
-    if (skippedFiles.length > 0) {
-        console.log(`${skippedFiles.length} imágenes duplicadas omitidas:`, skippedFiles);
-    }
-
-    // Limpiar errores si existían
-    if (formErrors.value.fotos) {
-        delete formErrors.value.fotos;
-    }
+    // Usar la misma función processImages para mostrar el indicador de procesamiento
+    await processImages(files);
 
     // Limpiar el input para permitir seleccionar los mismos archivos si es necesario
     event.target.value = '';
@@ -954,24 +872,51 @@ const handleDrop = async (event) => {
 
 // Función para procesar imágenes (usada por handleImageUpload y handleDrop)
 const processImages = async (files) => {
-    // Crear un Set con todos los hashes existentes para verificación rápida
-    const existingHashes = new Set();
-    for (let i = 0; i < imagePreviews.value.length; i++) {
-        if (imagePreviews.value[i].hash) {
-            existingHashes.add(imagePreviews.value[i].hash);
+    // Activar indicador de procesamiento
+    isProcessing.value = true;
+    processingText.value = `Procesando ${files.length} imagen(es)...`;
+
+    try {
+        // Crear un Set con todos los hashes existentes para verificación rápida
+        const existingHashes = new Set();
+        for (let i = 0; i < imagePreviews.value.length; i++) {
+            if (imagePreviews.value[i].hash) {
+                existingHashes.add(imagePreviews.value[i].hash);
+            }
         }
-    }
 
-    // Validar y procesar cada archivo
-    const validFiles = [];
-    const newPreviews = [];
-    const skippedFiles = [];
+        // Validar límite total de imágenes (10 máximo)
+        const MAX_IMAGES = 10;
+        const currentImageCount = imagePreviews.value.length;
+        const availableSlots = MAX_IMAGES - currentImageCount;
 
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+        if (currentImageCount >= MAX_IMAGES) {
+            formErrors.value.fotos = [`Ya has alcanzado el límite máximo de ${MAX_IMAGES} imágenes`];
+            isProcessing.value = false;
+            processingText.value = '';
+            return;
+        }
 
-        // Validar tipo de archivo
-        if (!file.type.startsWith('image/')) {
+        if (files.length > availableSlots) {
+            formErrors.value.fotos = [`Solo puedes agregar ${availableSlots} imagen(es) más. Límite total: ${MAX_IMAGES}`];
+            isProcessing.value = false;
+            processingText.value = '';
+            return;
+        }
+
+        // Validar y procesar cada archivo
+        const validFiles = [];
+        const newPreviews = [];
+        const skippedFiles = [];
+
+        for (let i = 0; i < files.length; i++) {
+            // Actualizar texto de progreso
+            processingText.value = `Procesando imagen ${i + 1} de ${files.length}...`;
+
+            const file = files[i];
+
+            // Validar tipo de archivo
+            if (!file.type.startsWith('image/')) {
             continue;
         }
 
@@ -1015,6 +960,7 @@ const processImages = async (files) => {
 
         } catch (error) {
             console.error(`Error procesando archivo ${file.name}:`, error);
+            formErrors.value.fotos = [`Error procesando ${file.name}: ${error.message}`];
         }
     }
 
@@ -1032,6 +978,12 @@ const processImages = async (files) => {
     // Limpiar errores si existían
     if (formErrors.value.fotos) {
         delete formErrors.value.fotos;
+    }
+
+    } finally {
+        // Desactivar indicador de procesamiento
+        isProcessing.value = false;
+        processingText.value = '';
     }
 };
 
