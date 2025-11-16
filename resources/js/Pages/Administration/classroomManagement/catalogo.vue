@@ -314,16 +314,26 @@
                                         :key="index"
                                         class="relative group"
                                     >
-                                        <img
-                                            :src="preview.url"
-                                            :alt="`Vista previa ${index + 1}`"
-                                            class="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
-                                        />
+                                        <!-- Contenedor clickeable para vista previa -->
+                                        <div
+                                            @click="openImagePreview(index)"
+                                            class="cursor-pointer relative overflow-hidden rounded-lg"
+                                        >
+                                            <img
+                                                :src="preview.url"
+                                                :alt="`Vista previa ${index + 1}`"
+                                                class="w-full h-32 object-cover rounded-lg border-2 border-gray-200 transition-transform duration-200 group-hover:scale-105"
+                                            />
+                                            <!-- Overlay de hover -->
+                                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                                                <i class="fa-solid fa-search-plus text-white text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"></i>
+                                            </div>
+                                        </div>
                                         <!-- Botón eliminar -->
                                         <button
                                             type="button"
-                                            @click="removeImage(index)"
-                                            class="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
+                                            @click.stop="removeImage(index)"
+                                            class="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 z-10"
                                             title="Eliminar imagen"
                                         >
                                             <i class="fa-solid fa-times text-xs"></i>
@@ -380,6 +390,15 @@
         </Modal>
 
     </MainLayoutDashboard>
+
+    <!-- Modal de vista previa de imágenes (fuera del layout) -->
+    <ImagePreviewModal
+        :visible="imagePreviewVisible"
+        :images="imagePreviews"
+        :initial-index="currentImageIndex"
+        @close="closeImagePreview"
+        @remove-image="handleRemoveImage"
+    />
 </template>
 
 <script setup>
@@ -394,6 +413,7 @@ import browserImageCompression from 'browser-image-compression';
 import Card from '@/Components/AdministrationComponent/Card.vue';
 import {authService} from "@/Services/authService.js";
 import Modal from "@/Components/Modal.vue";
+import ImagePreviewModal from "@/Components/AdministrationComponent/ImagePreviewModal.vue";
 import {createDeparments, updateDepartment} from "@/Services/deparmentsService.js";
 
 const colorText = ref('#2C2D2F');
@@ -402,6 +422,8 @@ const showModal = ref(false);
 const isEditMode = ref(false);
 const fileInput = ref(null);
 const imagePreviews = ref([]);
+const imagePreviewVisible = ref(false);
+const currentImageIndex = ref(0);
 // Estado de autenticación
 const isAuthenticated = ref(false);
 
@@ -899,6 +921,56 @@ const removeImage = (index) => {
 
     // Eliminar del array de archivos del formulario
     form.value.fotos.splice(index, 1);
+};
+
+// Abrir modal de vista previa de imagen
+const openImagePreview = (index) => {
+    currentImageIndex.value = index;
+
+    // Cerrar temporalmente el modal principal para evitar conflictos de z-index
+    const originalShowModal = showModal.value;
+    showModal.value = false;
+
+    // Guardar estado original para restaurar después
+    const originalModalState = originalShowModal;
+
+    // Abrir el modal de vista previa
+    imagePreviewVisible.value = true;
+
+    // Guardar referencia para poder restaurar el modal principal
+    window._tempModalState = originalModalState;
+};
+
+// Cerrar modal de vista previa
+const closeImagePreview = () => {
+    imagePreviewVisible.value = false;
+
+    // Restaurar el modal principal si estaba abierto
+    if (window._tempModalState === true) {
+        // Pequeño delay para asegurar que el modal de vista previa se cierre completamente
+        setTimeout(() => {
+            showModal.value = true;
+            window._tempModalState = null;
+        }, 100);
+    } else {
+        window._tempModalState = null;
+    }
+};
+
+// Manejar eliminación de imagen desde el modal de vista previa
+const handleRemoveImage = (index) => {
+    // Usar la misma función que se usa para eliminar desde el formulario
+    removeImage(index);
+
+    // Si solo queda una imagen, cerrar el modal de vista previa
+    if (imagePreviews.value.length <= 1) {
+        closeImagePreview();
+    }
+
+    // Ajustar el índice actual si es necesario
+    if (currentImageIndex.value >= imagePreviews.value.length && currentImageIndex.value > 0) {
+        currentImageIndex.value = imagePreviews.value.length - 1;
+    }
 };
 
 function validateCapacity(event) {
