@@ -274,61 +274,75 @@
                     </div>
 
                     <div class="space-y-4">
-                        <!-- Sección de Imagen -->
+                        <!-- Sección de Imágenes -->
                         <div>
-                            <label class="block text-sm font-medium mb-2">Imagen del Aula</label>
+                            <label class="block text-sm font-medium mb-2">Imágenes del Aula</label>
 
-                            <!-- Input oculto para seleccionar archivo -->
+                            <!-- Input oculto para seleccionar archivos -->
                             <input
                                 ref="fileInput"
                                 type="file"
                                 @change="handleImageUpload"
                                 accept="image/*"
+                                multiple
                                 class="hidden"
                             />
 
-                            <!-- Vista previa o placeholder -->
-                            <div class="flex flex-col items-center">
-                                <!-- Cuadro de imagen -->
+                            <!-- Contenedor de imágenes -->
+                            <div class="space-y-4">
+                                <!-- Botón para agregar imágenes -->
                                 <div
                                     @click="triggerFileInput"
-                                    class="w-full h-64 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-all hover:border-blue-500 hover:bg-blue-50"
-                                    :class="imagePreview ? 'border-gray-300 bg-gray-50' : 'border-gray-300 bg-gray-100'"
+                                    class="w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-all hover:border-blue-500 hover:bg-blue-50"
+                                    :class="imagePreviews.length > 0 ? 'border-gray-300 bg-gray-50' : 'border-gray-300 bg-gray-100'"
                                 >
-                                    <!-- Sin imagen -->
-                                    <div v-if="!imagePreview" class="text-center">
-                                        <i class="fa-solid fa-image text-5xl text-gray-400 mb-3"></i>
-                                        <p class="text-gray-500 font-medium">Imagen del aula</p>
-                                        <p class="text-gray-400 text-sm mt-1">Haz clic para agregar una imagen</p>
+                                    <div class="text-center">
+                                        <i class="fa-solid fa-images text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-gray-500 font-medium">
+                                            {{ imagePreviews.length > 0 ? 'Agregar más imágenes' : 'Seleccionar imágenes del aula' }}
+                                        </p>
+                                        <p class="text-gray-400 text-sm mt-1">
+                                            {{ imagePreviews.length > 0 ? `${imagePreviews.length} imagen(es) seleccionada(s)` : 'Haz clic para seleccionar imágenes' }}
+                                        </p>
                                     </div>
-
-                                    <!-- Con imagen -->
-                                    <img
-                                        v-else
-                                        :src="imagePreview"
-                                        alt="Vista previa"
-                                        class="w-full h-full object-cover rounded-lg"
-                                    />
                                 </div>
 
-                                <!-- Botones de acción (solo se muestran si hay imagen) -->
-                                <div v-if="imagePreview" class="flex gap-3 mt-3">
-                                    <button
-                                        type="button"
-                                        @click="triggerFileInput"
-                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                <!-- Grid de previsualizaciones -->
+                                <div v-if="imagePreviews.length > 0" class="grid grid-cols-2 gap-4">
+                                    <div
+                                        v-for="(preview, index) in imagePreviews"
+                                        :key="index"
+                                        class="relative group"
                                     >
-                                        <i class="fa-solid fa-pen"></i>
-                                        Editar
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="removeImage"
-                                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                                    >
-                                        <i class="fa-solid fa-trash"></i>
-                                        Eliminar
-                                    </button>
+                                        <img
+                                            :src="preview.url"
+                                            :alt="`Vista previa ${index + 1}`"
+                                            class="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+                                        />
+                                        <!-- Botón eliminar -->
+                                        <button
+                                            type="button"
+                                            @click="removeImage(index)"
+                                            class="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
+                                            title="Eliminar imagen"
+                                        >
+                                            <i class="fa-solid fa-times text-xs"></i>
+                                        </button>
+                                        <!-- Información del archivo -->
+                                        <div class="mt-2 text-xs text-gray-600">
+                                            <p class="font-medium truncate">{{ preview.name }}</p>
+                                            <p>{{ formatFileSize(preview.size) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Información de límite -->
+                                <div class="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                                    <p><i class="fa-solid fa-info-circle mr-1"></i> Puedes seleccionar múltiples imágenes (máximo 5MB por imagen)</p>
+                                    <p v-if="imagePreviews.length > 0" class="mt-1">
+                                        <i class="fa-solid fa-check-circle mr-1 text-green-500"></i>
+                                        {{ imagePreviews.length }} imagen(es) lista(s) para subir
+                                    </p>
                                 </div>
                             </div>
 
@@ -387,7 +401,7 @@ const colorButton = ref('#d93f3f');
 const showModal = ref(false);
 const isEditMode = ref(false);
 const fileInput = ref(null);
-const imagePreview = ref(null);
+const imagePreviews = ref([]);
 // Estado de autenticación
 const isAuthenticated = ref(false);
 
@@ -403,7 +417,7 @@ const form = ref({
     capacidad_pupitres: '',
     ubicacion: '',
     estado: 'activo',
-    fotos: null,
+    fotos: [],
     videos: '',
 });
 
@@ -619,10 +633,14 @@ function openCreateModal() {
         capacidad: '',
         ubicacion: '',
         estado: 'activo',
-        imagen: null,
+        fotos: [],
         videos: '',
     }
-    imagePreview.value = null
+    // Liberar todas las URLs de objeto para evitar memory leaks
+    imagePreviews.value.forEach(preview => {
+        URL.revokeObjectURL(preview.url);
+    });
+    imagePreviews.value = []
     formErrors.value = {}
     showModal.value = true
 }
@@ -636,7 +654,11 @@ const cerrarMensaje = () => {
 
 function closeModal() {
     showModal.value = false
-    imagePreview.value = null
+    // Liberar todas las URLs de objeto para evitar memory leaks
+    imagePreviews.value.forEach(preview => {
+        URL.revokeObjectURL(preview.url);
+    });
+    imagePreviews.value = []
     formErrors.value = {}
 }
 
@@ -660,29 +682,16 @@ async function handleSubmit() {
         formData.append('estado', form.value.estado);
         formData.append('videos', form.value.videos || '');
 
-        // Depuración: Verificar que tenemos la imagen
-        console.log("=== DEPURACIÓN FORMULARIO ===");
-        console.log("form.value.fotos:", form.value.fotos);
-        console.log("Tipo de form.value.fotos:", typeof form.value.fotos);
-        console.log("¿Es File?:", form.value.fotos instanceof File);
-
-        // Agregar la imagen si existe (aceptar File o Blob)
-        if (form.value.fotos && (form.value.fotos instanceof File || form.value.fotos instanceof Blob)) {
-            formData.append('fotos', form.value.fotos);
-            console.log("✅ Imagen agregada al FormData:", form.value.fotos.name);
-            console.log("✅ Tipo de archivo:", form.value.fotos.constructor.name);
-            console.log("✅ Tamaño:", form.value.fotos.size, "bytes");
-        } else {
-            console.log("❌ No hay imagen válida para enviar");
-            console.log("form.value.fotos es:", form.value.fotos);
+        // Agregar las imágenes si existen
+        if (form.value.fotos && Array.isArray(form.value.fotos) && form.value.fotos.length > 0) {
+            form.value.fotos.forEach((file, index) => {
+                if (file instanceof File || file instanceof Blob) {
+                    formData.append('fotos[]', file);
+                }
+            });
         }
 
-        // Verificar contenido del FormData
-        console.log("=== CONTENIDO FORMDATA ===");
-        for (let pair of formData.entries()) {
-            console.log(pair[0], pair[1]);
-        }
-
+        
         const response = await axios.post(`/api/classrooms/new`, formData, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -706,10 +715,10 @@ async function handleSubmit() {
             capacidad_pupitres: '',
             ubicacion: '',
             estado: 'activo',
-            fotos: null,
+            fotos: [],
             videos: '',
         };
-        imagePreview.value = null;
+        imagePreviews.value = [];
 
     } catch (error) {
         console.error('Error completo:', error);
@@ -727,22 +736,80 @@ const triggerFileInput = () => {
     fileInput.value.click();
 };
 
-// Manejar la carga de imagen
-const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
+// Generar hash SHA-256 de un archivo para detectar duplicados
+const getFileHash = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const buffer = e.target.result;
+                const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                resolve(hashHex);
+            } catch (error) {
+                reject(error);
+            }
+        };
+        reader.onerror = () => reject(new Error('Error al leer el archivo'));
+        reader.readAsArrayBuffer(file.slice(0, 1024)); // Solo primeros 1KB para eficiencia
+    });
+};
 
-    if (file) {
+// Manejar la carga de imágenes (múltiples)
+const handleImageUpload = async (event) => {
+    const files = Array.from(event.target.files);
+
+    if (files.length === 0) return;
+
+    console.log("Procesando", files.length, "archivos seleccionados");
+
+    // Validar límite de archivos (máximo 10 para no sobrecargar el sistema)
+    if (imagePreviews.value.length + files.length > 10) {
+        formErrors.value.fotos = ['Máximo 10 imágenes permitidas'];
+        event.target.value = '';
+        return;
+    }
+
+    // Obtener hashes originales de las imágenes ya seleccionadas (almacenados en imagePreviews)
+    const existingHashes = new Set();
+
+    for (let i = 0; i < imagePreviews.value.length; i++) {
+        if (imagePreviews.value[i].hash) {
+            existingHashes.add(imagePreviews.value[i].hash);
+        }
+    }
+
+    // Validar y procesar cada archivo
+    const validFiles = [];
+    const newPreviews = [];
+    const skippedFiles = [];
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+
         // Validar tipo de archivo
         if (!file.type.startsWith('image/')) {
-            formErrors.value.fotos = ['Por favor selecciona un archivo de imagen válido'];
+            continue;
+        }
+
+        // Validar tamaño (5MB = 5 * 1024 * 1024 bytes)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            formErrors.value.fotos = [`El archivo ${file.name} excede el límite de 5MB`];
+            event.target.value = '';
             return;
         }
 
         try {
-            console.log("=== INICIO PROCESAMIENTO DE IMAGEN ===");
-            console.log("Archivo original:", file);
-            console.log("Tamaño original:", file.size, "bytes");
-            console.log("Tipo original:", file.type);
+            // Generar hash del archivo actual (antes de compresión)
+            const currentHash = await getFileHash(file);
+
+            // Verificar si ya existe (duplicado) - comparar con hash original
+            if (existingHashes.has(currentHash)) {
+                skippedFiles.push(file.name);
+                continue;
+            }
 
             // Comprimir la imagen
             const options = {
@@ -751,66 +818,87 @@ const handleImageUpload = async (event) => {
                 useWebWorker: true
             };
 
-            console.log("Opciones de compresión:", options);
             const compressedFile = await browserImageCompression(file, options);
 
-            console.log("Archivo comprimido:", compressedFile);
-            console.log("Tamaño comprimido:", compressedFile.size, "bytes");
-            console.log("Tipo comprimido:", compressedFile.type);
-            console.log("¿Es File después de compresión?:", compressedFile instanceof File);
-
-            // Asignar al formulario
-            form.value.fotos = compressedFile;
-            console.log("✅ form.value.fotos asignado:", form.value.fotos);
+            // Agregar el hash del archivo original a los existentes
+            existingHashes.add(currentHash);
 
             // Crear vista previa
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                imagePreview.value = e.target.result;
-                console.log("✅ Vista previa generada");
-            };
-            reader.readAsDataURL(compressedFile);
+            const preview = URL.createObjectURL(compressedFile);
 
-            // Limpiar error si existía
-            if (formErrors.value.fotos) {
-                delete formErrors.value.fotos;
-            }
+            validFiles.push(compressedFile);
+            newPreviews.push({
+                url: preview,
+                name: compressedFile.name,
+                size: compressedFile.size,
+                file: compressedFile,
+                hash: currentHash // Guardar hash del archivo original
+            });
+
         } catch (error) {
-            console.error('❌ Error al comprimir la imagen:', error);
-            console.error('Error details:', error.message);
-            console.error('Error stack:', error.stack);
-
             // Si hay error de compresión, usar el archivo original
-            if (file && file.type.startsWith('image/')) {
-                console.log("⚠️ Usando archivo original como fallback");
-                form.value.fotos = file;
+            if (file.type.startsWith('image/')) {
+                try {
+                    const preview = URL.createObjectURL(file);
+                    const originalHash = await getFileHash(file);
+                    existingHashes.add(originalHash);
 
-                // Crear vista previa con el archivo original
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    imagePreview.value = e.target.result;
-                    console.log("✅ Vista previa generada con archivo original");
-                };
-                reader.readAsDataURL(file);
-
-                // Limpiar error si existía
-                if (formErrors.value.fotos) {
-                    delete formErrors.value.fotos;
+                    validFiles.push(file);
+                    newPreviews.push({
+                        url: preview,
+                        name: file.name,
+                        size: file.size,
+                        file: file,
+                        hash: originalHash // Guardar hash del archivo original
+                    });
+                } catch (fallbackError) {
+                    console.error(`Error crítico con archivo ${file.name}:`, fallbackError);
                 }
-            } else {
-                formErrors.value.fotos = ['Error al procesar la imagen: ' + error.message];
             }
         }
     }
+
+    // Agregar archivos válidos al formulario
+    if (validFiles.length > 0) {
+        form.value.fotos = [...form.value.fotos, ...validFiles];
+        imagePreviews.value = [...imagePreviews.value, ...newPreviews];
+    }
+
+    // Mostrar mensaje de archivos omitidos si existen
+    if (skippedFiles.length > 0) {
+        console.log(`${skippedFiles.length} imágenes duplicadas omitidas:`, skippedFiles);
+    }
+
+    // Limpiar errores si existían
+    if (formErrors.value.fotos) {
+        delete formErrors.value.fotos;
+    }
+
+    // Limpiar el input para permitir seleccionar los mismos archivos si es necesario
+    event.target.value = '';
 };
 
-// Eliminar imagen
-const removeImage = () => {
-    imagePreview.value = null;
-    form.value.fotos = null;
-    if (fileInput.value) {
-        fileInput.value.value = '';
-    }
+// Formatear tamaño de archivo
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Eliminar imagen específica
+const removeImage = (index) => {
+    // Liberar la URL del objeto para evitar memory leaks
+    URL.revokeObjectURL(imagePreviews.value[index].url);
+
+    // Eliminar del array de previews
+    imagePreviews.value.splice(index, 1);
+
+    // Eliminar del array de archivos del formulario
+    form.value.fotos.splice(index, 1);
 };
 
 function validateCapacity(event) {
