@@ -138,12 +138,12 @@
                     <p class="text-gray-500 text-sm max-w-md mx-auto px-4">
                         <span v-if="filtros.busqueda">No hay aulas que coincidan con <strong>"{{ filtros.busqueda }}"</strong></span>
                         <span v-if="filtros.capacidad_pupitres !== 'all'">
-                            {{ filtros.busqueda ? '<br>' : '' }}
+                            <br v-if="filtros.busqueda" />
                             Con capacidad: {{ filtros.capacidad_pupitres === 'small' ? 'Pequeña (≤30 personas)' :
                                             filtros.capacidad_pupitres === 'medium' ? 'Mediana (31-100 personas)' : 'Grande (>100 personas)' }}
                         </span>
                         <span v-if="filtros.estado !== 'all'">
-                            {{ (filtros.busqueda || filtros.capacidad_pupitres !== 'all') ? '<br>' : '' }}
+                            <br v-if="filtros.busqueda || filtros.capacidad_pupitres !== 'all'" />
                             Estado: <strong>{{ filtros.estado }}</strong>
                         </span>
                     </p>
@@ -289,20 +289,31 @@
                             />
 
                             <!-- Contenedor de imágenes -->
-                            <div class="space-y-4">
+                            <div
+                                class="space-y-4"
+                                @dragover.prevent="handleDragOver"
+                                @dragleave.prevent="handleDragLeave"
+                                @drop.prevent="handleDrop"
+                            >
                                 <!-- Botón para agregar imágenes -->
                                 <div
                                     @click="triggerFileInput"
-                                    class="w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-all hover:border-blue-500 hover:bg-blue-50"
-                                    :class="imagePreviews.length > 0 ? 'border-gray-300 bg-gray-50' : 'border-gray-300 bg-gray-100'"
+                                    class="w-full h-32 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-all"
+                                    :class="[
+                                        imagePreviews.length > 0 ? 'border-gray-300 bg-gray-50' : 'border-gray-300 bg-gray-100',
+                                        isDragging ? 'border-blue-500 bg-blue-50 border-4' : 'hover:border-blue-500 hover:bg-blue-50'
+                                    ]"
                                 >
                                     <div class="text-center">
-                                        <i class="fa-solid fa-images text-4xl text-gray-400 mb-2"></i>
+                                        <i
+                                            class="text-4xl mb-2 transition-colors"
+                                            :class="isDragging ? 'fa-solid fa-cloud-arrow-down text-blue-500' : 'fa-solid fa-images text-gray-400'"
+                                        ></i>
                                         <p class="text-gray-500 font-medium">
-                                            {{ imagePreviews.length > 0 ? 'Agregar más imágenes' : 'Seleccionar imágenes del aula' }}
+                                            {{ isDragging ? 'Suelta las imágenes aquí' : (imagePreviews.length > 0 ? 'Agregar más imágenes' : 'Seleccionar imágenes del aula') }}
                                         </p>
                                         <p class="text-gray-400 text-sm mt-1">
-                                            {{ imagePreviews.length > 0 ? `${imagePreviews.length} imagen(es) seleccionada(s)` : 'Haz clic para seleccionar imágenes' }}
+                                            {{ isDragging ? 'Arrastra y suelta para agregar' : (imagePreviews.length > 0 ? `${imagePreviews.length} imagen(es) seleccionada(s)` : 'Haz clic o arrastra imágenes aquí') }}
                                         </p>
                                     </div>
                                 </div>
@@ -424,6 +435,7 @@ const fileInput = ref(null);
 const imagePreviews = ref([]);
 const imagePreviewVisible = ref(false);
 const currentImageIndex = ref(0);
+const isDragging = ref(false);
 // Estado de autenticación
 const isAuthenticated = ref(false);
 
@@ -713,7 +725,7 @@ async function handleSubmit() {
             });
         }
 
-        
+
         const response = await axios.post(`/api/classrooms/new`, formData, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -898,6 +910,129 @@ const handleImageUpload = async (event) => {
 
     // Limpiar el input para permitir seleccionar los mismos archivos si es necesario
     event.target.value = '';
+};
+
+// Funciones de Drag & Drop
+const handleDragOver = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    isDragging.value = true;
+};
+
+const handleDragLeave = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Verificar si el drag está dejando el área específica
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX;
+    const y = event.clientY;
+
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+        isDragging.value = false;
+    }
+};
+
+const handleDrop = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    isDragging.value = false;
+
+    const files = Array.from(event.dataTransfer.files);
+
+    // Filtrar solo imágenes
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+
+    if (imageFiles.length === 0) {
+        formErrors.value.fotos = ['Por favor, arrastra solo archivos de imagen'];
+        return;
+    }
+
+    // Usar la misma lógica que handleImageUpload
+    await processImages(imageFiles);
+};
+
+// Función para procesar imágenes (usada por handleImageUpload y handleDrop)
+const processImages = async (files) => {
+    // Crear un Set con todos los hashes existentes para verificación rápida
+    const existingHashes = new Set();
+    for (let i = 0; i < imagePreviews.value.length; i++) {
+        if (imagePreviews.value[i].hash) {
+            existingHashes.add(imagePreviews.value[i].hash);
+        }
+    }
+
+    // Validar y procesar cada archivo
+    const validFiles = [];
+    const newPreviews = [];
+    const skippedFiles = [];
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+
+        // Validar tipo de archivo
+        if (!file.type.startsWith('image/')) {
+            continue;
+        }
+
+        // Validar tamaño (5MB = 5 * 1024 * 1024 bytes)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            formErrors.value.fotos = [`El archivo ${file.name} excede el límite de 5MB`];
+            return;
+        }
+
+        try {
+            // Generar hash del archivo actual (antes de compresión)
+            const currentHash = await getFileHash(file);
+
+            // Verificar si ya existe (duplicado) - comparar con hash original
+            if (existingHashes.has(currentHash)) {
+                skippedFiles.push(file.name);
+                continue;
+            }
+
+            // Comprimir la imagen
+            const options = {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 800,
+                useWebWorker: true
+            };
+
+            const compressedFile = await browserImageCompression(file, options);
+
+            // Agregar el hash del archivo original a los existentes
+            existingHashes.add(currentHash);
+
+            validFiles.push(compressedFile);
+            newPreviews.push({
+                url: URL.createObjectURL(compressedFile),
+                name: file.name,
+                size: compressedFile.size,
+                file: compressedFile,
+                hash: currentHash
+            });
+
+        } catch (error) {
+            console.error(`Error procesando archivo ${file.name}:`, error);
+        }
+    }
+
+    // Agregar todas las vistas previas nuevas
+    imagePreviews.value = [...imagePreviews.value, ...newPreviews];
+
+    // Actualizar el formulario para incluir todos los archivos (original y nuevos)
+    form.value.fotos = [...form.value.fotos, ...validFiles];
+
+    // Mostrar mensaje de archivos omitidos si existen
+    if (skippedFiles.length > 0) {
+        console.log(`${skippedFiles.length} imágenes duplicadas omitidas:`, skippedFiles);
+    }
+
+    // Limpiar errores si existían
+    if (formErrors.value.fotos) {
+        delete formErrors.value.fotos;
+    }
 };
 
 // Formatear tamaño de archivo
