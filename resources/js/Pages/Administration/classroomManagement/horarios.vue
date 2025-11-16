@@ -49,7 +49,7 @@
 							class="text-white px-4 py-3 sm:px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px]"
 							:style="{background: '#ff9966'}"
 						>
-							<i class="fa-solid fa-plus text-sm sm:text-xl"></i>
+							<i class="fa-solid fa-plus hidden sm:inline text-sm sm:text-xl"></i>
 							<span class="hidden sm:inline">Nuevo</span>
 							<span class="sm:hidden">+</span>
 						</button>
@@ -117,26 +117,26 @@
 					</div>
 
 					<!-- Paginación fija (fuera del scroll) -->
-					<div class="bg-gray-50 p-4 border-t border-gray-200">
-						<div class="flex justify-center items-center space-x-2">
+					<div class="bg-gray-50 p-2 sm:p-4 border-t border-gray-200">
+						<div class="flex justify-center items-center space-x-1 sm:space-x-2 overflow-x-auto pb-1">
 							<button
 								@click="prevPage"
 								:disabled="currentPage === 1"
-								class="p-2 border rounded-lg transition-colors"
+								class="p-1 sm:p-2 border rounded transition-colors min-w-[32px] sm:min-w-[44px] text-xs sm:text-sm"
 								:class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }">
-								<i class="fas fa-chevron-left"></i>
+								<i class="fas fa-chevron-left text-xs sm:text-sm"></i>
 							</button>
 
 							<!-- Botones de paginación inteligente -->
 							<template v-for="(page, index) in visiblePages" :key="index">
 								<!-- Puntos suspensivos -->
-								<span v-if="page === '...'" class="px-2 text-gray-500">...</span>
+								<span v-if="page === '...'" class="px-1 sm:px-2 text-gray-500 text-xs sm:text-sm flex items-center">...</span>
 
 								<!-- Botón de página -->
 								<button
 									v-else
 									@click="goToPage(page)"
-									class="px-4 py-2 border rounded-lg font-bold transition-colors"
+									class="px-2 py-1 sm:px-3 sm:py-2 border rounded font-bold transition-colors min-w-[32px] sm:min-w-[44px] text-xs sm:text-sm"
 									:class="[
 										page===currentPage
 											? 'text-white'
@@ -150,9 +150,9 @@
 							<button
 								@click="nextPage"
 								:disabled="currentPage === totalPages"
-								class="p-2 border rounded-lg transition-colors"
+								class="p-1 sm:p-2 border rounded transition-colors min-w-[32px] sm:min-w-[44px] text-xs sm:text-sm"
 								:class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }">
-								<i class="fas fa-chevron-right"></i>
+								<i class="fas fa-chevron-right text-xs sm:text-sm"></i>
 							</button>
 						</div>
 					</div>
@@ -542,20 +542,20 @@ const visiblePages = computed(() => {
 	const current = currentPage.value;
 	const pages = [];
 
-	// Si hay pocas páginas (7 o menos), mostrar todas
-	if (total <= 7) {
+	// Si hay pocas páginas (5 o menos), mostrar todas
+	if (total <= 5) {
 		for (let i = 1; i <= total; i++) {
 			pages.push(i);
 		}
 		return pages;
 	}
 
-	// Lógica para muchas páginas
+	// Lógica para muchas páginas - mostrar máximo 5 botones
 	pages.push(1); // Siempre mostrar la primera página
 
-	// Páginas alrededor de la actual
-	const startPage = Math.max(2, current - 2);
-	const endPage = Math.min(total - 1, current + 2);
+	// Páginas alrededor de la actual (solo 1 a cada lado)
+	const startPage = Math.max(2, current - 1);
+	const endPage = Math.min(total - 1, current + 1);
 
 	// Si no estamos cerca del inicio, agregar puntos suspensivos
 	if (startPage > 2) {

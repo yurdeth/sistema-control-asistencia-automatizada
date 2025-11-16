@@ -115,24 +115,26 @@
 
                     <div class="flex items-center gap-2 sm:gap-4" v-if="user && user.nombre_completo">
                         <!-- Notificaciones -->
-                        <Link
-                        href="#"
-                        class="sidebar-link flex items-center gap-2 p-3 rounded-lg transition-colors duration-300
-                                hover:text-white shadow-lg hover:shadow-md relative min-w-[44px] min-h-[44px]"
-                        :style="{ color: colorText }"
-                        >
-                            <i class="fa-solid fa-bell text-base sm:text-lg"></i>
-                            <span class="hidden sm:inline">Notificaciones</span>
+                        <div class="relative">
+                            <Link
+                            href="#"
+                            class="sidebar-link flex items-center gap-2 p-3 rounded-lg transition-colors duration-300
+                                    hover:text-white shadow-lg hover:shadow-md min-w-[44px] min-h-[44px]"
+                            :style="{ color: colorText }"
+                            >
+                                <i class="fa-solid fa-bell text-base sm:text-lg relative"></i>
+                                <span class="hidden sm:inline">Notificaciones</span>
+                            </Link>
                             <!-- Badge de notificación -->
                             <span
                                 v-if="notificationCount > 0"
-                                class="absolute -top-1 -right-1 sm:left-6 sm:left-8 text-white text-xs font-bold px-2 py-0.5 rounded-full
+                                class="absolute -top-1 -right-1 sm:top-2 sm:right-8 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full
                                     transform hover:-translate-y-0.5 transition-all duration-200 shadow-md"
                                 :style="{background:'#eb6238'}"
                             >
                                 {{ notificationCount }}
                             </span>
-                        </Link>
+                        </div>
 
 
                         <!-- Custom Dropdown -->
@@ -147,8 +149,7 @@
                                     <path
                                         fill-rule="evenodd"
                                         d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                        clip-rule="evenodd"
-                                    />
+                                        clip-rule="evenodd"                                    />
                                 </svg>
                             </button>
 
