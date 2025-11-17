@@ -139,14 +139,28 @@
                                     hover:text-white shadow-lg hover:shadow-md min-w-[44px] min-h-[44px]"
                             :style="{ color: colorText }"
                             >
-                                <i class="fa-solid fa-bell text-base sm:text-lg relative"></i>
+                                <!-- Icono con posición relativa para el badge en móvil -->
+                                <div class="relative">
+                                    <i class="fa-solid fa-bell text-base sm:text-lg"></i>
+                                    <!-- Badge para móvil -->
+                                    <span
+                                        v-if="notificationCount > 0"
+                                        class="absolute -top-1 -right-1 text-white text-xs font-bold flex items-center justify-center rounded-full
+                                            transform hover:-translate-y-0.5 transition-all duration-200 shadow-md sm:hidden
+                                            min-w-[16px] min-h-[16px] px-1"
+                                        :style="{background:'#eb6238'}"
+                                    >
+                                        {{ notificationCount }}
+                                    </span>
+                                </div>
                                 <span class="hidden sm:inline">Notificaciones</span>
                             </Link>
-                            <!-- Badge de notificación -->
+                            <!-- Badge para escritorio -->
                             <span
                                 v-if="notificationCount > 0"
-                                class="absolute -top-1 -right-1 sm:top-2 sm:right-8 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full
-                                    transform hover:-translate-y-0.5 transition-all duration-200 shadow-md"
+                                class="hidden sm:inline absolute top-2 right-0 text-white text-xs font-bold flex items-center justify-center rounded-full
+                                    transform hover:-translate-y-0.5 transition-all duration-200 shadow-md
+                                    min-w-[20px] min-h-[20px] px-1"
                                 :style="{background:'#eb6238'}"
                             >
                                 {{ notificationCount }}
