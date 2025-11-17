@@ -18,38 +18,55 @@
             </div>
 
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <input
-                        v-model="searchTerm"
-                        type="text"
-                        placeholder="Buscar por código o nombre"
-                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <select
-                        v-model="filterCarrera"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
-                    >
-                        <option value="">Todas las carreras</option>
-                        <option v-for="carrera in carreras" :key="carrera.id" :value="carrera.id">
-                            {{ carrera.nombre }}
-                        </option>
-                    </select>
-                    <select
-                        v-model="filterEstado"
-                        class="px-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                        <option value="">Todos los estados</option>
-                        <option value="activa">Activas</option>
-                        <option value="inactiva">Inactivas</option>
-                    </select>
-                    <button
-                        @click="openCreateModal"
-                        class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#D93F3F'}"
-                    >
-                        <span class="text-xl">+</span>
-                        Agregar Materia
-                    </button>
+                <div class="flex flex-col lg:flex-row gap-4">
+                    <div class="flex flex-col sm:flex-row gap-4 flex-1">
+                        <input
+                            v-model="searchTerm"
+                            type="text"
+                            placeholder="Buscar por código o nombre"
+                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <select
+                            v-model="filterCarrera"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
+                        >
+                            <option value="">Todas las carreras</option>
+                            <option v-for="carrera in carreras" :key="carrera.id" :value="carrera.id">
+                                {{ carrera.nombre }}
+                            </option>
+                        </select>
+                        <select
+                            v-model="filterEstado"
+                            class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="">Todos los estados</option>
+                            <option value="activa">Activas</option>
+                            <option value="inactiva">Inactivas</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-4 items-center">
+                        <!-- Selector de registros por página -->
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-600 whitespace-nowrap">Mostrar:</label>
+                            <select
+                                v-model="perPage"
+                                class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
+                            >
+                                <option v-for="option in perPageOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </option>
+                            </select>
+                            <span class="text-sm text-gray-600 whitespace-nowrap">registros</span>
+                        </div>
+                        <button
+                            @click="openCreateModal"
+                            class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                            :style="{background: '#D93F3F'}"
+                        >
+                            <span class="text-xl">+</span>
+                            Agregar Materia
+                        </button>
+                    </div>
                 </div>
                 <br>
 
@@ -65,6 +82,21 @@
                 <br>
 
                 <div v-if="!loading && materiasFiltradas.length" class="bg-white rounded-lg overflow-hidden">
+                    <!-- Información de paginación -->
+                    <div v-if="paginationData" class="px-6 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                        <div class="text-sm text-gray-600">
+                            <span v-if="paginationData.from && paginationData.to">
+                                Mostrando {{ paginationData.from }} al {{ paginationData.to }}
+                                de {{ paginationData.total }} registros
+                            </span>
+                            <span v-else>
+                                No hay registros que mostrar
+                            </span>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            Página {{ paginationData.current_page }} de {{ paginationData.last_page }}
+                        </div>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full" :style="{ border: '1px solid #d93f3f' }">
                             <thead class="bg-gray-50 border-b-2 border-gray-200 text-center" :style="{background: '#d93f3f', height: '40px'}">
@@ -114,29 +146,78 @@
                             </tbody>
                         </table>
 
-                        <div class="flex justify-center items-center space-x-2 p-4 border-t border-gray-200">
-                            <button
-                                @click="prevPage"
-                                :disabled="currentPage === 1"
-                                class="p-2 border rounded-lg transition-colors"
-                                :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
+                        <!-- Controles de paginación mejorados -->
+                        <div v-if="paginationData && paginationData.last_page > 1" class="px-6 py-4 border-t border-gray-200">
+                            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                                <!-- Información de paginación -->
+                                <div class="text-sm text-gray-600">
+                                    <span v-if="paginationData.total > 0">
+                                        Página {{ paginationData.current_page }} de {{ paginationData.last_page }}
+                                        ({{ paginationData.total }} registros en total)
+                                    </span>
+                                </div>
 
-                            <button
-                                @click="goToPage(currentPage)"
-                                class="px-4 py-2 border rounded-lg font-bold text-white transition-colors"
-                                :style="{ background: '#d93f3f' }">
-                                {{ currentPage }}
-                            </button>
+                                <!-- Controles de navegación -->
+                                <div class="flex items-center space-x-1">
+                                    <!-- Botón Primera página -->
+                                    <button
+                                        @click="goToPage(1)"
+                                        :disabled="currentPage === 1"
+                                        class="p-2 border rounded-lg transition-colors text-xs"
+                                        :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }"
+                                        title="Primera página">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </button>
 
-                            <button
-                                @click="nextPage"
-                                :disabled="currentPage === totalPages"
-                                class="p-2 border rounded-lg transition-colors"
-                                :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
+                                    <!-- Botón Anterior -->
+                                    <button
+                                        @click="prevPage"
+                                        :disabled="currentPage === 1"
+                                        class="p-2 border rounded-lg transition-colors"
+                                        :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }"
+                                        title="Página anterior">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+
+                                    <!-- Números de página (limitado a mostrar) -->
+                                    <div class="flex items-center space-x-1">
+                                        <!-- Lógica para mostrar páginas alrededor de la actual -->
+                                        <template v-for="page in getVisiblePages()" :key="page">
+                                            <span v-if="page === '...'" class="px-2 py-1 text-gray-500">...</span>
+                                            <button
+                                                v-else
+                                                @click="goToPage(page)"
+                                                class="px-3 py-1 border rounded-lg transition-colors text-sm"
+                                                :class="{
+                                                    'bg-blue-600 text-white': page === currentPage,
+                                                    'hover:bg-gray-100': page !== currentPage
+                                                }">
+                                                {{ page }}
+                                            </button>
+                                        </template>
+                                    </div>
+
+                                    <!-- Botón Siguiente -->
+                                    <button
+                                        @click="nextPage"
+                                        :disabled="currentPage === totalPages"
+                                        class="p-2 border rounded-lg transition-colors"
+                                        :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }"
+                                        title="Página siguiente">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+
+                                    <!-- Botón Última página -->
+                                    <button
+                                        @click="goToPage(totalPages)"
+                                        :disabled="currentPage === totalPages"
+                                        class="p-2 border rounded-lg transition-colors text-xs"
+                                        :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }"
+                                        title="Última página">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -299,9 +380,11 @@ const allMaterias = ref([]);
 const carreras = ref([]);
 const isAuthenticated = localStorage.getItem('isAuthenticated');
 
-// Paginación
+// Paginación server-side
 const currentPage = ref(1);
-const perPage = ref(10);
+const perPage = ref(15); // Default a 15 registros por página
+const perPageOptions = ref([10, 15, 25, 50, 100]);
+const paginationData = ref(null);
 
 // Configuración de axios
 const API_URL = '/api';
@@ -329,48 +412,36 @@ const formData = ref({
     estado: 'activa',
 });
 
-// Filtrado
+// Los datos ya vienen filtrados y paginados del servidor
 const materiasFiltradas = computed(() => {
-    const data = Array.isArray(allMaterias.value) ? allMaterias.value : [];
-    let filtered = data;
-
-    // Filtrar por término de búsqueda
-    if (searchTerm.value) {
-        const term = searchTerm.value.toLowerCase();
-        filtered = filtered.filter(materia =>
-            materia.codigo.toLowerCase().includes(term) ||
-            materia.nombre.toLowerCase().includes(term)
-        );
-    }
-
-    // Filtrar por carrera
-    if (filterCarrera.value) {
-        filtered = filtered.filter(materia => materia.carrera_id == filterCarrera.value);
-    }
-
-    // Filtrar por estado
-    if (filterEstado.value) {
-        filtered = filtered.filter(materia => materia.estado === filterEstado.value);
-    }
-
-    return filtered;
+    return Array.isArray(allMaterias.value) ? allMaterias.value : [];
 });
 
-// Paginación
+// Paginación server-side (datos vienen del backend)
 const totalPages = computed(() => {
-    return Math.ceil(materiasFiltradas.value.length / perPage.value);
+    return paginationData.value ? paginationData.value.last_page : 1;
 });
 
 const paginatedMaterias = computed(() => {
-    const start = (currentPage.value - 1) * perPage.value;
-    const end = start + perPage.value;
-    return materiasFiltradas.value.slice(start, end);
+    return materiasFiltradas.value; // Ya viene paginado del backend
 });
 
-// Observa los cambios en filtros
+// Observa los cambios en filtros (resetea página y carga datos)
 watch([searchTerm, filterEstado, filterCarrera], () => {
-    currentPage.value = 1;
-});
+    currentPage.value = 1; // Resetear a página 1 cuando cambian filtros
+    fetchMaterias(); // Cargar datos del servidor
+}, { deep: false });
+
+// Observa cambios de tamaño de página (resetea a página 1)
+watch(perPage, () => {
+    currentPage.value = 1; // Resetear a página 1 cuando cambia tamaño de página
+    fetchMaterias(); // Cargar datos del servidor
+}, { deep: false });
+
+// Observa cambios de página actual (solo carga datos)
+watch(currentPage, () => {
+    fetchMaterias(); // Cargar datos del servidor
+}, { deep: false });
 
 // Funciones del Modal
 const resetForm = () => {
@@ -524,41 +595,142 @@ const goToPage = (page) => {
     }
 };
 
-// Cargar datos
+// Función para calcular qué páginas mostrar en la paginación
+const getVisiblePages = () => {
+    if (!paginationData.value) return [];
+
+    const current = paginationData.value.current_page;
+    const last = paginationData.value.last_page;
+    const delta = 2; // Cuántas páginas mostrar antes y después de la actual
+
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    // Si hay pocas páginas, mostrar todas
+    if (last <= 7) {
+        for (let i = 1; i <= last; i++) {
+            range.push(i);
+        }
+        return range;
+    }
+
+    // Agregar primera página
+    range.push(1);
+
+    // Calcular rango alrededor de la página actual
+    for (let i = Math.max(2, current - delta); i <= Math.min(last - 1, current + delta); i++) {
+        range.push(i);
+    }
+
+    // Agregar última página
+    range.push(last);
+
+    // Eliminar duplicados y ordenar
+    const uniqueRange = [...new Set(range)].sort((a, b) => a - b);
+
+    // Agregar puntos suspensivos donde haya saltos
+    for (let i = 0; i < uniqueRange.length; i++) {
+        if (l) {
+            if (uniqueRange[i] - l === 2) {
+                rangeWithDots.push(l + 1);
+            } else if (uniqueRange[i] - l !== 1) {
+                rangeWithDots.push('...');
+            }
+        }
+        rangeWithDots.push(uniqueRange[i]);
+        l = uniqueRange[i];
+    }
+
+    return rangeWithDots;
+};
+
+// Cargar datos con paginación y filtros del servidor
 async function fetchMaterias() {
     loading.value = true;
     error.value = null;
 
     try {
-        const res = await axios.get(`${API_URL}/subjects/get/all`, getAuthHeaders());
+        // Construir parámetros de consulta
+        const params = new URLSearchParams({
+            page: currentPage.value.toString(),
+            per_page: perPage.value.toString(),
+        });
 
-        const payload = res.data?.data;
-        const raw = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
+        // Agregar filtros si tienen valores
+        if (searchTerm.value.trim()) {
+            params.append('search', searchTerm.value.trim());
+        }
+        if (filterCarrera.value) {
+            params.append('carrera_id', filterCarrera.value);
+        }
+        if (filterEstado.value) {
+            params.append('estado', filterEstado.value);
+        }
 
-        allMaterias.value = raw.map(materia => ({
-            id: materia.id ?? 'N/A',
-            codigo: materia.codigo ?? 'N/A',
-            nombre: materia.nombre ?? 'Sin nombre',
-            descripcion: materia.descripcion ?? 'Sin descripción',
-            carrera_id: materia.carrera_id ?? null,
-            carrera_nombre: materia.carrera?.nombre || carrerasMap.value[materia.carrera_id] || 'N/A',
-            estado: materia.estado ?? 'activa',
-        }));
+        const res = await axios.get(`${API_URL}/subjects/get/all?${params.toString()}`, getAuthHeaders());
 
-        error.value = null;
+        if (res.data.success) {
+            const payload = res.data?.data;
+            const raw = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
+
+            allMaterias.value = raw.map(materia => ({
+                id: materia.id ?? 'N/A',
+                codigo: materia.codigo ?? 'N/A',
+                nombre: materia.nombre ?? 'Sin nombre',
+                descripcion: materia.descripcion ?? 'Sin descripción',
+                carrera_id: materia.carrera_id ?? null,
+                carrera_nombre: materia.carrera?.nombre || carrerasMap.value[materia.carrera_id] || 'N/A',
+                estado: materia.estado ?? 'activa',
+            }));
+
+            // Guardar metadata de paginación
+            paginationData.value = res.data?.pagination || {
+                current_page: 1,
+                last_page: 1,
+                per_page: perPage.value,
+                total: 0,
+                from: null,
+                to: null
+            };
+
+            error.value = null;
+        } else {
+            // Manejar caso cuando no hay resultados con los filtros actuales
+            allMaterias.value = [];
+            paginationData.value = {
+                current_page: 1,
+                last_page: 1,
+                per_page: perPage.value,
+                total: 0,
+                from: null,
+                to: null
+            };
+            error.value = null; // No es error, solo no hay resultados
+        }
 
     } catch (err) {
         const status = err.response?.status;
 
         if (status === 404) {
             allMaterias.value = [];
-            error.value = null;
+            paginationData.value = {
+                current_page: 1,
+                last_page: 1,
+                per_page: perPage.value,
+                total: 0,
+                from: null,
+                to: null
+            };
+            error.value = null; // No hay resultados, no es error
         } else if (status === 401 || status === 403) {
             error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
             allMaterias.value = [];
+            paginationData.value = null;
         } else {
             error.value = err.response?.data?.message || 'Error al cargar las materias';
             allMaterias.value = [];
+            paginationData.value = null;
         }
     } finally {
         loading.value = false;
