@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class MateriasController extends Controller {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource with pagination and filtering.
      */
-    public function index(): JsonResponse {
+    public function index(Request $request): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -24,21 +24,110 @@ class MateriasController extends Controller {
         }
 
         try {
-            $materias = Cache::remember('materias_all', 5, function () {
-                return materias::limit(50)->get();
+            // Obtener parámetros de paginación y filtros
+            $page = max(1, (int)$request->get('page', 1));
+            $perPageOptions = [10, 15, 25, 50, 100];
+            $perPage = in_array($request->get('per_page', 15), $perPageOptions)
+                ? $request->get('per_page', 15)
+                : 15;
+
+            $search = $this->sanitizeInput($request->get('search', ''));
+            $carreraId = $request->get('carrera_id', '');
+            $estado = $this->sanitizeInput($request->get('estado', ''));
+
+            // Crear clave de cache única para esta combinación de parámetros
+            $cacheKey = "materias_page_{$page}_per_{$perPage}_search_{$search}_career_{$carreraId}_status_{$estado}";
+
+            $materias = Cache::remember($cacheKey, 5, function () use ($page, $perPage, $search, $carreraId, $estado) {
+                $query = materias::with(['carrera' => function($query) {
+                    $query->select('id', 'nombre');
+                }]);
+
+                // Aplicar filtros
+                if (!empty($search)) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('codigo', 'LIKE', "%{$search}%")
+                          ->orWhere('nombre', 'LIKE', "%{$search}%");
+                    });
+                }
+
+                if (!empty($carreraId)) {
+                    $query->where('carrera_id', $carreraId);
+                }
+
+                if (!empty($estado)) {
+                    $query->where('estado', $estado);
+                }
+
+                // Ordenar por nombre para consistencia
+                $query->orderBy('nombre', 'asc');
+
+                // Aplicar paginación
+                return $query->paginate($perPage, ['*'], 'page', $page);
             });
+
+            // Verificar si la página solicitada existe
+            if ($page > $materias->lastPage() && $materias->lastPage() > 0) {
+                // Si la página solicitada no existe, devolver la primera página
+                $page = 1;
+                $cacheKey = "materias_page_{$page}_per_{$perPage}_search_{$search}_career_{$carreraId}_status_{$estado}";
+
+                $materias = Cache::remember($cacheKey, 5, function () use ($page, $perPage, $search, $carreraId, $estado) {
+                    $query = materias::with(['carrera' => function($query) {
+                        $query->select('id', 'nombre');
+                    }]);
+
+                    // Aplicar filtros
+                    if (!empty($search)) {
+                        $query->where(function($q) use ($search) {
+                            $q->where('codigo', 'LIKE', "%{$search}%")
+                              ->orWhere('nombre', 'LIKE', "%{$search}%");
+                        });
+                    }
+
+                    if (!empty($carreraId)) {
+                        $query->where('carrera_id', $carreraId);
+                    }
+
+                    if (!empty($estado)) {
+                        $query->where('estado', $estado);
+                    }
+
+                    // Ordenar por nombre para consistencia
+                    $query->orderBy('nombre', 'asc');
+
+                    // Aplicar paginación
+                    return $query->paginate($perPage, ['*'], 'page', $page);
+                });
+            }
 
             if ($materias->isEmpty()) {
                 return response()->json([
-                    'message' => 'No se encontraron materias',
-                    'success' => false
+                    'message' => 'No se encontraron materias con los criterios especificados',
+                    'success' => false,
+                    'pagination' => [
+                        'current_page' => 1,
+                        'last_page' => 1,
+                        'per_page' => $perPage,
+                        'total' => 0,
+                        'from' => null,
+                        'to' => null
+                    ]
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Materias encontradas',
+                'message' => 'Materias obtenidas exitosamente',
                 'success' => true,
-                'data' => $materias
+                'data' => $materias->items(),
+                'pagination' => [
+                    'current_page' => $materias->currentPage(),
+                    'last_page' => $materias->lastPage(),
+                    'per_page' => $materias->perPage(),
+                    'total' => $materias->total(),
+                    'from' => $materias->firstItem(),
+                    'to' => $materias->lastItem()
+                ]
             ]);
         } catch (Exception $e) {
             return response()->json([
