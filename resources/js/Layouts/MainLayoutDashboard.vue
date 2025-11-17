@@ -42,16 +42,24 @@
             >
                 <Link
                 href="/dashboard"
-                class="sidebar-link p-2 rounded flex items-center gap-2"
-                :style="{ color: colorText }">
+                class="sidebar-link p-2 rounded flex items-center gap-2 transition-all duration-200"
+                :class="{ 'bg-white/10 font-semibold': isActive('/dashboard') }"
+                :style="{
+                    color: colorText,
+                    borderLeft: isActive('/dashboard') ? '3px solid #ffffff' : 'none'
+                }">
                     <i class="fa-solid fa-grip"></i>
                     Dashboard
                 </Link>
 
                 <Link
                 href="/departamentos"
-                class="sidebar-link p-2 rounded flex items-center gap-2"
-                :style="{ color: colorText }">
+                class="sidebar-link p-2 rounded flex items-center gap-2 transition-all duration-200"
+                :class="{ 'bg-white/10 font-semibold': isActive('/departamentos') }"
+                :style="{
+                    color: colorText,
+                    borderLeft: isActive('/departamentos') ? '3px solid #ffffff' : 'none'
+                }">
                     <i class="fa-solid fa-list"></i>
                     Departamentos
                 </Link>
@@ -60,8 +68,12 @@
             <div v-for="(menu, index) in menus" :key="index">
                 <button
                     @click="toggleMenu(menu.key)"
-                    class="sidebar-link p-2 rounded flex justify-between items-center w-full "
-                    :style="{color: colorText }"
+                    class="sidebar-link p-2 rounded flex justify-between items-center w-full transition-all duration-200"
+                    :class="{ 'bg-white/10 font-semibold': isMenuActive(menu.items) }"
+                    :style="{
+                        color: colorText,
+                        borderLeft: isMenuActive(menu.items) ? '3px solid #ffffff' : 'none'
+                    }"
                 >
                     <span class="flex items-center gap-2">
                         <i :class="menu.icon" :style="{ color: colorText }"></i>
@@ -86,8 +98,13 @@
                         v-for="(item, i) in menu.items"
                         :key="i"
                         :href="item.href"
-                        class="sidebar-submenu-link block p-2 rounded flex items-center gap-2"
-                        :style="{ color: colorText }"
+                        class="sidebar-submenu-link block p-2 rounded flex items-center gap-2 transition-all duration-200"
+                        :class="{ 'bg-white/20 font-semibold': isActive(item.href) }"
+                        :style="{
+                            color: colorText,
+                            borderLeft: isActive(item.href) ? '3px solid #ffffff' : 'none',
+                            marginLeft: isActive(item.href) ? '4px' : '0'
+                        }"
                     >
                         <i :class="item.icon" :style="{ color: colorText }"></i>
                         {{ item.label }}
@@ -197,6 +214,24 @@ const user = ref(null);
 const sidebarOpen = ref(false); // Control del sidebar en móviles
 const notificationCount = ref(5); // simulando como se veria
 
+// Obtener la ruta actual para el estado activo
+const currentPath = ref(window.location.pathname);
+
+// Función para verificar si un enlace está activo
+const isActive = (href) => {
+    return currentPath.value === href;
+};
+
+// Función para verificar si un menú principal tiene una subopción activa
+const isMenuActive = (menuItems) => {
+    return menuItems.some(item => isActive(item.href));
+};
+
+// Detectar cambios de ruta
+const updateCurrentPath = () => {
+    currentPath.value = window.location.pathname;
+};
+
 onMounted(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -206,6 +241,27 @@ onMounted(() => {
             console.error('Error parsing localStorage user:', e);
         }
     }
+
+    // Inicializar ruta actual
+    updateCurrentPath();
+
+    // Inicializar estados de menús después de tener la ruta actual
+    initializeMenuStates();
+
+    // Escuchar cambios de ruta (para SPA)
+    window.addEventListener('popstate', updateCurrentPath);
+
+    // Para Inertia.js, necesitamos detectar cambios de navegación
+    const originalPushState = history.pushState;
+    history.pushState = function(...args) {
+        originalPushState.apply(history, args);
+        updateCurrentPath();
+        initializeMenuStates(); // Re-inicializar menús al cambiar de ruta
+    };
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('popstate', updateCurrentPath);
 });
 
     // =====| parte donde se trabaja la personalización |=====
@@ -221,7 +277,7 @@ onMounted(() => {
                 icon: "fa-solid fa-school",
                 items: [
                     {
-                        label: "Catalogo.",
+                        label: "Catálogo.",
                         href: "/catalogo",
                         icon: "fa-solid fa-list",
                     },
@@ -237,7 +293,7 @@ onMounted(() => {
                     },
                     {
                         label: "Tipos de Recursos",
-                        href: "tipos-recursos",
+                        href: "/tipos-recursos",
                         icon: "fa-solid fa-list-check",
                     },
                     {
@@ -305,9 +361,14 @@ onMounted(() => {
 
     // Estado para los submenús
     const openMenus = reactive({});
+
+    // Inicializar estado de menús
+    const initializeMenuStates = () => {
         menus.forEach((menu) => {
-        openMenus[menu.key] = false;
-    });
+            // Abrir automáticamente el menú si tiene una subopción activa
+            openMenus[menu.key] = isMenuActive(menu.items);
+        });
+    };
 
     function toggleMenu(key) {
         openMenus[key] = !openMenus[key];
@@ -396,6 +457,42 @@ onMounted(() => {
         .sidebar-link,
         .sidebar-submenu-link {
             min-height: 44px;
+        }
+    }
+
+    /* Estilos para enlaces activos del sidebar */
+    .sidebar-link,
+    .sidebar-submenu-link {
+        position: relative;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-submenu-link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        transform: translateX(2px);
+    }
+
+    /* Efecto de brillo para enlaces activos */
+    .sidebar-link.font-semibold,
+    .sidebar-submenu-link.font-semibold {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Animación suave para el borde izquierdo */
+    .sidebar-link[style*="border-left"],
+    .sidebar-submenu-link[style*="border-left"] {
+        animation: slideInBorder 0.3s ease-out;
+    }
+
+    @keyframes slideInBorder {
+        from {
+            border-left-width: 0;
+            transform: translateX(-3px);
+        }
+        to {
+            border-left-width: 3px;
+            transform: translateX(0);
         }
     }
 </style>
