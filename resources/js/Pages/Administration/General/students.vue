@@ -1242,7 +1242,10 @@ const handleSelectFilter = () => {
 onMounted(async () => {
     await authService.verifyToken(localStorage.getItem("token"));
     searchTerm.value = '';
-    await fetchEstudiantes();
+    await Promise.all([
+        fetchCarreras(),
+        fetchEstudiantes()
+    ]);
     isLoading.value = false;
 });
 </script>
