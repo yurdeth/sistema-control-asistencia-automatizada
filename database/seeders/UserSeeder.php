@@ -156,7 +156,9 @@ class UserSeeder extends Seeder
                     ->conCarrera()
                     ->create([
                         'email_verificado' => fake()->boolean(85),
-                        'estado' => fake()->randomElement(['activo', 'activo', 'activo', 'inactivo']),
+                        'estado' => fake()->randomElement(
+                            ['activo', 'activo', 'activo', 'activo', 'activo',
+                            'activo', 'inactivo', 'inactivo', 'inactivo', 'suspendido']),
                     ]);
 
                 usuario_roles::create([
