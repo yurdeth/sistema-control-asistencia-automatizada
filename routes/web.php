@@ -37,89 +37,117 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])->gr
         ]);
     })->name('dashboard');
 
-    // Rutas de administración
-
-    Route::get('/catalogo', function () {
-        return Inertia::render('Administration/classroomManagement/catalogo', [
-            'mustCheckAuth' => true
-        ]);
-    })->middleware('role:1,6'); // Roles específicos o permitidos por rutas
-
-    Route::get('/docentes', function () {
-        return Inertia::render('Administration/General/docentes', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/estudiantes', function () {
-        return Inertia::render('Administration/General/students', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/disponibilidad', function () {
-        return Inertia::render('Administration/classroomManagement/availability', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/departamentos', function () {
-        return Inertia::render('Administration/General/departments', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/informes', function () {
-        return Inertia::render('Administration/General/reports', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/horarios', function () {
-        return Inertia::render('Administration/classroomManagement/horarios', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/grupos', function () {
-        return Inertia::render('Administration/classroomManagement/grupos', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/solicitudes-inscripcion', function () {
-        return Inertia::render('Administration/General/solicitudesInscripcion', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/roles', function () {
-        return Inertia::render('Administration/General/roles', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/materias', function () {
-        return Inertia::render('Administration/General/materias', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('/sesiones-clase', function () {
-        return Inertia::render('Administration/classroomManagement/sesionesClase', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
-    Route::get('tipos-recursos', function () {
-        return Inertia::render('Administration/classroomManagement/tiposRecursos', [
-            'mustCheckAuth' => true
-        ]);
-    });
-
+    // Rutas de perfil (mantener fuera de /dashboard)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// ===== RUTAS REESTRUCTURADAS CON PREFIJO /DASHBOARD/ =====
+// Grupo de rutas del dashboard con estructura jerárquica
+Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
+    ->prefix('dashboard')
+    ->name('dashboard.')
+    ->group(function () {
+
+        // Gestión de Aulas
+        Route::get('/catalogo', function () {
+            return Inertia::render('Administration/classroomManagement/catalogo', [
+                'mustCheckAuth' => true
+            ]);
+        })->middleware('role:1,6')->name('catalogo'); // Roles específicos o permitidos por rutas
+
+        Route::get('/disponibilidad', function () {
+            return Inertia::render('Administration/classroomManagement/availability', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('disponibilidad');
+
+        Route::get('/horarios', function () {
+            return Inertia::render('Administration/classroomManagement/horarios', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('horarios');
+
+        Route::get('/tipos-recursos', function () {
+            return Inertia::render('Administration/classroomManagement/tiposRecursos', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('tipos-recursos');
+
+        Route::get('/sesiones-clase', function () {
+            return Inertia::render('Administration/classroomManagement/sesionesClase', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('sesiones-clase');
+
+        Route::get('/grupos', function () {
+            return Inertia::render('Administration/classroomManagement/grupos', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('grupos');
+
+        // Gestión General
+        Route::get('/departamentos', function () {
+            return Inertia::render('Administration/General/departments', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('departamentos');
+
+        Route::get('/docentes', function () {
+            return Inertia::render('Administration/General/docentes', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('docentes');
+
+        Route::get('/estudiantes', function () {
+            return Inertia::render('Administration/General/students', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('estudiantes');
+
+        Route::get('/solicitudes-inscripcion', function () {
+            return Inertia::render('Administration/General/solicitudesInscripcion', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('solicitudes-inscripcion');
+
+        Route::get('/roles', function () {
+            return Inertia::render('Administration/General/roles', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('roles');
+
+        Route::get('/materias', function () {
+            return Inertia::render('Administration/General/materias', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('materias');
+
+        Route::get('/informes', function () {
+            return Inertia::render('Administration/General/reports', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('informes');
+    });
+
+// ===== SISTEMA DE ALIAS PARA COMPATIBILIDAD =====
+// Rutas de alias que redirigen a las nuevas URLs con prefijo /dashboard/
+Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])->group(function () {
+    // Alias de redirección para mantener compatibilidad con URLs antiguas
+    Route::redirect('/catalogo', '/dashboard/catalogo', 301);
+    Route::redirect('/docentes', '/dashboard/docentes', 301);
+    Route::redirect('/estudiantes', '/dashboard/estudiantes', 301);
+    Route::redirect('/disponibilidad', '/dashboard/disponibilidad', 301);
+    Route::redirect('/departamentos', '/dashboard/departamentos', 301);
+    Route::redirect('/informes', '/dashboard/informes', 301);
+    Route::redirect('/horarios', '/dashboard/horarios', 301);
+    Route::redirect('/grupos', '/dashboard/grupos', 301);
+    Route::redirect('/solicitudes-inscripcion', '/dashboard/solicitudes-inscripcion', 301);
+    Route::redirect('/roles', '/dashboard/roles', 301);
+    Route::redirect('/materias', '/dashboard/materias', 301);
+    Route::redirect('/sesiones-clase', '/dashboard/sesiones-clase', 301);
+    Route::redirect('/tipos-recursos', '/dashboard/tipos-recursos', 301);
 });
 
 

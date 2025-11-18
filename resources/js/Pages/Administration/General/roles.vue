@@ -642,12 +642,12 @@
     const getUsersByRol = async (id) => {
         try {
             if (id === 5) {
-                window.location.href = '/docentes';
+                window.location.href = '/dashboard/docentes';
                 return;
             }
 
             if (id === 6) {
-                window.location.href = '/estudiantes';
+                window.location.href = '/dashboard/estudiantes';
                 return;
             }
 

@@ -53,12 +53,12 @@
                 </Link>
 
                 <Link
-                href="/departamentos"
+                href="/dashboard/departamentos"
                 class="sidebar-link p-2 rounded flex items-center gap-2 transition-all duration-200"
-                :class="{ 'bg-white/10 font-semibold': isActive('/departamentos') }"
+                :class="{ 'bg-white/10 font-semibold': isActive('/dashboard/departamentos') }"
                 :style="{
                     color: colorText,
-                    borderLeft: isActive('/departamentos') ? '3px solid #ffffff' : 'none'
+                    borderLeft: isActive('/dashboard/departamentos') ? '3px solid #ffffff' : 'none'
                 }">
                     <i class="fa-solid fa-list"></i>
                     Departamentos
@@ -292,27 +292,27 @@ onBeforeUnmount(() => {
                 items: [
                     {
                         label: "Catálogo.",
-                        href: "/catalogo",
+                        href: "/dashboard/catalogo",
                         icon: "fa-solid fa-list",
                     },
                     {
                         label: "Disponibilidad",
-                        href: "/disponibilidad",
+                        href: "/dashboard/disponibilidad",
                         icon: "fa-solid fa-calendar-days",
                     },
                     {
                         label: "Horarios",
-                        href: "/horarios",
+                        href: "/dashboard/horarios",
                         icon: "fa-solid fa-clock",
                     },
                     {
                         label: "Tipos de Recursos",
-                        href: "/tipos-recursos",
+                        href: "/dashboard/tipos-recursos",
                         icon: "fa-solid fa-list-check",
                     },
                     {
                         label: "Sesiones de Clase",
-                        href: "/sesiones-clase",
+                        href: "/dashboard/sesiones-clase",
                         icon: "fa-solid fa-calendar-check",
                     }
                 ]
@@ -324,32 +324,32 @@ onBeforeUnmount(() => {
             items: [
                 {
                     label: "Docentes.",
-                    href: "/docentes",
+                    href: "/dashboard/docentes",
                     icon: "fa-solid fa-chalkboard-user",
                 },
                 {
                     label: "Estudiantes.",
-                    href: "/estudiantes",
+                    href: "/dashboard/estudiantes",
                     icon: "fa-solid fa-user",
                 },
                 {
                     label: "Grupos",
-                    href: "/grupos",
+                    href: "/dashboard/grupos",
                     icon: "fa-solid fa-layer-group",
                 },
                 {
                     label: "Solicitudes Inscripción",
-                    href: "/solicitudes-inscripcion",
+                    href: "/dashboard/solicitudes-inscripcion",
                     icon: "fa-solid fa-file-signature",
                 },
                 {
                     label: "Roles",
-                    href: "/roles",
+                    href: "/dashboard/roles",
                     icon: "fa-solid fa-user-shield",
                 },
                 {
                     label: "Materias",
-                    href: "/materias",
+                    href: "/dashboard/materias",
                     icon: "fa-solid fa-book",
                 }
             ]
@@ -361,7 +361,7 @@ onBeforeUnmount(() => {
             items: [
                 {
                     label: "Gestión de reportes",
-                    href: "/informes",
+                    href: "/dashboard/informes",
                     icon: "fa-solid fa-file",
                 },
                 {
