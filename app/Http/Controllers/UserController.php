@@ -1347,6 +1347,157 @@ class UserController extends Controller {
         ]);
     }
 
+    /**
+     * Display a listing of students with pagination and filtering.
+     */
+    public function getStudentsPaginated(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            // Obtener parámetros de paginación y filtros
+            $page = max(1, (int)$request->get('page', 1));
+            $perPageOptions = [10, 15, 25, 50, 100];
+            $perPage = in_array($request->get('per_page', 15), $perPageOptions)
+                ? $request->get('per_page', 15)
+                : 15;
+
+            $search = $this->sanitizeInput($request->get('search', ''));
+            $carreraId = $request->get('carrera_id', '');
+            $estado = $this->sanitizeInput($request->get('estado', ''));
+            $sortBy = $this->sanitizeInput($request->get('sort_by', 'nombre_completo'));
+            $sortDir = $this->sanitizeInput($request->get('sort_dir', 'asc'));
+
+            // Validar sort_by y sort_dir
+            $allowedSortBy = ['id', 'nombre_completo', 'email', 'telefono', 'estado', 'created_at'];
+            $allowedSortDir = ['asc', 'desc'];
+
+            if (!in_array($sortBy, $allowedSortBy)) {
+                $sortBy = 'nombre_completo';
+            }
+            if (!in_array($sortDir, $allowedSortDir)) {
+                $sortDir = 'asc';
+            }
+
+            // Crear clave de cache única para esta combinación de parámetros
+            $cacheKey = "students_page_{$page}_per_{$perPage}_search_{$search}_career_{$carreraId}_status_{$estado}_sort_{$sortBy}_dir_{$sortDir}";
+
+            $students = Cache::remember($cacheKey, 5, function () use ($page, $perPage, $search, $carreraId, $estado, $sortBy, $sortDir) {
+                // Usar la misma estructura que los métodos existentes del modelo User
+                $query = DB::table('users')
+                    ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
+                    ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')
+                    ->leftJoin('carreras', 'users.carrera_id', '=', 'carreras.id')
+                    ->where('roles.nombre', '=', 'estudiante')
+                    ->select(
+                        'users.id',
+                        'users.nombre_completo',
+                        'users.email',
+                        'users.telefono',
+                        'users.carrera_id',
+                        'users.estado',
+                        'users.created_at',
+                        'carreras.nombre as carrera_nombre'
+                    );
+
+                // Aplicar filtros
+                if (!empty($search)) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('users.nombre_completo', 'LIKE', "%{$search}%")
+                          ->orWhere('users.email', 'LIKE', "%{$search}%");
+                    });
+                }
+
+                if (!empty($carreraId)) {
+                    $query->where('users.carrera_id', $carreraId);
+                }
+
+                if (!empty($estado)) {
+                    $query->where('users.estado', $estado);
+                }
+
+                // Ordenar
+                $query->orderBy("users.{$sortBy}", $sortDir);
+
+                // Obtener datos paginados manualmente
+                $total = $query->count();
+                $offset = ($page - 1) * $perPage;
+                $results = $query->offset($offset)->limit($perPage)->get();
+
+                // Crear objeto de paginación manual
+                $lastPage = ceil($total / $perPage);
+                $from = $total > 0 ? $offset + 1 : null;
+                $to = $total > 0 ? $offset + min($perPage, $total - $offset) : null;
+
+                return (object)[
+                    'data' => $results,
+                    'current_page' => $page,
+                    'last_page' => $lastPage,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                    'from' => $from,
+                    'to' => $to
+                ];
+            });
+
+            // Verificar si hay resultados y manejar el caso de no encontrados
+            if ($students->total == 0) {
+                return response()->json([
+                    'message' => 'No se encontraron estudiantes con los criterios especificados',
+                    'success' => false,
+                    'pagination' => [
+                        'current_page' => 1,
+                        'last_page' => 1,
+                        'per_page' => $perPage,
+                        'total' => 0,
+                        'from' => null,
+                        'to' => null
+                    ]
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Estudiantes obtenidos exitosamente',
+                'success' => true,
+                'data' => $students->data,
+                'pagination' => [
+                    'current_page' => $students->current_page,
+                    'last_page' => $students->last_page,
+                    'per_page' => $students->per_page,
+                    'total' => $students->total,
+                    'from' => $students->from,
+                    'to' => $students->to
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los estudiantes',
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getMyProfile(): JsonResponse {
         if (!Auth::check()) {
             return response()->json([

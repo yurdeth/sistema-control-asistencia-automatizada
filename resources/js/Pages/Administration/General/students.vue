@@ -396,9 +396,11 @@ const error = ref(null);
 const allEstudiantes = ref([]);
 const isAuthenticated = localStorage.getItem('isAuthenticated');
 
-// Paginación
+// Paginación server-side
 const currentPage = ref(1);
-const perPage = ref(5); // Número de registros por página
+const perPage = ref(15); // Default a 15 registros por página
+const perPageOptions = ref([10, 15, 25, 50, 100]);
+const paginationData = ref(null);
 
 // Configuración de axios
 const API_URL = '/api';
@@ -418,6 +420,8 @@ const formErrors = ref({});
 const currentEstudianteId = ref(null);
 let errorTimeout = null;
 const selectedOption = ref('view-all');
+const filterEstado = ref('');
+const filterCarrera = ref('');
 
 // Datos del formulario
 const formData = ref({
@@ -433,32 +437,32 @@ const formData = ref({
 // Lista para selects (solo carreras)
 const carreras = ref([]);
 
-// Filtrado
+// Los datos ya vienen filtrados y paginados del servidor
 const estudiantesFiltrados = computed(() => {
-    const data = Array.isArray(allEstudiantes.value) ? allEstudiantes.value : [];
-    if (!searchTerm.value) return data;
-    const term = searchTerm.value.toLowerCase();
-    return data.filter(estudiante =>
-        estudiante.nombre_completo.toLowerCase().includes(term) ||
-        estudiante.email.toLowerCase().includes(term)
-    );
+    return Array.isArray(allEstudiantes.value) ? allEstudiantes.value : [];
 });
 
-// Paginación
+// Paginación server-side (datos vienen del backend)
 const totalPages = computed(() => {
-    return Math.ceil(estudiantesFiltrados.value.length / perPage.value);
+    return paginationData.value ? paginationData.value.last_page : 1;
 });
 
 const paginatedEstudiantes = computed(() => {
-    const start = (currentPage.value - 1) * perPage.value;
-    const end = start + perPage.value;
-    return estudiantesFiltrados.value.slice(start, end);
+    return estudiantesFiltrados.value; // Ya viene paginado del backend
 });
 
-// Observa los estudiantes filtrados o el término de búsqueda para resetear a la página 1
-watch(estudiantesFiltrados, () => {
-    currentPage.value = 1;
+// Mapa de carreras para búsqueda rápida
+const carrerasMap = computed(() => {
+    const map = {};
+    carreras.value.forEach(carrera => {
+        map[carrera.id] = carrera.nombre;
+    });
+    return map;
 });
+
+const getCarreraNombre = (carrera_id) => {
+    return carrerasMap.value[carrera_id] || 'N/A';
+}
 
 // Funciones del Modal
 const resetForm = () => {
@@ -614,54 +618,110 @@ const goToPage = (page) => {
     }
 };
 
-// Cargar datos (Estudiantes)
+// Watchers reactivos para paginación server-side
+// Observa los cambios en filtros (resetea página y carga datos)
+watch([searchTerm, filterEstado, filterCarrera], () => {
+    currentPage.value = 1; // Resetear a página 1 cuando cambian filtros
+    fetchEstudiantes(); // Cargar datos del servidor
+}, { deep: false });
+
+// Observa cambios de tamaño de página (resetea a página 1)
+watch(perPage, () => {
+    currentPage.value = 1; // Resetear a página 1 cuando cambia tamaño de página
+    fetchEstudiantes(); // Cargar datos del servidor
+}, { deep: false });
+
+// Observa cambios de página actual (solo carga datos)
+watch(currentPage, () => {
+    fetchEstudiantes(); // Cargar datos del servidor
+}, { deep: false });
+
+// Cargar datos con paginación y filtros del servidor
 async function fetchEstudiantes() {
     loading.value = true;
     error.value = null;
 
     try {
-        const res = await axios.get(`${API_URL}/users/get/students/all`, getAuthHeaders());
-
-        const payload = res.data?.data;
-        const raw = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
-
-        // Filtrar solo Estudiantes (rol_id = 6)
-        const estudiantes = raw.filter(user => {
-            // 1) rol_id directo
-            if (user.rol_id === 6) return true;
-
-            // 2) roles: [{id, nombre}] o [{rol_id, ...}]
-            if (Array.isArray(user.roles) && user.roles.some(r => (r.id ?? r.rol_id) === 6)) return true;
-
-            // 3) usuario_roles: [{rol_id, ...}]
-            if (Array.isArray(user.usuario_roles) && user.usuario_roles.some(r => r.rol_id === 6)) return true;
-
-            return false;
+        // Construir parámetros de consulta
+        const params = new URLSearchParams({
+            page: currentPage.value.toString(),
+            per_page: perPage.value.toString(),
         });
 
-        allEstudiantes.value = estudiantes.map(estudiante => ({
-            id: estudiante.id ?? 'N/A',
-            nombre_completo: estudiante.nombre_completo ?? estudiante.name ?? 'Unknown',
-            email: estudiante.email ?? 'N/A',
-            telefono: estudiante.telefono ?? estudiante.phone ?? 'N/A',
-            estado: estudiante.estado ?? estudiante.status ?? 'N/A',
-            carrera_id: estudiante.carrera_id ?? null,
-        }));
+        // Agregar filtros si tienen valores
+        if (searchTerm.value.trim()) {
+            params.append('search', searchTerm.value.trim());
+        }
+        if (filterCarrera.value) {
+            params.append('carrera_id', filterCarrera.value);
+        }
+        if (filterEstado.value) {
+            params.append('estado', filterEstado.value);
+        }
 
-        error.value = null;
+        const res = await axios.get(`${API_URL}/users/get/students/paginated?${params.toString()}`, getAuthHeaders());
+
+        if (res.data.success) {
+            const payload = res.data?.data;
+            const raw = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
+
+            allEstudiantes.value = raw.map(estudiante => ({
+                id: estudiante.id ?? 'N/A',
+                nombre_completo: estudiante.nombre_completo ?? estudiante.name ?? 'Sin nombre',
+                email: estudiante.email ?? 'N/A',
+                telefono: estudiante.telefono ?? estudiante.phone ?? 'N/A',
+                estado: estudiante.estado ?? estudiante.status ?? 'N/A',
+                carrera_id: estudiante.carrera_id ?? null,
+                carrera_nombre: estudiante.carrera?.nombre || carrerasMap.value[estudiante.carrera_id] || 'N/A',
+            }));
+
+            // Guardar metadata de paginación
+            paginationData.value = res.data?.pagination || {
+                current_page: 1,
+                last_page: 1,
+                per_page: perPage.value,
+                total: 0,
+                from: null,
+                to: null
+            };
+
+            error.value = null;
+        } else {
+            // Manejar caso cuando no hay resultados con los filtros actuales
+            allEstudiantes.value = [];
+            paginationData.value = {
+                current_page: 1,
+                last_page: 1,
+                per_page: perPage.value,
+                total: 0,
+                from: null,
+                to: null
+            };
+            error.value = null; // No es error, solo no hay resultados
+        }
 
     } catch (err) {
         const status = err.response?.status;
 
         if (status === 404) {
             allEstudiantes.value = [];
-            error.value = null;
+            paginationData.value = {
+                current_page: 1,
+                last_page: 1,
+                per_page: perPage.value,
+                total: 0,
+                from: null,
+                to: null
+            };
+            error.value = null; // No hay resultados, no es error
         } else if (status === 401 || status === 403) {
-            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión.';
+            error.value = err.response?.data?.message || 'Acceso no autorizado. Verifica tu sesión/rol.';
             allEstudiantes.value = [];
+            paginationData.value = null;
         } else {
             error.value = err.response?.data?.message || 'Error al cargar los estudiantes';
             allEstudiantes.value = [];
+            paginationData.value = null;
         }
     } finally {
         loading.value = false;
