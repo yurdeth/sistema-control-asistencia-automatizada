@@ -52,8 +52,6 @@
 
 				<br>
 
-
-
 				<br>
 
 				<!-- VISTA DE DATOS: ahora con estado de carga visible -->

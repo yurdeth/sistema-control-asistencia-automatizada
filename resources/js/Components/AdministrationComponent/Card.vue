@@ -112,8 +112,8 @@ import AulaModalContent from './AulaModalContent.vue';
 //Colores para buttons
 const colorButtons = {
     ver: '#D93F3F',        // Ver detalles
-    editar: '#FF204E',     // Naranja - Editar
-    reservar: '#F05941',   // Verde - Reservar/Aprobar
+    editar: '#FE6244',     // Naranja - Editar
+    reservar: '#FF6C0C',   // Verde - Reservar/Aprobar
     eliminar: '#DC2626',   // Rojo - Eliminar
     cancelar: '#6B7280',   // Gris - Cancelar
 };

@@ -2,23 +2,78 @@
     <!-- Contenedor principal del formulario-->
     <div class="p-6 space-y-4">
 
-        <!-- Título dinámico que se ajusta según el modo -->
-        <h2 class="text-xl font-bold mb-4">
-            {{ titulo }}
-        </h2>
-
         <!-- Bloque para visualizar los detalles del aula (modo ver) -->
         <template v-if="modo === 'ver'">
+            <h2 class="text-xl font-bold mb-4 text-center text-gray-600"> {{ titulo }} </h2>
+
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-3xl font-extralight text-gray-900 tracking-tight mb-3">{{ aula.nombre }}</h1>
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-2 h-2 rounded-full transition-all"
+                            :class="aula.estado === 'Activo' ? 'bg-gray-900 shadow-[0_0_8px_rgba(17,23,39,0.4)]' : 'bg-gray-400'"
+                        />
+                        <span class="text-sm text-gray-600 font-light">{{ aula.estado }}</span>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <div class="text-3xl font-extralight text-gray-900">{{ aula.capacidad_pupitres }}</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-2 font-light">Estudiantes</div>
+                </div>
+            </div>
+
+            <!-- Línea divisoria -->
+            <div class="border-t border-gray-100" />
+
+            <!-- DATOS DEL AULA EN TARJETAS -->
+            <div class="grid gap-4">
+                <div class="p-3 bg-gray-50 rounded-lg shadow-sm">
+                    <p class="text-gray-600 text-sm">Ubicación</p>
+                    <p class="font-semibold text-gray-800">{{ aula.ubicacion }}</p>
+                </div>
+
+                <div class="p-3 bg-gray-50 rounded-lg shadow-sm">
+                    <p class="text-gray-600 text-sm">Recursos</p>
+                    <p class="font-semibold text-gray-800 text-gray-500 italic">
+                        {{ aula.recurso || 'No hay recursos asignados' }}
+                    </p>
+                </div>
+            </div>
+
+                <!-- GALERÍA DE IMÁGENES -->
+            <div class="pt-2 border-t">
+                <h3 class="text-lg font-semibold mb-2">Imágenes del aula</h3>
+                <!-- Miniaturas -->
+                <div class="overflow-x-auto scrollbar-hide">
+                    <div class="flex gap-2">
+                        <img
+                            v-for="(foto, index) in aula.fotos"
+                            :key="foto.id"
+                            :src="foto.url"
+                            alt="Aula"
+                            class="w-20 h-20 object-cover cursor-pointer transition-all duration-300 border-2 border-transparent hover:border-gray-900 flex-shrink-0"
+                            @click="abrirLightbox(index)"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Título dinámico que se ajusta según el modo -->
+            <!-- <h2 class="text-xl font-bold mb-4">
+                {{ titulo }}
+            </h2>
             <p><strong>Nombre:</strong> {{ aula.nombre }}</p>
             <p><strong>Capacidad:</strong> {{ aula.capacidad_pupitres }}</p>
             <p><strong>Ubicación:</strong> {{ aula.ubicacion }}</p>
             <p><strong>Recursos:</strong> {{ aula.recurso }}</p>
             <p><strong>Estado:</strong> {{ aula.estado }}</p>
 
-            <p class="mt-4"><strong>Imágenes del aula:</strong></p>
+            <p class="mt-4"><strong>Imágenes del aula:</strong></p> -->
 
             <!-- Grid de imágenes con scroll horizontal -->
-            <div class="overflow-x-auto overflow-y-hidden">
+            <!-- <div class="overflow-x-auto overflow-y-hidden">
                 <div class="flex gap-2 pb-2">
                     <div
                         v-for="(foto, index) in aula.fotos"
@@ -33,7 +88,7 @@
                         />
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Lightbox/Carrusel -->
             <Modal :show="mostrarLightbox" @close="cerrarLightbox">

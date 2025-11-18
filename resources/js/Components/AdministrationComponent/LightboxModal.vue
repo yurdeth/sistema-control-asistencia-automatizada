@@ -1,54 +1,58 @@
 <template>
-    <div class="bg-black bg-opacity-90 text-white flex flex-col items-center justify-center relative p-6">
+    <!-- Vista Normal del Lightbox -->
+    <div class="bg-black bg-opacity-95 text-white flex flex-col items-center justify-center relative p-8 min-h-[600px]">
         <!-- Botón cerrar -->
         <button
-            class="absolute top-4 right-4 text-white text-4xl hover:text-gray-400 z-30"
+            class="absolute top-6 right-6 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors z-30 group"
             @click="$emit('close')"
         >
-            &times;
+            <i class="fa-solid fa-xmark group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"></i>
         </button>
 
+        <!-- Contador superior -->
+        <div class="absolute top-6 left-6 text-white text-sm font-light z-10">
+            {{ indiceActual + 1 }} / {{ imagenes.length }}
+        </div>
+
         <!-- Imagen principal -->
-        <div class="max-w-4xl max-h-[80vh] flex items-center justify-center relative group">
+        <div class="w-full max-w-5xl h-[500px] flex items-center justify-center relative bg-black/20">
             <img
                 :src="imagenes[indiceActual]?.url"
                 alt="Imagen del aula"
-                class="w-full h-full object-contain rounded-lg cursor-default group-hover:cursor-zoom-in"
+                class="max-w-full max-h-full object-contain cursor-zoom-in transition-opacity duration-300"
                 @click="toggleFullscreen"
                 ref="mainImage"
             />
         </div>
 
-        <!-- Controles -->
-        <div class="flex items-center justify-center mt-4 gap-4">
-            <button
-                v-if="imagenes.length > 1"
-                @click="anterior"
-                class="text-5xl hover:text-gray-400"
-            >&#8249;
-            </button>
+                <!-- Navegación con flechas laterales -->
+        <button
+            v-if="imagenes.length > 1"
+            @click="anterior"
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+        >
+            <i class="fa-solid fa-angle-left" :style="{fontSize:'30px'}"></i>
+        </button>
 
-            <span class="text-lg font-semibold">{{ indiceActual + 1 }} / {{ imagenes.length }}</span>
-
-            <button
-                v-if="imagenes.length > 1"
-                @click="siguiente"
-                class="text-5xl hover:text-gray-400"
-            >&#8250;
-            </button>
-        </div>
+        <button
+            v-if="imagenes.length > 1"
+            @click="siguiente"
+            class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+        >
+            <i class="fa-solid fa-angle-right" :style="{fontSize:'30px'}"></i>
+        </button>
 
         <!-- Miniaturas -->
-        <div v-if="imagenes.length > 1" class="flex gap-2 mt-4 overflow-x-auto pb-2">
+        <div v-if="imagenes.length > 1" class="flex gap-2 mt-6 overflow-x-auto pb-2 max-w-5xl scrollbar-hide">
             <img
                 v-for="(foto, index) in imagenes"
                 :key="foto.id"
                 :src="foto.url"
                 @click="indiceActual = index"
-                class="w-20 h-20 object-cover rounded cursor-pointer transition-all"
+                class="w-16 h-16 object-cover cursor-pointer transition-all flex-shrink-0 grayscale hover:grayscale-0"
                 :class="index === indiceActual
-          ? 'ring-2 ring-white scale-110'
-          : 'opacity-60 hover:opacity-100'"
+                    ? 'ring-2 ring-white scale-110 grayscale-0'
+                    : 'opacity-60 hover:opacity-100'"
             />
         </div>
     </div>
@@ -60,15 +64,15 @@
         @click.self="exitFullscreen"
     >
         <!-- Imagen a pantalla completa completa -->
-        <img
-            :src="imagenes[indiceActual]?.url"
-            alt="Imagen del aula en pantalla completa"
-            class="w-screen h-screen object-contain cursor-zoom-out"
-            @click="exitFullscreen"
-            ref="fullscreenImage"
-        />
-
-      
+        <div class="flex items-center justify-center">
+            <img
+                :src="imagenes[indiceActual]?.url"
+                alt="Imagen"
+                class="w-[500px] h-[400px] object-cover cursor-zoom-out"
+                @click="exitFullscreen"
+            />
+        </div>
+        
         <!-- Flechas de navegación -->
         <button
             v-if="imagenes.length > 1"

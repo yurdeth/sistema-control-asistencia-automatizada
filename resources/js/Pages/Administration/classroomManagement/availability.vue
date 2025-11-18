@@ -40,19 +40,16 @@
 
                     <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
                         <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                            <!--Para filtrar por lo sectores o zonas-->
+                            <!--Para filtrar por cantidad de asientos-->
                             <select
-                                v-model="sectorSeleccionado"
-                                class="w-full sm:w-48 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
+                                v-model="capacidadSeleccionada"
+                                class="w-full sm:w-64 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
                             >
-                                <option value="all">Todos los Sectores</option>
-                                <option
-                                    v-for="sector in sectores"
-                                    :key="sector.id"
-                                    :value="sector.id"
-                                >
-                                    {{ sector.nombre }}
-                                </option>
+                                <option value="all">Todas las capacidades</option>
+                                <option value="pequena">Pequeña (1-30 asientos)</option>
+                                <option value="mediana">Mediana (31-70 asientos)</option>
+                                <option value="grande">Grande (71-100 asientos)</option>
+                                <option value="muy-grande">Muy grande (100+ asientos)</option>
                             </select>
 
                             <!--Para filtrar según el estado-->
@@ -185,8 +182,8 @@
 
                             <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
                                 <button
-                                    :style="{background:colorViewButton}"
-                                    class="text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:opacity-90 transition-opacity text-xs sm:text-sm"
+                                    :style="{background:'#D93F3F'}"
+                                    class="mr-2 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:opacity-90 transition-opacity text-xs sm:text-sm"
                                     @click="abrirModal({ aula, modo: 'ver' })"
                                 >
                                     Ver detalles
@@ -222,7 +219,7 @@
                 </div>
 
                 <div v-if="aulasFiltradas.length > 0"
-                     class="bg-white px-3 sm:px-4 md:px-6 py-3 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 gap-3">
+                    class="bg-white px-3 sm:px-4 md:px-6 py-3 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 gap-3">
                     <!-- Info de registros (oculta en móvil) -->
                     <div class="hidden sm:block">
                         <p class="text-xs sm:text-sm text-gray-700">
@@ -276,27 +273,57 @@
     </MainLayoutDashboard>
 
     <Modal :show="showModal" @close="cerrarModal">
-        <div>
-            <p><strong>Nombre:</strong> {{ aula.nombre }}</p>
-            <p><strong>Capacidad:</strong> {{ aula.capacidad_pupitres }}</p>
-            <p><strong>Ubicación:</strong> {{ aula.ubicacion }}</p>
-            <p><strong>Recursos:</strong> {{ aula.recurso }}</p>
-            <p><strong>Estado:</strong> {{ aula.estado }}</p>
+        <div class="p-6 space-y-4">
+            <!-- Header -->
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-4xl font-extralight text-gray-900 tracking-tight mb-3">{{ aula.nombre }}</h1>
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-2 h-2 rounded-full transition-all"
+                            :class="aula.estado === 'Activo' ? 'bg-gray-900 shadow-[0_0_8px_rgba(17,23,39,0.4)]' : 'bg-gray-400'"
+                        />
+                        <span class="text-sm text-gray-600 font-light">{{ aula.estado }}</span>
+                    </div>
+                </div>
 
-            <p class="mt-4"><strong>Imágenes del aula:</strong></p>
+                <div class="text-right">
+                    <div class="text-4xl font-extralight text-gray-900">{{ aula.capacidad_pupitres }}</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-2 font-light">Estudiantes</div>
+                </div>
+            </div>
 
-            <!-- Grid de imágenes con scroll horizontal -->
-            <div class="overflow-x-auto overflow-y-hidden">
-                <div class="flex gap-2 pb-2">
-                    <div
-                        v-for="(foto, index) in aula.fotos"
-                        :key="foto.id"
-                        class="flex-shrink-0"
-                    >
+            <!-- Línea divisoria -->
+            <div class="border-t border-gray-100" />
+
+            <!-- DATOS DEL AULA EN TARJETAS -->
+            <div class="grid gap-4">
+
+                <div class="p-3 bg-gray-50 rounded-lg shadow-sm">
+                    <p class="text-gray-600 text-sm">Ubicación</p>
+                    <p class="font-semibold text-gray-800">{{ aula.ubicacion }}</p>
+                </div>
+
+                <div class="p-3 bg-gray-50 rounded-lg shadow-sm">
+                    <p class="text-gray-600 text-sm">Recursos</p>
+                    <p class="font-semibold text-gray-800 text-gray-500 italic">
+                        {{ aula.recurso || 'No hay recursos asignados' }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- GALERÍA DE IMÁGENES -->
+            <div class="pt-2 border-t">
+                <h3 class="text-lg font-semibold mb-2">Imágenes del aula</h3>
+                <!-- Miniaturas -->
+                <div class="overflow-x-auto scrollbar-hide">
+                    <div class="flex gap-2">
                         <img
+                            v-for="(foto, index) in aula.fotos"
+                            :key="foto.id"
                             :src="foto.url"
-                            alt="Imagen del aula"
-                            class="w-32 h-32 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity border-2 border-gray-200 hover:border-blue-500"
+                            alt="Aula"
+                            class="w-20 h-20 object-cover cursor-pointer transition-all duration-300 border-2 border-transparent hover:border-gray-900 flex-shrink-0"
                             @click="abrirLightbox(index)"
                         />
                     </div>
@@ -315,96 +342,115 @@
     </Modal>
 
     <Modal :show="assignClassrooms" class="p-50 max-w-lg m-5" @close="cerrarModal">
-        <h2 class="text-xl font-bold mb-4">Asignar Aula: {{ aula.nombre }}</h2>
-        <input type="hidden" v-model="aula_id" /> {{aula.id}}
-        <form class="space-y-4">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1" for="subject">Materia</label>
-                <select
-                    id="subject"
-                    v-model="selectedSubject"
-                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    name="subject"
-                    @change="fetchGroups(selectedSubject)"
-                >
-                    <option disabled selected value="">Seleccione la materia</option>
-                    <option v-for="subject in subjects" :key="subject.id" :value="subject.id">
-                        {{ subject.nombre }}
-                    </option>
-                </select>
+        <div class="p-6 space-y-4">
+            <!--Header-->
+            <div class="flex items-start justify-between">
+                <div>
+                    <h2 class="text-xl font-extralight text-gray-900 tracking-tight mb-3">Asignar Aula: {{ aula.nombre }}</h2>
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-2 h-2 rounded-full transition-all"
+                            :class="aula.estado === 'Activo' ? 'bg-gray-900 shadow-[0_0_8px_rgba(17,23,39,0.4)]' : 'bg-gray-400'"
+                        />
+                        <input type="hidden" v-model="aula_id" /> {{aula.id}}
+                    </div>
+                </div>
             </div>
-            <div class="mb-4">
+
+            <form class="space-y-4">
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1" for="grupo">Grupo</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="subject">Materia</label>
                     <select
-                        id="grupo"
-                        v-model="selectedGroup"
+                        id="subject"
+                        v-model="selectedSubject"
                         class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        name="grupo"
-                        @change="fetchSubjectProfessors(selectedSubject)"
+                        name="subject"
+                        @change="fetchGroups(selectedSubject)"
                     >
-                        <option disabled selected value="">Seleccione el grupo</option>
-                        <option v-for="group in groups" :key="group.id" :value="group.id">
-                            {{ group.numero_grupo }}
+                        <option disabled selected value="">Seleccione la materia</option>
+                        <option v-for="subject in subjects" :key="subject.id" :value="subject.id">
+                            {{ subject.nombre }}
                         </option>
                     </select>
                 </div>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1" for="responsible">Responsable</label>
-                <select
-                    id="responsible"
-                    v-model="selectedResponsible"
-                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    name="responsible"
-                    @change="fetchSchedules(selectedGroup)"
-                >
-                    <option disabled selected value="">Seleccione el responsable del aula</option>
-                    <option v-if="responsible" :value="responsible.id">{{ responsible.nombre_docente }}</option>
-                </select>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1" for="schedule">Horario</label>
-                <select
-                    id="schedule"
-                    v-model="selectedSchedule"
-                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    name="schedule"
-                >
-                    <option disabled selected value="">Seleccione el horario</option>
-                    <option v-for="schedule in schedules" :key="schedule.id" :value="schedule.id">
-                        {{ schedule.dia_semana }} - {{ schedule.hora_inicio }} a {{ schedule.hora_fin }}
-                    </option>
-                </select>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1" for="date">Fecha de la Clase</label>
-                <input
-                    type="date"
-                    id="date"
-                    v-model="selectedDate"
-                    :min="new Date().toISOString().split('T')[0]"
-                    class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    name="date"
-                />
-            </div>
-            <div class="flex justify-end">
-                <button
-                    class="mr-3 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
-                    type="button"
-                    @click="cerrarModal"
-                >
-                    Cancelar
-                </button>
-                <button
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                    type="submit"
-                    @click="sendReservation()"
-                >
-                    Asignar Aula
-                </button>
-            </div>
-        </form>
+
+                <div class="mb-4">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="grupo">Grupo</label>
+                        <select
+                            id="grupo"
+                            v-model="selectedGroup"
+                            class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            name="grupo"
+                            @change="fetchSubjectProfessors(selectedSubject)"
+                        >
+                            <option disabled selected value="">Seleccione el grupo</option>
+                            <option v-for="group in groups" :key="group.id" :value="group.id">
+                                {{ group.numero_grupo }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="responsible">Responsable</label>
+                    <select
+                        id="responsible"
+                        v-model="selectedResponsible"
+                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        name="responsible"
+                        @change="fetchSchedules(selectedGroup)"
+                    >
+                        <option disabled selected value="">Seleccione el responsable del aula</option>
+                        <option v-if="responsible" :value="responsible.id">{{ responsible.nombre_docente }}</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="schedule">Horario</label>
+                    <select
+                        id="schedule"
+                        v-model="selectedSchedule"
+                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        name="schedule"
+                    >
+                        <option disabled selected value="">Seleccione el horario</option>
+                        <option v-for="schedule in schedules" :key="schedule.id" :value="schedule.id">
+                            {{ schedule.dia_semana }} - {{ schedule.hora_inicio }} a {{ schedule.hora_fin }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="date">Fecha de la Clase</label>
+                    <input
+                        type="date"
+                        id="date"
+                        v-model="selectedDate"
+                        :min="new Date().toISOString().split('T')[0]"
+                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        name="date"
+                    />
+                </div>
+                <div class="flex justify-end">
+                    <button
+                        class="mr-3 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+                        type="button"
+                        @click="cerrarModal"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        class="px-4 py-2 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        type="submit"
+                        :style="{background: '#D93F3F'}"
+                        @click="sendReservation()"
+                    >
+                        Asignar Aula
+                    </button>
+                </div>
+            </form>
+        </div>
     </Modal>
 </template>
 
@@ -421,8 +467,7 @@ import LightboxModal from "@/Components/AdministrationComponent/LightboxModal.vu
 const isLoading = ref(true);
 // Constantes reactivas para los colores de la interfaz
 const colorText = ref('#2C2D2F');
-const colorButton = ref('#d93f3f');
-const colorViewButton = ref('#3f7dd9');
+const colorButton = ref('#FE6244');
 
 // Constantes reactivas para el control de la paginación
 const paginaActual = ref(1);
@@ -430,7 +475,7 @@ const itemsPorPagina = ref(10);
 
 // Definimos los estados a emplear
 const fechaSeleccionada = ref(new Date());
-const sectorSeleccionado = ref('all');
+const capacidadSeleccionada = ref('all');
 const estadoFiltro = ref('disponibles');
 const busquedaAula = ref('');
 const aulas = ref([]);
@@ -477,9 +522,24 @@ const aulasFiltradas = computed(() => {
         );
     }
 
-    // Filtrar por ubicación, sector o zona específica
-    if (sectorSeleccionado.value !== 'all') {
-        resultado = resultado.filter(a => a.sectorId === sectorSeleccionado.value);
+    // Filtrar por capacidad de asientos
+    if (capacidadSeleccionada.value !== 'all') {
+        resultado = resultado.filter(a => {
+            const capacidad = a.capacidad_pupitres|| 0;
+
+            switch (capacidadSeleccionada.value) {
+                case 'pequena':
+                    return capacidad >= 1 && capacidad <= 30;
+                case 'mediana':
+                    return capacidad >= 31 && capacidad <= 70;
+                case 'grande':
+                    return capacidad >= 71 && capacidad <= 100;
+                case 'muy-grande':
+                    return capacidad > 100;
+                default:
+                    return true;
+            }
+        });
     }
     return resultado;
 });

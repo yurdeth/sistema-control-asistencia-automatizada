@@ -115,7 +115,7 @@
                                             <button
                                                 @click="openEditModal(department)"
                                                 class="text-white px-4 py-2 rounded-lg transition-colors"
-                                                :style="{background: '#FF204E'}"
+                                                :style="{background: '#FE6244'}"
                                                 :disabled="loading"
                                                 v-if="['root', 'administrador_academico', 'jefe_departamento'].includes(currentUserRolName)"
                                             >
@@ -124,7 +124,7 @@
                                             <button
                                                 @click="deleteItem(department.id)"
                                                 class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                                :style="{ background: '#A0153E' }"
+                                                :style="{ background: '#BF1A1A' }"
                                                 :disabled="loading"
                                                 v-if="['root', 'administrador_academico', 'jefe_departamento'].includes(currentUserRolName)"
                                             >
@@ -133,7 +133,7 @@
                                             <button
                                                 @click="openCarreraModal(department.id)"
                                                 class="text-white px-4 py-2 rounded-lg"
-                                                :style="{background:'#F05941'}"
+                                                :style="{background:'#FF6C0C'}"
                                             >
                                                 Carreras
                                             </button>
