@@ -18,76 +18,64 @@
             </div>
 
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <input
-                        v-model="searchTerm"
-                        type="text"
-                        placeholder="Buscar por nombre o email"
-                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <button
-                        @click="performApiSearch"
-                        class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#667aff'}"
-                    >
-                        <span class="text-xl"><i class="fas fa-search"></i></span>
-                        Búsqueda Avanzada
-                    </button>
-                    <button
-                        @click="performCleanSearch"
-                        v-if="searchTerm"
-                        class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#ff6678'}"
-                    >
-                        <span class="text-xl"><i class="fa-solid fa-trash"></i></span>
-                        Limpiar Búsqueda
-                    </button>
-                    <button
-                        @click="openCreateModal"
-                        class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#ff9966'}"
-                    >
-                        <span class="text-xl">+</span>
-                        Agregar
-                    </button>
-
-                    <label
-                        for="fileUpload"
-                        class="cursor-pointer bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors whitespace-nowrap"
-                    >
-                        <i class="fa-solid fa-file-excel"></i>
-                        Subir Excel
-                    </label>
-                    <input id="fileUpload" type="file" accept=".xlsx, .xls" class="hidden" @change="handleExcelUpload"/>
-                </div>
-                <div class="mt-5 flex gap-3">
-                    <select
-                        v-model="selectedOption"
-                        @change="handleSelectFilter"
-                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        :class="selectedOption === 'view-by-career' ? 'w-1/2' : 'w-full'"
-                    >
-                        <option value="">Seleccione una opción de filtro</option>
-                        <option value="view-all">Ver todos los estudiantes</option>
-                        <option value="view-actives">Ver estudiantes activos</option>
-                        <option value="view-inactives">Ver estudiantes inactivos</option>
-                        <option value="view-suspended">Ver estudiantes suspendidos</option>
-                        <option value="view-by-career">Ver estudiantes por carrera</option>
-                    </select>
-
-                    <select
-                        v-if="selectedOption === 'view-by-career'"
-                        v-model="formData.carrera_id"
-                        class="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        :class="{'border-red-500': formErrors.carrera_id}"
-                        @change="handleFetchByCareer"
-                        required
-                    >
-                        <option value="">Seleccione una carrera</option>
-                        <option v-for="c in carreras" :key="c.id" :value="c.id">
-                            {{ c.nombre }}
-                        </option>
-                    </select>
+                <div class="flex flex-col lg:flex-row gap-4">
+                    <div class="flex flex-col sm:flex-row gap-4 flex-1">
+                        <input
+                            v-model="searchTerm"
+                            type="text"
+                            placeholder="Buscar por nombre o email"
+                            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <select
+                            v-model="filterCarrera"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
+                        >
+                            <option value="">Todas las carreras</option>
+                            <option v-for="carrera in carreras" :key="carrera.id" :value="carrera.id">
+                                {{ carrera.nombre }}
+                            </option>
+                        </select>
+                        <select
+                            v-model="filterEstado"
+                            class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value="">Todos los estados</option>
+                            <option value="activo">Activos</option>
+                            <option value="inactivo">Inactivos</option>
+                            <option value="suspendido">Suspendidos</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-4 items-center">
+                        <!-- Selector de registros por página -->
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-600 whitespace-nowrap">Mostrar:</label>
+                            <select
+                                v-model="perPage"
+                                class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
+                            >
+                                <option v-for="option in perPageOptions" :key="option" :value="option">
+                                    {{ option }}
+                                </option>
+                            </select>
+                            <span class="text-sm text-gray-600 whitespace-nowrap">registros</span>
+                        </div>
+                        <button
+                            @click="openCreateModal"
+                            class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                            :style="{background: '#D93F3F'}"
+                        >
+                            <span class="text-xl">+</span>
+                            Agregar Estudiante
+                        </button>
+                        <label
+                            for="fileUpload"
+                            class="cursor-pointer bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors whitespace-nowrap"
+                        >
+                            <i class="fa-solid fa-file-excel"></i>
+                            Subir Excel
+                        </label>
+                        <input id="fileUpload" type="file" accept=".xlsx, .xls" class="hidden" @change="handleExcelUpload"/>
+                    </div>
                 </div>
                 <br>
 
@@ -103,76 +91,161 @@
                 <br>
 
                 <div v-if="!loading && estudiantesFiltrados.length" class="bg-white rounded-lg overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full" :style="{ border: '1px solid #d93f3f' }">
-                            <thead class="bg-gray-50 border-b-2 border-gray-200 text-center"
-                                   :style="{background: '#d93f3f', height: '40px'}">
-                            <tr>
-                                <th class="text-white px-4 py-2">Id</th>
-                                <th class="text-white px-4 py-2">Nombre</th>
-                                <th class="text-white px-4 py-2">Email</th>
-                                <th class="text-white px-4 py-2">Teléfono</th>
-                                <th class="text-white px-4 py-2">Estado</th>
-                                <th class="text-white px-4 py-2">Opciones</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 text-center align-middle">
-                            <tr v-for="estudiante in paginatedEstudiantes" :key="estudiante.id"
-                                class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm text-gray-900">{{ estudiante.id }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{
-                                        estudiante.nombre_completo
-                                    }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ estudiante.email }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ estudiante.telefono }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ estudiante.estado }}</td>
-                                <td class="px-6 py-4 text-sm">
-                                    <div class="flex justify-center gap-2">
-                                        <button
-                                            @click="openEditModal(estudiante)"
-                                            class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
-                                            :disabled="loading"
-                                        >
-                                            Editar
-                                        </button>
-                                        <button
-                                            @click="deleteItem(estudiante.id)"
-                                            class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                            :style="{ background: '#9b3b3e' }"
-                                            :disabled="loading"
-                                        >
-                                            Eliminar
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-
-                        <div class="flex justify-center items-center space-x-2 p-4 border-t border-gray-200">
-                            <button
-                                @click="prevPage"
-                                :disabled="currentPage === 1"
-                                class="p-2 border rounded-lg transition-colors"
-                                :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }">
-                                <i class="fas fa-chevron-left"></i></button>
-
-                            <button
-                                @click="goToPage(currentPage)"
-                                class="px-4 py-2 border rounded-lg font-bold text-white transition-colors"
-                                :style="{ background: '#d93f3f' }">
-                                {{ currentPage }}
-                            </button>
-
-                            <button
-                                @click="nextPage"
-                                :disabled="currentPage === totalPages"
-                                class="p-2 border rounded-lg transition-colors"
-                                :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }">
-                                <i class="fas fa-chevron-right"></i></button>
+                    <!-- Información de paginación -->
+                    <div v-if="paginationData" class="px-6 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                        <div class="text-sm text-gray-600">
+                            <span v-if="paginationData.from && paginationData.to">
+                                Mostrando {{ paginationData.from }} al {{ paginationData.to }}
+                                de {{ paginationData.total }} registros
+                            </span>
+                            <span v-else>
+                                No hay registros que mostrar
+                            </span>
                         </div>
+                        <div class="text-sm text-gray-600">
+                            Página {{ paginationData.current_page }} de {{ paginationData.last_page }}
+                        </div>
+                    </div>
 
+                    <!-- Contenedor con altura fija para tabla con scroll -->
+                    <div class="relative" style="height: 500px;">
+                        <div class="overflow-x-auto h-full flex flex-col">
+                            <!-- Cabecera fija -->
+                            <div class="sticky top-0 z-10">
+                                <table class="w-full" :style="{ border: '1px solid #d93f3f' }">
+                                    <thead class="bg-gray-50 border-b-2 border-gray-200 text-center"
+                                           :style="{background: '#d93f3f', height: '40px'}">
+                                        <tr>
+                                            <th class="text-white px-4 py-2">Id</th>
+                                            <th class="text-white px-4 py-2">Nombre</th>
+                                            <th class="text-white px-4 py-2">Email</th>
+                                            <th class="text-white px-4 py-2">Teléfono</th>
+                                            <th class="text-white px-4 py-2">Estado</th>
+                                            <th class="text-white px-4 py-2">Opciones</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+
+                            <!-- Cuerpo con scroll -->
+                            <div class="overflow-y-auto flex-1" style="max-height: calc(500px - 40px - 80px);">
+                                <table class="w-full" :style="{ border: '1px solid #d93f3f', borderTop: 'none' }">
+                                    <tbody class="divide-y divide-gray-200 text-center align-middle">
+                                        <tr v-for="estudiante in paginatedEstudiantes" :key="estudiante.id"
+                                            class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-6 py-4 text-sm text-gray-900">{{ estudiante.id }}</td>
+                                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{
+                                                    estudiante.nombre_completo
+                                                }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">{{ estudiante.email }}</td>
+                                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ estudiante.telefono }}</td>
+                                            <td class="px-6 py-4 text-sm">
+                                                <span
+                                                    class="px-3 py-1 rounded-full text-xs font-semibold"
+                                                    :class="estudiante.estado === 'activo' ? 'bg-green-100 text-green-800' : estudiante.estado === 'inactivo' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'"
+                                                >
+                                                    {{ estudiante.estado }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm">
+                                                <div class="flex justify-center gap-2">
+                                                    <button
+                                                        @click="openEditModal(estudiante)"
+                                                        class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
+                                                        :disabled="loading"
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                    <button
+                                                        @click="deleteItem(estudiante.id)"
+                                                        class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                                        :style="{ background: '#9b3b3e' }"
+                                                        :disabled="loading"
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Controles de paginación fijos en la parte inferior -->
+                    <div v-if="paginationData && paginationData.last_page > 1" class="px-6 py-4 border-t border-gray-200 bg-white">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <!-- Información de paginación -->
+                            <div class="text-sm text-gray-600">
+                                <span v-if="paginationData.total > 0">
+                                    Página {{ paginationData.current_page }} de {{ paginationData.last_page }}
+                                    ({{ paginationData.total }} registros en total)
+                                </span>
+                            </div>
+
+                            <!-- Controles de navegación -->
+                            <div class="flex items-center space-x-1">
+                                <!-- Botón Primera página -->
+                                <button
+                                    @click="goToPage(1)"
+                                    :disabled="currentPage === 1"
+                                    class="p-2 border rounded-lg transition-colors text-xs"
+                                    :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }"
+                                    title="Primera página">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </button>
+
+                                <!-- Botón Anterior -->
+                                <button
+                                    @click="prevPage"
+                                    :disabled="currentPage === 1"
+                                    class="p-2 border rounded-lg transition-colors"
+                                    :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }"
+                                    title="Página anterior">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+
+                                <!-- Números de página (limitado a mostrar) -->
+                                <div class="flex items-center space-x-1">
+                                    <!-- Lógica para mostrar páginas alrededor de la actual -->
+                                    <template v-for="page in getVisiblePages()" :key="page">
+                                        <span v-if="page === '...'" class="px-2 py-1 text-gray-500">...</span>
+                                        <button
+                                            v-else
+                                            @click="goToPage(page)"
+                                            class="px-3 py-1 border rounded-lg transition-colors text-sm"
+                                            :class="{
+                                                'bg-blue-600 text-white': page === currentPage,
+                                                'hover:bg-gray-100': page !== currentPage
+                                            }">
+                                            {{ page }}
+                                        </button>
+                                    </template>
+                                </div>
+
+                                <!-- Botón Siguiente -->
+                                <button
+                                    @click="nextPage"
+                                    :disabled="currentPage === totalPages"
+                                    class="p-2 border rounded-lg transition-colors"
+                                    :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }"
+                                    title="Página siguiente">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+
+                                <!-- Botón Última página -->
+                                <button
+                                    @click="goToPage(totalPages)"
+                                    :disabled="currentPage === totalPages"
+                                    class="p-2 border rounded-lg transition-colors text-xs"
+                                    :class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }"
+                                    title="Última página">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -616,6 +689,56 @@ const goToPage = (page) => {
     if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page;
     }
+};
+
+// Función para calcular qué páginas mostrar en la paginación
+const getVisiblePages = () => {
+    if (!paginationData.value) return [];
+
+    const current = paginationData.value.current_page;
+    const last = paginationData.value.last_page;
+    const delta = 2; // Cuántas páginas mostrar antes y después de la actual
+
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    // Si hay pocas páginas, mostrar todas
+    if (last <= 7) {
+        for (let i = 1; i <= last; i++) {
+            range.push(i);
+        }
+        return range;
+    }
+
+    // Agregar primera página
+    range.push(1);
+
+    // Calcular rango alrededor de la página actual
+    for (let i = Math.max(2, current - delta); i <= Math.min(last - 1, current + delta); i++) {
+        range.push(i);
+    }
+
+    // Agregar última página
+    range.push(last);
+
+    // Eliminar duplicados y ordenar
+    const uniqueRange = [...new Set(range)].sort((a, b) => a - b);
+
+    // Agregar puntos suspensivos donde haya saltos
+    for (let i = 0; i < uniqueRange.length; i++) {
+        if (l) {
+            if (uniqueRange[i] - l === 2) {
+                rangeWithDots.push(l + 1);
+            } else if (uniqueRange[i] - l !== 1) {
+                rangeWithDots.push('...');
+            }
+        }
+        rangeWithDots.push(uniqueRange[i]);
+        l = uniqueRange[i];
+    }
+
+    return rangeWithDots;
 };
 
 // Watchers reactivos para paginación server-side
