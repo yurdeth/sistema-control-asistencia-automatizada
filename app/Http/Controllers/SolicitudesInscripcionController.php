@@ -37,10 +37,11 @@ class SolicitudesInscripcionController extends Controller {
         }
 
         try {
-            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo', 'respondidoPor'])->get();
+            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo.materia', 'respondidoPor'])->get();
+            $data = $solicitudes->map(fn($s) => $this->transformSolicitud($s));
             return response()->json([
                 'success' => true,
-                'data' => $solicitudes
+                'data' => $data
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -76,10 +77,10 @@ class SolicitudesInscripcionController extends Controller {
         }
 
         try {
-            $solicitud = solicitudes_inscripcion::with(['estudiante', 'grupo', 'respondidoPor'])->findOrFail($id);
+            $solicitud = solicitudes_inscripcion::with(['estudiante', 'grupo.materia', 'respondidoPor'])->findOrFail($id);
             return response()->json([
                 'success' => true,
-                'data' => $solicitud
+                'data' => $this->transformSolicitud($solicitud)
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -152,10 +153,12 @@ class SolicitudesInscripcionController extends Controller {
                 'estado' => 'pendiente'
             ]);
 
+            $solicitud->load(['estudiante', 'grupo.materia', 'respondidoPor']);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Solicitud creada exitosamente',
-                'data' => $solicitud
+                'data' => $this->transformSolicitud($solicitud)
             ], 201);
         } catch (Exception $e) {
             return response()->json([
@@ -224,11 +227,12 @@ class SolicitudesInscripcionController extends Controller {
             }
 
             $solicitud->update($request->all());
+            $solicitud->load(['estudiante', 'grupo.materia', 'respondidoPor']);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Solicitud actualizada exitosamente',
-                'data' => $solicitud
+                'data' => $this->transformSolicitud($solicitud)
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -302,13 +306,15 @@ class SolicitudesInscripcionController extends Controller {
         }
 
         try {
-            $solicitudes = solicitudes_inscripcion::with(['grupo', 'respondidoPor'])
+            $solicitudes = solicitudes_inscripcion::with(['grupo.materia', 'respondidoPor'])
                 ->where('estudiante_id', $id)
                 ->get();
 
+            $data = $solicitudes->map(fn($s) => $this->transformSolicitud($s));
+
             return response()->json([
                 'success' => true,
-                'data' => $solicitudes
+                'data' => $data
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -344,13 +350,15 @@ class SolicitudesInscripcionController extends Controller {
         }
 
         try {
-            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'respondidoPor'])
+            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'respondidoPor', 'grupo.materia'])
                 ->where('grupo_id', $id)
                 ->get();
 
+            $data = $solicitudes->map(fn($s) => $this->transformSolicitud($s));
+
             return response()->json([
                 'success' => true,
-                'data' => $solicitudes
+                'data' => $data
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -388,13 +396,15 @@ class SolicitudesInscripcionController extends Controller {
         $estado = $this->sanitizeInput($estado);
 
         try {
-            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo', 'respondidoPor'])
+            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo.materia', 'respondidoPor'])
                 ->where('estado', $estado)
                 ->get();
 
+            $data = $solicitudes->map(fn($s) => $this->transformSolicitud($s));
+
             return response()->json([
                 'success' => true,
-                'data' => $solicitudes
+                'data' => $data
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -432,13 +442,15 @@ class SolicitudesInscripcionController extends Controller {
         $tipo = $this->sanitizeInput($tipo);
 
         try {
-            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo', 'respondidoPor'])
+            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo.materia', 'respondidoPor'])
                 ->where('tipo_solicitud', $tipo)
                 ->get();
 
+            $data = $solicitudes->map(fn($s) => $this->transformSolicitud($s));
+
             return response()->json([
                 'success' => true,
-                'data' => $solicitudes
+                'data' => $data
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -478,13 +490,15 @@ class SolicitudesInscripcionController extends Controller {
 
             $solicitud->update([
                 'estado' => 'aceptada',
-                'respondido_por_id' => auth()->id()
+                'respondido_por' => auth()->id()
             ]);
+
+            $solicitud->load(['estudiante', 'grupo.materia', 'respondidoPor']);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Solicitud aceptada exitosamente',
-                'data' => $solicitud
+                'data' => $this->transformSolicitud($solicitud)
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -524,13 +538,15 @@ class SolicitudesInscripcionController extends Controller {
 
             $solicitud->update([
                 'estado' => 'rechazada',
-                'respondido_por_id' => auth()->id()
+                'respondido_por' => auth()->id()
             ]);
+
+            $solicitud->load(['estudiante', 'grupo.materia', 'respondidoPor']);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Solicitud rechazada exitosamente',
-                'data' => $solicitud
+                'data' => $this->transformSolicitud($solicitud)
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -566,16 +582,18 @@ class SolicitudesInscripcionController extends Controller {
         }
 
         try {
-            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo'])
+            $solicitudes = solicitudes_inscripcion::with(['estudiante', 'grupo.materia'])
                 ->whereHas('grupo', function ($query) use ($id) {
                     $query->where('docente_id', $id);
                 })
                 ->where('estado', 'pendiente')
                 ->get();
 
+            $data = $solicitudes->map(fn($s) => $this->transformSolicitud($s));
+
             return response()->json([
                 'success' => true,
-                'data' => $solicitudes
+                'data' => $data
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -584,6 +602,46 @@ class SolicitudesInscripcionController extends Controller {
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    // --- Nuevo método helper para transformar y normalizar una solicitud ---
+    private function transformSolicitud($s): array {
+        $estudiante = $s->estudiante ?? null;
+        $grupo = $s->grupo ?? null;
+        $materia = $grupo->materia ?? null;
+
+        $estudiante_nombre = $estudiante->nombre_completo ?? $estudiante->name ?? ('#' . ($s->estudiante_id ?? 'N/A'));
+        // Construir nombre de grupo (ej: "Programación - Grupo 1")
+        $materia_nombre = $materia->nombre ?? null;
+        $grupo_label = null;
+        if ($materia_nombre) {
+            $grupo_label = "{$materia_nombre} - Grupo " . ($grupo->numero_grupo ?? $grupo->id ?? '');
+        } else {
+            $grupo_label = "Grupo " . ($grupo->numero_grupo ?? $grupo->id ?? '');
+        }
+
+        return [
+            'id' => $s->id,
+            'estudiante_id' => $s->estudiante_id,
+            'estudiante_nombre' => $estudiante_nombre,
+            'grupo_id' => $s->grupo_id,
+            'grupo_nombre' => $grupo_label,
+            'materia_nombre' => $materia_nombre,
+            'tipo_solicitud' => $this->normalizeText($s->tipo_solicitud),
+            'estado' => $this->normalizeText($s->estado),
+            'mensaje' => $s->mensaje,
+            'motivo_rechazo' => $s->motivo_rechazo,
+            'respondido_por' => $s->respondido_por,
+            'created_at' => $s->created_at,
+            'updated_at' => $s->updated_at,
+        ];
+    }
+
+    private function normalizeText($text): string {
+        $t = str_replace('_', ' ', (string)$text);
+        // usar multibyte para capitalizar correctamente
+        $t = mb_convert_case(mb_strtolower($t, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+        return $t;
     }
 
     private function getUserRoleName(): string|null {

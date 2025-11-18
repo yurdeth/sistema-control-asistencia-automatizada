@@ -165,9 +165,13 @@
 								<option value="">Seleccionar materia...</option>
 								<option v-for="m in materias" :key="m.id" :value="m.id">{{ m.nombre }}</option>
 							</select>
-							<ul v-if="errors.materia_id && errors.materia_id.length" class="text-sm text-red-600 mt-1 list-disc ml-4">
-								<li v-for="(m, idx) in errors.materia_id" :key="idx">{{ m }}</li>
-							</ul>
+							<!-- Normalizado: muestra string o array -->
+							<div v-if="errors.materia_id" class="text-sm text-red-600 mt-1 list-disc ml-4">
+								<template v-if="Array.isArray(errors.materia_id)">
+									<p v-for="(m, idx) in errors.materia_id" :key="idx">{{ m }}</p>
+								</template>
+								<p v-else>{{ errors.materia_id }}</p>
+							</div>
 						</div>
 						<div>
 							<label class="block text-sm">Docente</label>
@@ -175,9 +179,13 @@
 								<option value="">Seleccionar docente...</option>
 								<option v-for="d in docentes" :key="d.id" :value="d.id">{{ d.nombre_completo }}</option>
 							</select>
-							<ul v-if="errors.docente_id && errors.docente_id.length" class="text-sm text-red-600 mt-1 list-disc ml-4">
-								<li v-for="(m, idx) in errors.docente_id" :key="idx">{{ m }}</li>
-							</ul>
+							<!-- Normalizado: muestra string o array -->
+							<div v-if="errors.docente_id" class="text-sm text-red-600 mt-1 list-disc ml-4">
+								<template v-if="Array.isArray(errors.docente_id)">
+									<p v-for="(m, idx) in errors.docente_id" :key="idx">{{ m }}</p>
+								</template>
+								<p v-else>{{ errors.docente_id }}</p>
+							</div>
 						</div>
 						<div>
 							<label class="block text-sm">Ciclo</label>
@@ -185,9 +193,13 @@
 								<option value="">Seleccionar ciclo...</option>
 								<option v-for="c in ciclos" :key="c.id" :value="c.id">{{ c.nombre }}</option>
 							</select>
-							<ul v-if="errors.ciclo_id && errors.ciclo_id.length" class="text-sm text-red-600 mt-1 list-disc ml-4">
-								<li v-for="(m, idx) in errors.ciclo_id" :key="idx">{{ m }}</li>
-							</ul>
+							<!-- Cambiado: mostrar correctamente si errors.ciclo_id es string o array -->
+							<div v-if="errors.ciclo_id" class="text-sm text-red-600 mt-1 list-disc ml-4">
+								<template v-if="Array.isArray(errors.ciclo_id)">
+									<p v-for="(m, idx) in errors.ciclo_id" :key="idx">{{ m }}</p>
+								</template>
+								<p v-else>{{ errors.ciclo_id }}</p>
+							</div>
 						</div>
 						<div>
 							<label class="block text-sm">Nº Grupo</label>
@@ -204,16 +216,24 @@
 								@copy.prevent
 								@cut.prevent
 							/>
-							<ul v-if="errors.numero_grupo && errors.numero_grupo.length" class="text-sm text-red-600 mt-1 list-disc ml-4">
-								<li v-for="(m, idx) in errors.numero_grupo" :key="idx">{{ m }}</li>
-							</ul>
+							<!-- Normalizado: muestra string o array -->
+							<div v-if="errors.numero_grupo" class="text-sm text-red-600 mt-1 list-disc ml-4">
+								<template v-if="Array.isArray(errors.numero_grupo)">
+									<p v-for="(m, idx) in errors.numero_grupo" :key="idx">{{ m }}</p>
+								</template>
+								<p v-else>{{ errors.numero_grupo }}</p>
+							</div>
 						</div>
 						<div>
 							<label class="block text-sm">Capacidad máxima</label>
 							<input v-model="form.capacidad_maxima" type="number" :class="['w-full rounded px-2 py-1 border', errors.capacidad_maxima ? 'border-red-600' : '']" />
-							<ul v-if="errors.capacidad_maxima && errors.capacidad_maxima.length" class="text-sm text-red-600 mt-1 list-disc ml-4">
-								<li v-for="(m, idx) in errors.capacidad_maxima" :key="idx">{{ m }}</li>
-							</ul>
+							<!-- Normalizado: muestra string o array -->
+							<div v-if="errors.capacidad_maxima" class="text-sm text-red-600 mt-1 list-disc ml-4">
+								<template v-if="Array.isArray(errors.capacidad_maxima)">
+									<p v-for="(m, idx) in errors.capacidad_maxima" :key="idx">{{ m }}</p>
+								</template>
+								<p v-else>{{ errors.capacidad_maxima }}</p>
+							</div>
 						</div>
 						<div>
 							<label class="block text-sm">Estado</label>
@@ -230,7 +250,7 @@
 				</div>
 				<div v-if="serverErrors && serverErrors.length" class="mb-3 p-2 rounded bg-red-50 text-red-800">
 					<ul class="list-disc pl-5">
-						<li v-for="(msg, idx) in serverErrors" :key="idx">{{ msg }}</li>
+						<p v-for="(msg, idx) in serverErrors" :key="idx">{{ msg }}</p>
 					</ul>
 				</div>
 				<div class="flex justify-end">

@@ -178,11 +178,11 @@
 							{{ serverErrorMessage }}
 						</div>
 
-						<!-- Agregado: mostrar errores generales del servidor como lista -->
+						<!-- Agregado: mostrar errores generales del servidor como una sola frase -->
 						<div v-if="serverErrors && serverErrors.length" class="mb-3 mx-4 p-2 rounded bg-red-50 text-red-800 text-sm">
-							<ul class="list-disc pl-5">
-								<li v-for="(msg, idx) in serverErrors" :key="idx">{{ msg }}</li>
-							</ul>
+							<p class="text-sm">
+								{{ serverErrors.join('. ') + (serverErrors.length ? '.' : '') }}
+							</p>
 						</div>
 
 						<form @submit.prevent="submitForm" class="space-y-3 sm:space-y-4 p-4 sm:p-6">
@@ -190,43 +190,47 @@
 								<!-- Materia select (nuevo) -->
 								<div>
 									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Materia</label>
-									<select v-model="selectedMateriaId" @change="onMateriaChange" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
+									<select ref="materiaRef" v-model="selectedMateriaId" @change="onMateriaChange" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
 										<option value="">Seleccione materia...</option>
 										<option v-for="m in materias" :key="m.id" :value="m.id">{{ m.nombre }}</option>
 									</select>
+									<!-- mostrado errores para materia -->
+									<p v-if="errors.materia_id && errors.materia_id.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
+										{{ errors.materia_id.join('. ') + (errors.materia_id.length ? '.' : '') }}
+									</p>
 								</div>
 
 								<!-- Grupo select dependiente -->
 								<div>
 									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Grupo</label>
 									<select ref="grupoRef" v-model="form.grupo_id" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
-										<option value="">Seleccione</option>
+										<option value="">Seleccione un grupo</option>
 										<option v-for="g in subjectGroups" :key="g.id" :value="g.id">
 											{{ g.numero_grupo ?? g.nombre ?? ('#' + g.id) }}
 										</option>
 									</select>
-									<ul v-if="errors.grupo_id && errors.grupo_id.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
-										<li v-for="(m, idx) in errors.grupo_id" :key="idx">{{ m }}</li>
-									</ul>
+									<p v-if="errors.grupo_id && errors.grupo_id.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
+										{{ errors.grupo_id.join('. ') + (errors.grupo_id.length ? '.' : '') }}
+									</p>
 								</div>
 
 								<div>
 									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Aula</label>
 									<select ref="aulaRef" v-model="form.aula_id" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
-										<option value="">Seleccione</option>
+										<option value="">Seleccione un aula</option>
 										<option v-for="a in classrooms" :key="a.id" :value="a.id">
 											{{ a.nombre ?? a.nombre_aula ?? a.codigo ?? ('#' + a.id) }}
 										</option>
 									</select>
-									<ul v-if="errors.aula_id && errors.aula_id.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
-										<li v-for="(m, idx) in errors.aula_id" :key="idx">{{ m }}</li>
-									</ul>
+									<p v-if="errors.aula_id && errors.aula_id.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
+										{{ errors.aula_id.join('. ') + (errors.aula_id.length ? '.' : '') }}
+									</p>
 								</div>
 
 								<div>
 									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Día</label>
 									<select ref="diaRef" v-model="form.dia_semana" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
-										<option value="">Seleccione</option>
+										<option value="">Seleccione un dia</option>
 										<option>Lunes</option>
 										<option>Martes</option>
 										<option>Miercoles</option>
@@ -235,25 +239,25 @@
 										<option>Sabado</option>
 										<option>Domingo</option>
 									</select>
-									<ul v-if="errors.dia_semana && errors.dia_semana.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
-										<li v-for="(m, idx) in errors.dia_semana" :key="idx">{{ m }}</li>
-									</ul>
+									<p v-if="errors.dia_semana && errors.dia_semana.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
+										{{ errors.dia_semana.join('. ') + (errors.dia_semana.length ? '.' : '') }}
+									</p>
 								</div>
 
 								<div>
 									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Hora Inicio</label>
 									<input ref="horaInicioRef" type="time" v-model="form.hora_inicio" step="60" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]" />
-									<ul v-if="errors.hora_inicio && errors.hora_inicio.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
-										<li v-for="(m, idx) in errors.hora_inicio" :key="idx">{{ m }}</li>
-									</ul>
+									<p v-if="errors.hora_inicio && errors.hora_inicio.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
+										{{ errors.hora_inicio.join('. ') + (errors.hora_inicio.length ? '.' : '') }}
+									</p>
 								</div>
 
 								<div>
 									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Hora Fin</label>
 									<input ref="horaFinRef" type="time" v-model="form.hora_fin" step="60" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]" />
-									<ul v-if="errors.hora_fin && errors.hora_fin.length" class="text-red-600 text-xs sm:text-sm mt-1 list-disc ml-4">
-										<li v-for="(m, idx) in errors.hora_fin" :key="idx">{{ m }}</li>
-									</ul>
+									<p v-if="errors.hora_fin && errors.hora_fin.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
+										{{ errors.hora_fin.join('. ') + (errors.hora_fin.length ? '.' : '') }}
+									</p>
 								</div>
 							</div>
 
@@ -306,7 +310,7 @@ const classrooms = ref([]);
 const materias = ref([]); // subjects list for modal
 const profesores = ref([]); // docentes list for lookup/display
 const subjectGroups = ref([]); // groups filtered by selected materia in modal
-const selectedMateriaId = ref(''); // materia currently selected in modal
+const selectedMateriaId = ref(''); // materia actualmente seleccionada en modal
 
 const showModal = ref(false);
 const isEditMode = ref(false);
@@ -324,8 +328,10 @@ const aulaRef = ref(null);
 const diaRef = ref(null);
 const horaInicioRef = ref(null);
 const horaFinRef = ref(null);
+const materiaRef = ref(null);
 
-const fieldRefs = { grupo_id: grupoRef, aula_id: aulaRef, dia_semana: diaRef, hora_inicio: horaInicioRef, hora_fin: horaFinRef };
+/* refs para foco */
+const fieldRefs = { grupo_id: grupoRef, aula_id: aulaRef, dia_semana: diaRef, hora_inicio: horaInicioRef, hora_fin: horaFinRef, materia_id: materiaRef };
 const focusFirstError = async () => {
 	const keys = Object.keys(errors.value || {});
 	if (!keys.length) return;
@@ -624,8 +630,51 @@ const openEditModal = async (h) => {
 const closeModal = () => { showModal.value = false; };
 
 /* Normalizar tiempos y submit */
+const friendlyField = {
+	'grupo_id': 'Seleccione un grupo.',
+	'aula_id': 'Seleccione un aula.',
+	'dia_semana': 'Seleccione un día.',
+	'hora_inicio': 'Ingrese la hora de inicio.',
+	'hora_fin': 'Ingrese la hora de fin.',
+	'materia_id': 'Seleccione una materia.'
+};
+
+const validateForm = () => {
+	const errs = {};
+	// campos obligatorios básicos
+	if (!selectedMateriaId.value) errs.materia_id = [friendlyField.materia_id];
+	if (!form.value.grupo_id) errs.grupo_id = [friendlyField.grupo_id];
+	if (!form.value.aula_id) errs.aula_id = [friendlyField.aula_id];
+	if (!form.value.dia_semana) errs.dia_semana = [friendlyField.dia_semana];
+	if (!form.value.hora_inicio) errs.hora_inicio = [friendlyField.hora_inicio];
+	if (!form.value.hora_fin) errs.hora_fin = [friendlyField.hora_fin];
+
+	// validación simple de horas (hora_fin posterior a hora_inicio)
+	if (form.value.hora_inicio && form.value.hora_fin) {
+		const hi = form.value.hora_inicio.toString().slice(0,5);
+		const hf = form.value.hora_fin.toString().slice(0,5);
+		if (hf <= hi) {
+			errs.hora_fin = ['La hora de fin debe ser posterior a la hora de inicio.'];
+		}
+	}
+
+	errors.value = errs;
+	return Object.keys(errs).length === 0;
+};
+
 const submitForm = async () => {
 	submitting.value = true;
+	serverErrorMessage.value = '';
+	serverErrors.value = [];
+	errors.value = {};
+
+	// validación cliente antes de enviar (incluye materia)
+	if (!validateForm()) {
+		await focusFirstError();
+		submitting.value = false;
+		return;
+	}
+
 	const normalizeTime = (t) => {
 		if (t === null || t === undefined) return t;
 		const s = t.toString();
@@ -635,14 +684,10 @@ const submitForm = async () => {
 
 	const payload = {
 		...form.value,
+		materia_id: selectedMateriaId.value, // incluir materia para coherencia con UI
 		hora_inicio: normalizeTime(form.value.hora_inicio),
 		hora_fin: normalizeTime(form.value.hora_fin)
 	};
-
-	// limpiar errores previos
-	errors.value = {};
-	serverErrorMessage.value = '';
-	serverErrors.value = [];
 
 	try {
 		if (isEditMode.value) {
@@ -653,51 +698,53 @@ const submitForm = async () => {
 		await fetchAll();
 		closeModal();
 	} catch (e) {
-		const data = e?.response?.data ?? null;
+		const resp = e?.response ?? null;
+		const data = resp?.data ?? null;
 
-		// campos esperados para horarios
-		const known = new Set(['grupo_id','aula_id','dia_semana','hora_inicio','hora_fin']);
-
-		// si vienen errores estilo Laravel (object)
+		// Si vienen errores de validación (estructura Laravel)
 		if (data && data.errors && typeof data.errors === 'object') {
 			Object.keys(data.errors).forEach(k => {
 				const raw = data.errors[k];
-				const msgArr = Array.isArray(raw) ? raw : [raw];
-				if (known.has(k)) {
-					// mantener formato de array porque plantilla itera arrays
-					errors.value[k] = msgArr;
+				const arr = Array.isArray(raw) ? raw : [raw];
+				// si tenemos un mensaje amigable para el campo, usarlo (evita mostrar "campo_id")
+				if (friendlyField[k]) {
+					errors.value[k] = [friendlyField[k]];
 				} else {
-					// errores no mapeables como lista general
-					serverErrors.value.push(...msgArr.map(m => (typeof m === 'string' ? m : JSON.stringify(m))));
+					errors.value[k] = arr.map(m => (typeof m === 'string' ? m : JSON.stringify(m)));
 				}
 			});
 			// mensaje general opcional
-			if (data.message && typeof data.message === 'string') serverErrorMessage.value = data.message;
+			if (data.message && typeof data.message === 'string') {
+				serverErrorMessage.value = data.message;
+			}
 			await focusFirstError();
 		}
-		// si viene un mensaje genérico (texto)
+		// Si llega un mensaje simple (string)
 		else if (data && typeof data === 'string') {
 			serverErrorMessage.value = data;
 		}
-		// si existe campo error (objeto con error)
+		// Si es un objeto con message/error pero sin estructura errors
 		else if (data && (data.error || data.message)) {
-			serverErrorMessage.value = data.error || data.message;
-		}
-		// fallback por status 422 sin estructura conocida
-		else if (e?.response?.status === 422 && e?.response?.data) {
-			const d = e.response.data;
-			if (d.errors && typeof d.errors === 'object') {
-				Object.keys(d.errors).forEach(k => {
-					const raw = d.errors[k];
-					errors.value[k] = Array.isArray(raw) ? raw : [raw];
-				});
-				serverErrorMessage.value = d.message || 'Error de validación';
-				await focusFirstError();
+			// si es 500 mostrar mensaje más amigable
+			if (resp && resp.status === 500) {
+				serverErrorMessage.value = 'Error interno del servidor. Intente nuevamente más tarde.';
 			} else {
-				serverErrorMessage.value = d.message || 'Error de validación';
+				serverErrorMessage.value = data.error || data.message;
 			}
+		}
+		// Si no hay estructura conocida, manejar por status
+		else if (resp && resp.status === 500) {
+			serverErrorMessage.value = 'Error interno del servidor. Intente nuevamente más tarde.';
+		} else if (resp && resp.status === 409) {
+			// conflictos (p. ej. conflicto de horario)
+			serverErrorMessage.value = data?.message ?? 'Conflicto detectado al guardar.';
 		} else {
 			serverErrorMessage.value = e?.message || 'Error en la solicitud. Revisa la consola para más detalles.';
+		}
+
+		// Si el backend devolvió mensajes no ligados a campos, intentar agregarlos a serverErrors
+		if (data && data.errors && typeof data.errors !== 'object') {
+			serverErrors.value.push(typeof data.errors === 'string' ? data.errors : JSON.stringify(data.errors));
 		}
 		console.error(e);
 	} finally {
