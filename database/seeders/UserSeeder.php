@@ -149,16 +149,19 @@ class UserSeeder extends Seeder
         }
         $this->command->info('Docentes creados');
 
+
         if ($hayCarreras) {
+
+            $targetEstudiantes = 10000;
+            $progressBar = $this->command->getOutput()->createProgressBar($targetEstudiantes);
+
             $this->command->info('Creando Estudiantes...');
-            for ($i = 0; $i < 1200; $i++) {
+            for ($i = 0; $i < $targetEstudiantes; $i++) {
                 $estudiante = User::factory()
                     ->conCarrera()
                     ->create([
                         'email_verificado' => fake()->boolean(85),
-                        'estado' => fake()->randomElement(
-                            ['activo', 'activo', 'activo', 'activo', 'activo',
-                            'activo', 'inactivo', 'inactivo', 'inactivo', 'suspendido']),
+                        'estado' => fake()->randomElement($this->createMultiple(['activo' => 12, 'inactivo' => 7, 'suspendido' => 1])),
                     ]);
 
                 usuario_roles::create([
@@ -166,7 +169,10 @@ class UserSeeder extends Seeder
                     'rol_id' => 6,
                     'asignado_por_id' => $coordinadores->random()->id,
                 ]);
+                $progressBar->advance();
             }
+            $progressBar->finish();
+            $this->command->newLine();
             $this->command->info('Estudiantes creados');
         } else {
             $this->command->warn('Saltando Estudiantes (no hay carreras)');
@@ -176,4 +182,28 @@ class UserSeeder extends Seeder
         $this->command->newLine();
         $this->command->info('Usuarios creados exitosamente:');
     }
+
+    /**
+     * Creates an array with multiple occurrences of keys based on their specified values.
+     * This method is useful for generating weighted random selections.
+     *
+     * For example, `['activo' => 12, 'inactivo' => 7, 'suspendido' => 1]`
+     * will return an array containing 'activo' 12 times, 'inactivo' 7 times,
+     * and 'suspendido' 1 time.
+     *
+     * @param array $data An associative array where keys are the values to be repeated and values are their respective counts.
+     * @return array An array containing the repeated keys.
+     */
+    public function createMultiple(array $data): array
+    {
+        $result = [];
+        foreach ($data as $key => $value) {
+            for ($i = 0; $i < $value; $i++) {
+                $result[] = $key;
+            }
+        }
+        return $result;
+    }
+
+
 }
