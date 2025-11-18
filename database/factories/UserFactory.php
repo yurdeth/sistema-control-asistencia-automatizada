@@ -28,7 +28,7 @@ class UserFactory extends Factory
     {
         return [
             'nombre_completo' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'email' => fake()->unique()->userName() . '@ues.edu.sv',
             'telefono' => '+503 ' . fake()->numberBetween(2000, 9999) . '-' . fake()->numberBetween(1000, 9999),
             'password' => static::$password ??= Hash::make(config('factory.password')),
             'departamento_id' => null,

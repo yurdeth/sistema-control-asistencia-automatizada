@@ -151,7 +151,7 @@ class UserSeeder extends Seeder
 
         if ($hayCarreras) {
             $this->command->info('Creando Estudiantes...');
-            for ($i = 0; $i < 200; $i++) {
+            for ($i = 0; $i < 1200; $i++) {
                 $estudiante = User::factory()
                     ->conCarrera()
                     ->create([
