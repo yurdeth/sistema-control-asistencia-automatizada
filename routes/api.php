@@ -124,6 +124,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
 
     //************************************ MANAGE CLASSROOMS ************************************//
     Route::get('/classrooms/get/all', [AulasController::class, 'index'])->name('aulas.index');
+    Route::get('/classrooms/get/paginated', [AulasController::class, 'getPaginatedClassrooms'])->name('aulas.paginated');
     Route::get('/classrooms/get/{id}', [AulasController::class, 'show'])->name('aulas.show');
     Route::post('/classrooms/new', [AulasController::class, 'store'])->name('aulas.store');
     Route::patch('/classrooms/edit/{id}', [AulasController::class, 'edit'])->name('aulas.edit');

@@ -95,22 +95,30 @@
 
             <!-- Resultados -->
             <div class="mb-4 text-gray-600 text-sm">
-                Mostrando {{ aulasFiltradas.length }} de {{ aulas.length }} aulas
+                <span v-if="usarPaginacionBackend">
+                    Mostrando {{ aulasBackend.length }} de {{ paginacionBackend.total }} aulas (página {{ paginacionBackend.pagina_actual }} de {{ paginacionBackend.ultima_pagina }})
+                </span>
+                <span v-else>
+                    Mostrando {{ aulasFiltradas.length }} de {{ aulas.length }} aulas
+                </span>
             </div>
 
             <!-- Loading -->
-            <div v-if="cargando" class="text-center py-12">
+            <div v-if="cargando || (usarPaginacionBackend && cargandoPaginado)" class="text-center py-12">
                 <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <p class="text-gray-600 mt-4">Cargando aulas...</p>
+                <p class="text-gray-600 mt-4">
+                    <span v-if="usarPaginacionBackend">Cargando aulas paginadas...</span>
+                    <span v-else>Cargando aulas...</span>
+                </p>
             </div>
 
             <!-- Error al cargar -->
-            <div v-else-if="error" class="text-center py-12 bg-red-50 rounded-lg border border-red-200">
+            <div v-else-if="error || (usarPaginacionBackend && errorPaginado)" class="text-center py-12 bg-red-50 rounded-lg border border-red-200">
                 <i class="fa-solid fa-exclamation-triangle text-6xl text-red-400 mb-4"></i>
                 <p class="text-red-600 text-lg font-semibold">Error al cargar las aulas</p>
-                <p class="text-gray-600 text-sm mt-2">{{ error }}</p>
+                <p class="text-gray-600 text-sm mt-2">{{ usarPaginacionBackend ? errorPaginado : error }}</p>
                 <button
-                    @click="cargarAulas"
+                    @click="usarPaginacionBackend ? cargarAulasPaginadas() : cargarAulas()"
                     class="mt-4 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700"
                 >
                     <i class="fa-solid fa-rotate-right"></i> Reintentar
@@ -118,16 +126,16 @@
             </div>
 
             <!-- Lista de aulas -->
-            <div v-else-if="aulas.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div v-else-if="(usarPaginacionBackend ? aulasBackend.length > 0 : aulas.length > 0)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <Card
-                    v-for="aula in aulasPaginadas"
+                    v-for="aula in usarPaginacionBackend ? aulasBackend : aulasPaginadas"
                     :key="aula.id"
                     :aula="aula"
                 />
             </div>
 
             <!-- Sin resultados -->
-            <div v-if="aulasFiltradas.length === 0 && (filtros.busqueda || filtros.capacidad_pupitres !== 'all' || filtros.estado !== 'all')"
+            <div v-if="!usarPaginacionBackend && aulasFiltradas.length === 0 && (filtros.busqueda || filtros.capacidad_pupitres !== 'all' || filtros.estado !== 'all')"
                  class="text-center py-12 bg-gray-50 rounded-lg">
                 <div class="flex flex-col items-center gap-3">
                     <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,8 +166,26 @@
                 </div>
             </div>
 
+            <!-- Sin resultados con paginación backend -->
+            <div v-else-if="usarPaginacionBackend && aulasBackend.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
+                <div class="flex flex-col items-center gap-3">
+                    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-gray-600 text-lg font-medium">
+                        <span v-if="paginacionBackend.pagina_actual === 1">No hay aulas registradas</span>
+                        <span v-else>No hay aulas en esta página</span>
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                        <span v-if="paginacionBackend.pagina_actual === 1">Comienza agregando tu primera aula</span>
+                        <span v-else>Intenta con otra página o ajusta los filtros</span>
+                    </p>
+                </div>
+            </div>
+
             <!-- Sin aulas -->
-            <div v-else-if="aulas.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
+            <div v-else-if="!usarPaginacionBackend && aulas.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
                 <div class="flex flex-col items-center gap-3">
                     <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -169,24 +195,177 @@
                     <p class="text-gray-500 text-sm">Comienza agregando tu primera aula</p>
                 </div>
             </div>
-            <!-- Controles de paginación -->
-            <div v-if="aulasFiltradas.length > 0" class="flex justify-center mt-6 space-x-2">
-                <button
-                    @click="paginaActual--"
-                    :disabled="paginaActual === 1"
-                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
 
-                <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-                <button
-                    @click="paginaActual++"
-                    :disabled="paginaActual === totalPaginas"
-                    class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
+            <!-- Controles de paginación -->
+            <!-- Paginación Frontend -->
+            <div v-if="!usarPaginacionBackend && aulasFiltradas.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+                <div class="text-sm text-gray-700">
+                    Mostrando {{ ((paginaActual - 1) * porPagina) + 1 }} a {{ Math.min(paginaActual * porPagina, aulasFiltradas.length) }}
+                    de {{ aulasFiltradas.length }} resultados
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- Selector de elementos por página -->
+                    <select
+                        v-model="porPagina"
+                        @change="paginaActual = 1"
+                        class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option :value="6">6 por página</option>
+                        <option :value="9">9 por página</option>
+                        <option :value="12">12 por página</option>
+                        <option :value="24">24 por página</option>
+                    </select>
+
+                    <!-- Controles de navegación -->
+                    <div class="flex items-center gap-1">
+                        <!-- Primera página -->
+                        <button
+                            @click="paginaActual = 1"
+                            :disabled="paginaActual === 1"
+                            class="px-2 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Primera página"
+                        >
+                            <i class="fa-solid fa-angle-double-left"></i>
+                        </button>
+
+                        <!-- Página anterior -->
+                        <button
+                            @click="paginaActual--"
+                            :disabled="paginaActual === 1"
+                            class="px-2 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Página anterior"
+                        >
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+
+                        <!-- Números de página -->
+                        <div class="flex items-center gap-1">
+                            <template v-for="page in displayedPages" :key="page">
+                                <button
+                                    v-if="page !== '...'"
+                                    @click="paginaActual = page"
+                                    :class="page === paginaActual ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'"
+                                    class="px-3 py-1 text-sm rounded font-medium transition-colors"
+                                >
+                                    {{ page }}
+                                </button>
+                                <span
+                                    v-else
+                                    class="px-2 py-1 text-sm text-gray-500"
+                                >
+                                    ...
+                                </span>
+                            </template>
+                        </div>
+
+                        <!-- Página siguiente -->
+                        <button
+                            @click="paginaActual++"
+                            :disabled="paginaActual === totalPaginas"
+                            class="px-2 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Página siguiente"
+                        >
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+
+                        <!-- Última página -->
+                        <button
+                            @click="paginaActual = totalPaginas"
+                            :disabled="paginaActual === totalPaginas"
+                            class="px-2 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Última página"
+                        >
+                            <i class="fa-solid fa-angle-double-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paginación Backend -->
+            <div v-else-if="usarPaginacionBackend && paginacionBackend.total > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+                <div class="text-sm text-gray-700">
+                    Mostrando {{ aulasBackend.length }} de {{ paginacionBackend.total }} aulas
+                    (página {{ paginacionBackend.pagina_actual }} de {{ paginacionBackend.ultima_pagina }})
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- Selector de elementos por página -->
+                    <select
+                        v-model="paginacionBackend.por_pagina"
+                        @change="paginacionBackend.pagina_actual = 1; cargarAulasPaginadas()"
+                        class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option :value="10" selected>10 por página</option>
+                        <option :value="15">15 por página</option>
+                        <option :value="25">25 por página</option>
+                        <option :value="50">50 por página</option>
+                        <option :value="100">100 por página</option>
+                    </select>
+
+                    <!-- Controles de navegación -->
+                    <div class="flex items-center gap-1">
+                        <!-- Primera página -->
+                        <button
+                            @click="paginacionBackend.pagina_actual = 1; cargarAulasPaginadas()"
+                            :disabled="paginacionBackend.pagina_actual === 1"
+                            class="px-2 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Primera página"
+                        >
+                            <i class="fa-solid fa-angle-double-left"></i>
+                        </button>
+
+                        <!-- Página anterior -->
+                        <button
+                            @click="paginacionBackend.pagina_actual--; cargarAulasPaginadas()"
+                            :disabled="paginacionBackend.pagina_actual === 1"
+                            class="px-2 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Página anterior"
+                        >
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+
+                        <!-- Números de página -->
+                        <div class="flex items-center gap-1">
+                            <template v-for="page in displayedPagesBackend" :key="page">
+                                <button
+                                    v-if="page !== '...'"
+                                    @click="paginacionBackend.pagina_actual = page; cargarAulasPaginadas()"
+                                    :class="page === paginacionBackend.pagina_actual ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'"
+                                    class="px-3 py-1 text-sm rounded font-medium transition-colors"
+                                >
+                                    {{ page }}
+                                </button>
+                                <span
+                                    v-else
+                                    class="px-2 py-1 text-sm text-gray-500"
+                                >
+                                    ...
+                                </span>
+                            </template>
+                        </div>
+
+                        <!-- Página siguiente -->
+                        <button
+                            @click="paginacionBackend.pagina_actual++; cargarAulasPaginadas()"
+                            :disabled="paginacionBackend.pagina_actual === paginacionBackend.ultima_pagina"
+                            class="px-2 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Página siguiente"
+                        >
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+
+                        <!-- Última página -->
+                        <button
+                            @click="paginacionBackend.pagina_actual = paginacionBackend.ultima_pagina; cargarAulasPaginadas()"
+                            :disabled="paginacionBackend.pagina_actual === paginacionBackend.ultima_pagina"
+                            class="px-2 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Última página"
+                        >
+                            <i class="fa-solid fa-angle-double-right"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
             <br>
         </div>
@@ -430,7 +609,7 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted} from 'vue';
+import {ref, computed, onMounted, watch} from 'vue';
 import {Head, Link} from '@inertiajs/vue3';
 import Loader from '@/Components/AdministrationComponent/Loader.vue';
 import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
@@ -492,6 +671,18 @@ const cargando = ref(false);
 const loading = ref(false);
 const error = ref(null);
 
+// Estados para paginación backend
+const aulasBackend = ref([]);
+const paginacionBackend = ref({
+    pagina_actual: 1,
+    por_pagina: 10,
+    total: 0,
+    ultima_pagina: 1
+});
+const cargandoPaginado = ref(false);
+const errorPaginado = ref(null);
+const usarPaginacionBackend = ref(true); // Switch para activar/desactivar paginación backend
+
 const mensaje = ref({
     mostrar: false,
     tipo: '',
@@ -504,10 +695,24 @@ const filtros = ref({
     estado: 'all'
 });
 
+// Watchers para los filtros - recargar cuando cambian los filtros
+watch(filtros, () => {
+    if (usarPaginacionBackend.value) {
+        paginacionBackend.value.pagina_actual = 1; // Resetear a primera página
+        cargarAulasPaginadas();
+    } else {
+        paginaActual.value = 1; // Resetear a primera página
+    }
+}, { deep: true });
+
 onMounted(async () => {
     await authService.verifyToken(localStorage.getItem("token"));
 
-    await cargarAulas();
+    if (usarPaginacionBackend.value) {
+        await cargarAulasPaginadas();
+    } else {
+        await cargarAulas();
+    }
     // isLoading.value = false;
 });
 
@@ -544,6 +749,75 @@ const aulasFiltradas = computed(() => {
 
         return busquedaAula && capacidadAula && estadoAula;
     });
+});
+
+// ======| Computed properties para paginación |======
+// Para paginación frontend
+const displayedPages = computed(() => {
+    const total = totalPaginas.value;
+    const current = paginaActual.value;
+    const delta = 2; // número de páginas a mostrar antes y después de la actual
+
+    if (total <= 7) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    let range = [];
+    let rangeWithDots = [];
+
+    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+        range.push(i);
+    }
+
+    if (current - delta > 2) {
+        rangeWithDots.push(1, '...');
+    } else {
+        rangeWithDots.push(1);
+    }
+
+    rangeWithDots.push(...range);
+
+    if (current + delta < total - 1) {
+        rangeWithDots.push('...', total);
+    } else {
+        rangeWithDots.push(total);
+    }
+
+    return rangeWithDots;
+});
+
+// Para paginación backend
+const displayedPagesBackend = computed(() => {
+    const total = paginacionBackend.value.ultima_pagina;
+    const current = paginacionBackend.value.pagina_actual;
+    const delta = 2; // número de páginas a mostrar antes y después de la actual
+
+    if (total <= 7) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    let range = [];
+    let rangeWithDots = [];
+
+    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+        range.push(i);
+    }
+
+    if (current - delta > 2) {
+        rangeWithDots.push(1, '...');
+    } else {
+        rangeWithDots.push(1);
+    }
+
+    rangeWithDots.push(...range);
+
+    if (current + delta < total - 1) {
+        rangeWithDots.push('...', total);
+    } else {
+        rangeWithDots.push(total);
+    }
+
+    return rangeWithDots;
 });
 
 // ======| Métodos API |======
@@ -586,6 +860,83 @@ const cargarAulas = async () => {
         mostrarMensaje('error', error.value);
     } finally {
         cargando.value = false;
+    }
+};
+
+// ======| Método para consumir paginación backend |======
+const cargarAulasPaginadas = async () => {
+    cargandoPaginado.value = true;
+    errorPaginado.value = null;
+
+    try {
+        // Construir query params
+        const queryParams = new URLSearchParams({
+            page: paginacionBackend.value.pagina_actual,
+            per_page: paginacionBackend.value.por_pagina,
+        });
+
+        // Agregar filtros si están activos
+        if (filtros.value.busqueda) {
+            queryParams.append('search', filtros.value.busqueda);
+        }
+
+        if (filtros.value.estado !== 'all') {
+            queryParams.append('estado', filtros.value.estado);
+        }
+
+        if (filtros.value.capacidad_pupitres !== 'all') {
+            queryParams.append('capacidad', filtros.value.capacidad_pupitres);
+        }
+
+        // Ordenamiento por defecto
+        queryParams.append('sort_by', 'nombre');
+        queryParams.append('sort_dir', 'asc');
+
+        const response = await axios.get(`/api/classrooms/get/paginated?${queryParams}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (response.data.success) {
+            aulasBackend.value = response.data.data;
+            paginacionBackend.value = {
+                pagina_actual: response.data.pagination.pagina_actual,
+                por_pagina: response.data.pagination.por_pagina,
+                total: response.data.pagination.total,
+                ultima_pagina: response.data.pagination.ultima_pagina
+            };
+
+            console.log('Aulas paginadas:', aulasBackend.value);
+
+            if (aulasBackend.value.length === 0 && paginacionBackend.value.pagina_actual === 1) {
+                mostrarMensaje('info', 'No hay aulas que coincidan con los filtros seleccionados');
+            } else {
+                const desde = response.data.pagination.desde || 0;
+                const hasta = response.data.pagination.hasta || 0;
+                mostrarMensaje('success', `Mostrando ${aulasBackend.value.length} aulas (registro ${desde}-${hasta} de ${paginacionBackend.value.total} totales)`);
+            }
+        } else {
+            throw new Error(response.data.message || 'Error al cargar las aulas paginadas');
+        }
+    } catch (err) {
+        console.error('Error en cargarAulasPaginadas:', err);
+
+        if (err.response?.status === 404) {
+            errorPaginado.value = 'Ruta no encontrada. Verifica que el endpoint paginado esté disponible.';
+        } else if (err.response?.status === 401) {
+            errorPaginado.value = 'No autorizado. Inicia sesión para ver las aulas.';
+        } else if (err.response?.status === 422) {
+            errorPaginado.value = 'Parámetros inválidos: ' + JSON.stringify(err.response.data.errors);
+        } else if (err.response?.status === 500) {
+            errorPaginado.value = err.response?.data?.error || 'Error interno del servidor';
+        } else {
+            errorPaginado.value = err.response?.data?.message || err.message || 'Error al conectar con el servidor';
+        }
+
+        mostrarMensaje('error', errorPaginado.value);
+    } finally {
+        cargandoPaginado.value = false;
     }
 };
 
@@ -758,7 +1109,12 @@ async function handleSubmit() {
         }
 
         alert('Aula creada exitosamente');
-        await cargarAulas();
+
+        if (usarPaginacionBackend.value) {
+            await cargarAulasPaginadas();
+        } else {
+            await cargarAulas();
+        }
         closeModal();
 
         // Limpiar formulario
