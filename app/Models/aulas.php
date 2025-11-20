@@ -92,4 +92,12 @@ class aulas extends Model {
         return $this->hasMany(AulaVideo::class, 'aula_id');
     }
 
+    /**
+     * Relación con AulaQr (hasMany)
+     */
+    public function qrs()
+    {
+        return $this->hasMany(AulaQr::class, 'aula_id');
+    }
+
 }
