@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder {
 //        $this->call(AulasSeeder::class);
         $this->call(AulasTableSeeder::class);
         $this->call(AulasFotosSeeder::class);
+        $this->call(AulasQrSeeder::class);
         $this->call(AulasVideosSeeder::class);
 
         $this->call(RolesSeeder::class);
