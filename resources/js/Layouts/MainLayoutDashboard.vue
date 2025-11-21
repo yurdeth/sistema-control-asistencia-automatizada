@@ -300,6 +300,11 @@ onBeforeUnmount(() => {
                         href: "/dashboard/disponibilidad",
                         icon: "fa-solid fa-calendar-days",
                     },
+                                        {
+                        label: "Sugerencias",
+                        href: "/dashboard/sugerencia-aula",
+                        icon: "fa-solid fa-lightbulb",
+                    },
                     {
                         label: "Horarios",
                         href: "/dashboard/horarios",

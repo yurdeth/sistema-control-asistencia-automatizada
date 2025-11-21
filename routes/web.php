@@ -129,6 +129,13 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
                 'mustCheckAuth' => true
             ]);
         })->name('informes');
+
+        //Para la parte de las sugerencias del aula
+        Route::get('/sugerencia-aula', function () {
+            return Inertia::render('Administration/classroomManagement/classroomSuggestion', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('sugerencia-aula');
     });
 
 // ===== SISTEMA DE ALIAS PARA COMPATIBILIDAD =====
