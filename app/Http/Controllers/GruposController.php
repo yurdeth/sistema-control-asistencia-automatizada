@@ -697,4 +697,224 @@ class GruposController extends Controller {
     private function sanitizeInput($input): string {
         return htmlspecialchars(strip_tags(trim($input)));
     }
+
+
+
+    public function asignarAula(Request $request, $grupo_id): JsonResponse {
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'Acceso no autorizado',
+            'success' => false
+        ], 401);
+    }
+
+    $user_rolName = $this->getUserRoleName();
+    $rolesPermitidos = [
+        RolesEnum::ROOT->value,
+        RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+        RolesEnum::JEFE_DEPARTAMENTO->value,
+        RolesEnum::COORDINADOR_CARRERAS->value,
+    ];
+
+    if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+        return response()->json([
+            'message' => 'Acceso no autorizado',
+            'success' => false
+        ], 403);
+    }
+
+    $request->merge([
+        'dia_semana' => $this->sanitizeInput($request->dia_semana),
+        'hora_inicio' => $this->sanitizeInput($request->hora_inicio),
+        'hora_fin' => $this->sanitizeInput($request->hora_fin),
+    ]);
+
+    $rules = [
+        'dia_semana' => 'required|in:Lunes,Martes,Miercoles,Jueves,Viernes,Sabado,Domingo',
+        'hora_inicio' => 'required|date_format:H:i',
+        'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
+    ];
+
+    $messages = [
+        'dia_semana.required' => 'El día de la semana es obligatorio.',
+        'dia_semana.in' => 'Día inválido.',
+        'hora_inicio.required' => 'La hora de inicio es obligatoria.',
+        'hora_inicio.date_format' => 'Formato de hora inicio inválido (HH:MM).',
+        'hora_fin.required' => 'La hora fin es obligatoria.',
+        'hora_fin.date_format' => 'Formato de hora fin inválido (HH:MM).',
+        'hora_fin.after' => 'La hora fin debe ser posterior a la hora inicio.',
+    ];
+
+    try {
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $validator->errors(),
+                'success' => false
+            ], 422);
+        }
+
+        $grupo = DB::table('grupos')->where('id', $grupo_id)->first();
+        if (!$grupo) {
+            return response()->json([
+                'message' => 'Grupo no encontrado',
+                'success' => false
+            ], 404);
+        }
+
+        $capacidad_grupo = $grupo->capacidad_maxima;
+
+        // Buscar aulas disponibles con capacidad suficiente
+        $aulas_disponibles = DB::table('aulas')
+            ->where('capacidad_pupitres', '>=', $capacidad_grupo)
+            ->where('estado', 'disponible')
+            ->whereNotExists(function ($query) use ($request) {
+                $query->select(DB::raw(1))
+                    ->from('horarios')
+                    ->whereColumn('horarios.aula_id', 'aulas.id')
+                    ->where('horarios.dia_semana', $request->dia_semana)
+                    ->where(function ($q) use ($request) {
+                        $q->whereBetween('horarios.hora_inicio', [$request->hora_inicio, $request->hora_fin])
+                          ->orWhereBetween('horarios.hora_fin', [$request->hora_inicio, $request->hora_fin])
+                          ->orWhere(function ($q2) use ($request) {
+                              $q2->where('horarios.hora_inicio', '<=', $request->hora_inicio)
+                                 ->where('horarios.hora_fin', '>=', $request->hora_fin);
+                          });
+                    });
+            })
+            ->orderBy('capacidad_pupitres', 'asc')
+            ->get();
+
+        if ($aulas_disponibles->isEmpty()) {
+            return response()->json([
+                'message' => 'No hay aulas disponibles con la capacidad necesaria en ese horario',
+                'success' => false,
+                'capacidad_requerida' => $capacidad_grupo
+            ], 404);
+        }
+
+       
+        $aula_asignada = $aulas_disponibles->first();
+
+        DB::beginTransaction();
+
+        // Crear registro en horarios
+        $horario_id = DB::table('horarios')->insertGetId([
+            'grupo_id' => $grupo_id,
+            'aula_id' => $aula_asignada->id,
+            'dia_semana' => $request->dia_semana,
+            'hora_inicio' => $request->hora_inicio,
+            'hora_fin' => $request->hora_fin,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'message' => 'Aula asignada exitosamente',
+            'success' => true,
+            'data' => [
+                'horario_id' => $horario_id,
+                'aula' => [
+                    'id' => $aula_asignada->id,
+                    'codigo' => $aula_asignada->codigo,
+                    'nombre' => $aula_asignada->nombre ?? $aula_asignada->codigo,
+                    'capacidad' => $aula_asignada->capacidad_pupitres,
+                    'ubicacion' => $aula_asignada->ubicacion
+                ],
+                'horario' => [
+                    'dia' => $request->dia_semana,
+                    'hora_inicio' => $request->hora_inicio,
+                    'hora_fin' => $request->hora_fin
+                ]
+            ]
+        ], 201);
+
+    } catch (Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'message' => 'Error al asignar aula',
+            'error' => $e->getMessage(),
+            'success' => false
+        ], 500);
+    }
+}
+
+public function getDisponibilidadAulas(Request $request): JsonResponse {
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'Acceso no autorizado',
+            'success' => false
+        ], 401);
+    }
+
+    try {
+        $capacidad_minima = $request->query('capacidad_minima', 0);
+
+        // Obtener todas las aulas activas
+        $aulas = DB::table('aulas')
+            ->where('estado', 'disponible')
+            ->where('capacidad_pupitres', '>=', $capacidad_minima)
+            ->select('id', 'codigo', 'nombre', 'capacidad_pupitres', 'ubicacion')
+            ->orderBy('codigo')
+            ->get();
+
+        // Obtener todos los horarios ocupados
+        $horarios_ocupados = DB::table('horarios')
+            ->join('grupos', 'horarios.grupo_id', '=', 'grupos.id')
+            ->join('materias', 'grupos.materia_id', '=', 'materias.id')
+            ->select(
+                'horarios.aula_id',
+                'horarios.dia_semana',
+                'horarios.hora_inicio',
+                'horarios.hora_fin',
+                'grupos.numero_grupo',
+                'materias.nombre as materia_nombre'
+            )
+            ->get();
+
+        // Organizar horarios por aula
+        $disponibilidad = [];
+        
+        foreach ($aulas as $aula) {
+            $ocupaciones = $horarios_ocupados->filter(function($h) use ($aula) {
+                return $h->aula_id == $aula->id;
+            })->map(function($h) {
+                return [
+                    'dia' => $h->dia_semana,
+                    'hora_inicio' => substr($h->hora_inicio, 0, 5),
+                    'hora_fin' => substr($h->hora_fin, 0, 5),
+                    'grupo' => $h->numero_grupo,
+                    'materia' => $h->materia_nombre
+                ];
+            })->values();
+
+            $disponibilidad[] = [
+                'aula' => [
+                    'id' => $aula->id,
+                    'codigo' => $aula->codigo,
+                    'nombre' => $aula->nombre ?? $aula->codigo,
+                    'capacidad' => $aula->capacidad_pupitres,
+                    'ubicacion' => $aula->ubicacion
+                ],
+                'horarios_ocupados' => $ocupaciones
+            ];
+        }
+
+        return response()->json([
+            'message' => 'Disponibilidad obtenida exitosamente',
+            'success' => true,
+            'data' => $disponibilidad
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'message' => 'Error al obtener disponibilidad',
+            'error' => $e->getMessage(),
+            'success' => false
+        ], 500);
+    }
+}
 }

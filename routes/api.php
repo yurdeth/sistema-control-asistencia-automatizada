@@ -121,6 +121,8 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/groups/get/status/{estado}', [GruposController::class, 'getGroupsByStatus'])->name('grupos.getByStatus');
     Route::get('/groups/get/available/all', [GruposController::class, 'getAvailableGroups'])->name('grupos.getAvailable');
     Route::post('/groups/get/professor/', [GruposController::class, 'getGroupProfessor'])->name('grupos.getGroupProfessor');
+    Route::post('/groups/assign-classroom/{id}', [GruposController::class, 'asignarAula'])->name('grupos.asignarAula');
+    Route::get('/groups/classrooms/availability', [GruposController::class, 'getDisponibilidadAulas'])->name('grupos.getDisponibilidadAulas');
 
     //************************************ MANAGE CLASSROOMS ************************************//
     Route::get('/classrooms/get/all', [AulasController::class, 'index'])->name('aulas.index');
@@ -138,6 +140,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/classrooms/change-status/{id}', [AulasController::class, 'changeClassroomStatus'])->name('aulas.changeStatus');
     Route::get('/classrooms/get/statistics/{id}', [AulasController::class, 'getClassroomStatistics'])->name('aulas.getStatistics');
     Route::post('/classrooms/suggestions/all', [AulasController::class, 'getClassroomSuggestions'])->name('aulas.getSuggestions');
+    
 
     //************************************ MANAGE SCHEDULES ************************************//
     Route::get('/schedules/get/all', [HorariosController::class, 'index'])->name('horarios.index');
