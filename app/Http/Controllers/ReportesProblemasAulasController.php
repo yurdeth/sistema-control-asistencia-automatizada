@@ -805,6 +805,52 @@ class ReportesProblemasAulasController extends Controller
         }
     }
 
+    public function getFullReport(): JsonResponse{
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $reporte = (new ReporteProblemaAula())->getFullReport();
+
+            if($reporte->isEmpty()){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron reportes'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $reporte
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el reporte',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Obtener el nombre del rol del usuario autenticado
      */

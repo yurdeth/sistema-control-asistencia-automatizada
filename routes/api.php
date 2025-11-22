@@ -140,7 +140,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/classrooms/change-status/{id}', [AulasController::class, 'changeClassroomStatus'])->name('aulas.changeStatus');
     Route::get('/classrooms/get/statistics/{id}', [AulasController::class, 'getClassroomStatistics'])->name('aulas.getStatistics');
     Route::post('/classrooms/suggestions/all', [AulasController::class, 'getClassroomSuggestions'])->name('aulas.getSuggestions');
-    
+
 
     //************************************ MANAGE SCHEDULES ************************************//
     Route::get('/schedules/get/all', [HorariosController::class, 'index'])->name('horarios.index');
@@ -359,4 +359,5 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/classroom-reports/change-status/{id}', [ReportesProblemasAulasController::class, 'cambiarEstado'])->name('classroomReports.cambiarEstado');
     Route::patch('/classroom-reports/assign-user/{id}', [ReportesProblemasAulasController::class, 'asignarUsuario'])->name('classroomReports.asignarUsuario');
     Route::post('/classroom-reports/mark-resolved/{id}', [ReportesProblemasAulasController::class, 'marcarResuelto'])->name('classroomReports.marcarResuelto');
+    Route::get('/classroom-reports/report/all', [ReportesProblemasAulasController::class, 'getFullReport'])->name('classroomReports.getFullReport');
 });
