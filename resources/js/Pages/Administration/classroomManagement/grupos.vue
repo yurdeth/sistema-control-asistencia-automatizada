@@ -153,6 +153,40 @@
 		</div>
 	</MainLayoutDashboard>
 
+	<!-- Notificaciones Toast -->
+		<div class="fixed top-4 right-4 z-50 space-y-2">
+			<div 
+				v-for="notif in notifications" 
+				:key="notif.id"
+				:class="[
+					'transform transition-all duration-300 ease-in-out animate-slide-in',
+					'min-w-[300px] max-w-md p-4 rounded-lg shadow-lg border-l-4 flex items-start gap-3',
+					{
+						'bg-green-50 border-green-500 text-green-800': notif.type === 'success',
+						'bg-red-50 border-red-500 text-red-800': notif.type === 'error',
+						'bg-blue-50 border-blue-500 text-blue-800': notif.type === 'info',
+						'bg-yellow-50 border-yellow-500 text-yellow-800': notif.type === 'warning'
+					}
+				]"
+			>
+				<div class="flex-shrink-0">
+					<i v-if="notif.type === 'success'" class="fas fa-check-circle text-xl text-green-600"></i>
+					<i v-if="notif.type === 'error'" class="fas fa-times-circle text-xl text-red-600"></i>
+					<i v-if="notif.type === 'info'" class="fas fa-info-circle text-xl text-blue-600"></i>
+					<i v-if="notif.type === 'warning'" class="fas fa-exclamation-triangle text-xl text-yellow-600"></i>
+				</div>
+				<div class="flex-1">
+					<p class="font-medium text-sm">{{ notif.message }}</p>
+				</div>
+				<button 
+					@click="notifications = notifications.filter(n => n.id !== notif.id)"
+					class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+				>
+					<i class="fas fa-times"></i>
+				</button>
+			</div>
+		</div>
+
 	<!-- Modal CRUD Grupos -->
 	<div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
 		<div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
@@ -257,12 +291,12 @@
 		</div>
 	</div>
 
-	<!-- Modal Asignar Aula con Mapa Visual -->
+	<!-- Modal Asignar Aula - Solo Mapa Visual -->
 	<div v-if="showAssignModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4 overflow-y-auto">
 		<div class="bg-white rounded-lg shadow-xl w-full max-w-6xl my-8 max-h-[90vh] overflow-y-auto">
 			<div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
 				<div>
-					<h2 class="text-xl font-bold text-gray-900">Asignar Aula</h2>
+					<h2 class="text-xl font-bold text-gray-900">Asignar Aula - Mapa de Disponibilidad</h2>
 					<p class="text-sm text-gray-600 mt-1">Grupo {{ assignForm.numero_grupo }} - {{ assignForm.materia_nombre }}</p>
 					<p class="text-sm text-gray-500">Capacidad necesaria: {{ assignForm.capacidad_maxima }} estudiantes</p>
 				</div>
@@ -272,119 +306,69 @@
 			</div>
 
 			<div class="p-6">
-				<!-- Tabs -->
-				<div class="flex border-b mb-6">
-					<button 
-						@click="assignTab = 'form'"
-						:class="['px-4 py-2 font-medium border-b-2 transition-colors', assignTab === 'form' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700']">
-						Formulario Manual
-					</button>
-					<button 
-						@click="assignTab = 'mapa'; loadDisponibilidad()"
-						:class="['px-4 py-2 font-medium border-b-2 transition-colors', assignTab === 'mapa' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700']">
-						Mapa de Disponibilidad
-					</button>
+				<!-- Loading -->
+				<div v-if="loadingDisponibilidad" class="text-center py-12">
+					<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+					<p class="mt-4 text-gray-600">Cargando mapa de disponibilidad...</p>
 				</div>
 
-				<!-- TAB: Formulario Manual -->
-				<div v-show="assignTab === 'form'">
-					<form @submit.prevent="submitAssignAula" class="space-y-4">
-						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-1">Día de la semana</label>
-							<select v-model="assignForm.dia_semana" class="w-full border border-gray-300 rounded px-3 py-2" required>
-								<option value="">Seleccionar día...</option>
-								<option value="Lunes">Lunes</option>
-								<option value="Martes">Martes</option>
-								<option value="Miercoles">Miércoles</option>
-								<option value="Jueves">Jueves</option>
-								<option value="Viernes">Viernes</option>
-								<option value="Sabado">Sábado</option>
-							</select>
-							<div v-if="assignErrors.dia_semana" class="text-sm text-red-600 mt-1">{{ assignErrors.dia_semana[0] }}</div>
-						</div>
-
-						<div class="grid grid-cols-2 gap-3">
-							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-1">Hora inicio</label>
-								<input v-model="assignForm.hora_inicio" type="time" class="w-full border border-gray-300 rounded px-3 py-2" required />
-								<div v-if="assignErrors.hora_inicio" class="text-sm text-red-600 mt-1">{{ assignErrors.hora_inicio[0] }}</div>
-							</div>
-							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-1">Hora fin</label>
-								<input v-model="assignForm.hora_fin" type="time" class="w-full border border-gray-300 rounded px-3 py-2" required />
-								<div v-if="assignErrors.hora_fin" class="text-sm text-red-600 mt-1">{{ assignErrors.hora_fin[0] }}</div>
-							</div>
-						</div>
-
-						<div v-if="assignedAulaInfo" class="bg-green-50 border border-green-200 rounded-lg p-4">
-							<p class="font-semibold text-green-800 mb-2">✅ Aula asignada exitosamente</p>
-							<div class="text-sm text-gray-700 space-y-1">
-								<p><strong>Aula:</strong> {{ assignedAulaInfo.aula.nombre || assignedAulaInfo.aula.codigo }}</p>
-								<p><strong>Ubicación:</strong> {{ assignedAulaInfo.aula.ubicacion }}</p>
-								<p><strong>Capacidad:</strong> {{ assignedAulaInfo.aula.capacidad_pupitres }} pupitres</p>
-								<p><strong>Horario:</strong> {{ assignedAulaInfo.horario.dia_semana }} de {{ assignedAulaInfo.horario.hora_inicio }} a {{ assignedAulaInfo.horario.hora_fin }}</p>
-							</div>
-						</div>
-
-						<div v-if="assignServerError" class="bg-red-50 border border-red-200 rounded p-3 text-sm text-red-800">
-							{{ assignServerError }}
-						</div>
-
-						<div class="flex justify-end gap-3 pt-4">
-							<button type="button" @click="closeAssignModal" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-								Cancelar
-							</button>
-							<button 
-								type="submit" 
-								:disabled="assignSubmitting || assignedAulaInfo !== null"
-								class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-								{{ assignSubmitting ? 'Asignando...' : (assignedAulaInfo ? 'Aula Asignada' : 'Buscar y Asignar Aula') }}
+				<div v-else-if="disponibilidadAulasOrdenadas.length">
+					<!-- Panel de selección STICKY arriba -->
+					<div v-if="bloqueSeleccionado" class="sticky top-0 z-20 mb-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg shadow-lg">
+						<div class="flex justify-between items-start mb-3">
+							<h3 class="font-bold text-gray-900 text-lg">✓ Bloque Seleccionado</h3>
+							<button @click="bloqueSeleccionado = null" class="text-gray-500 hover:text-gray-700">
+								<i class="fas fa-times"></i>
 							</button>
 						</div>
-					</form>
-				</div>
-
-				<!-- TAB: Mapa de Disponibilidad -->
-				<div v-show="assignTab === 'mapa'">
-					<!-- Loading -->
-					<div v-if="loadingDisponibilidad" class="text-center py-12">
-						<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-						<p class="mt-4 text-gray-600">Cargando mapa de disponibilidad...</p>
+						<div class="grid grid-cols-3 gap-4 text-sm mb-3">
+							<div>
+								<p class="text-gray-600">Aula:</p>
+								<p class="font-semibold text-lg">{{ bloqueSeleccionado.aula.nombre }}</p>
+								<p class="text-xs text-gray-500">Cap: {{ bloqueSeleccionado.aula.capacidad }} pupitres</p>
+							</div>
+							<div>
+								<p class="text-gray-600">Día:</p>
+								<p class="font-semibold text-lg">{{ bloqueSeleccionado.dia }}</p>
+							</div>
+							<div>
+								<p class="text-gray-600">Horario:</p>
+								<p class="font-semibold text-lg">{{ bloqueSeleccionado.horario }}</p>
+							</div>
+						</div>
+						<button 
+							@click="usarBloqueSeleccionado"
+							:disabled="assignSubmitting"
+							class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium text-lg shadow-md transition-all hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed">
+							<i class="fas fa-check-circle mr-2"></i>
+							{{ assignSubmitting ? 'Asignando...' : 'Asignar este horario' }}
+						</button>
 					</div>
 
-					<div v-else-if="disponibilidadAulasOrdenadas.length">
-						<!-- Panel de selección STICKY arriba -->
-						<div v-if="bloqueSeleccionado" class="sticky top-0 z-20 mb-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg shadow-lg">
-							<div class="flex justify-between items-start mb-3">
-								<h3 class="font-bold text-gray-900 text-lg">✓ Bloque Seleccionado</h3>
-								<button @click="bloqueSeleccionado = null" class="text-gray-500 hover:text-gray-700">
-									<i class="fas fa-times"></i>
-								</button>
-							</div>
-							<div class="grid grid-cols-3 gap-4 text-sm mb-3">
-								<div>
-									<p class="text-gray-600">Aula:</p>
-									<p class="font-semibold text-lg">{{ bloqueSeleccionado.aula.nombre }}</p>
-									<p class="text-xs text-gray-500">Cap: {{ bloqueSeleccionado.aula.capacidad }} pupitres</p>
-								</div>
-								<div>
-									<p class="text-gray-600">Día:</p>
-									<p class="font-semibold text-lg">{{ bloqueSeleccionado.dia }}</p>
-								</div>
-								<div>
-									<p class="text-gray-600">Horario:</p>
-									<p class="font-semibold text-lg">{{ bloqueSeleccionado.horario }}</p>
-								</div>
-							</div>
-							<button 
-								@click="usarBloqueSeleccionado"
-								class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium text-lg shadow-md transition-all hover:shadow-lg">
-								<i class="fas fa-check-circle mr-2"></i>Asignar este horario
-							</button>
-						</div>
+					<!-- Mensaje de error -->
+					<div v-if="assignServerError" class="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800 whitespace-pre-line">
+						{{ assignServerError }}
+					</div>
 
-						<!-- Leyenda -->
-						<div class="flex gap-4 mb-4 p-3 bg-gray-50 rounded-lg text-sm">
+					<!-- Mensaje de éxito -->
+					<div v-if="assignedAulaInfo" class="mb-4 bg-green-50 border border-green-200 rounded-lg p-4">
+						<p class="font-semibold text-green-800 mb-2">✅ Aula asignada exitosamente</p>
+						<div class="text-sm text-gray-700 space-y-1">
+							<p><strong>Aula:</strong> {{ assignedAulaInfo.aula.nombre || assignedAulaInfo.aula.codigo }}</p>
+							<p><strong>Ubicación:</strong> {{ assignedAulaInfo.aula.ubicacion }}</p>
+							<p><strong>Capacidad:</strong> {{ assignedAulaInfo.aula.capacidad_pupitres || assignedAulaInfo.aula.capacidad }} pupitres</p>
+							<p><strong>Horario:</strong> {{ assignedAulaInfo.horario.dia_semana }} de {{ assignedAulaInfo.horario.hora_inicio }} a {{ assignedAulaInfo.horario.hora_fin }}</p>
+						</div>
+						<button 
+							@click="closeAssignModal"
+							class="mt-3 w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+							Cerrar
+						</button>
+					</div>
+
+					<!-- Header con leyenda y botón actualizar -->
+					<div class="flex justify-between items-center mb-4">
+						<div class="flex gap-4 p-3 bg-gray-50 rounded-lg text-sm">
 							<div class="flex items-center gap-2">
 								<div class="w-4 h-4 bg-green-100 border-2 border-green-500 rounded"></div>
 								<span class="text-gray-700">Disponible</span>
@@ -397,99 +381,109 @@
 								<div class="w-4 h-4 bg-yellow-100 border-2 border-yellow-500 rounded"></div>
 								<span class="text-gray-700">Seleccionada</span>
 							</div>
-							<div class="ml-auto text-gray-600">
-								<i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
-								Aulas ordenadas por capacidad similar ({{ assignForm.capacidad_maxima }} estudiantes)
-							</div>
 						</div>
+						
+						<button 
+							@click="loadDisponibilidad()"
+							class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-2"
+							:disabled="loadingDisponibilidad"
+						>
+							<i class="fas fa-sync-alt" :class="{'fa-spin': loadingDisponibilidad}"></i>
+							Actualizar Mapa
+						</button>
+					</div>
 
-						<!-- Tabla de disponibilidad -->
-						<div class="overflow-x-auto border border-gray-300 rounded-lg">
-							<table class="w-full text-sm">
-								<thead>
-									<tr class="bg-gray-100">
-										<th class="border-r border-gray-300 px-3 py-2 text-left sticky left-0 bg-gray-100 z-10 min-w-[150px]">
-											<div class="font-bold text-gray-700">Aula</div>
-										</th>
-										<th v-for="dia in diasSemana" :key="dia" class="border-r border-gray-300 px-2 py-2 text-center min-w-[100px]">
-											<div class="font-bold text-gray-700">{{ dia }}</div>
-										</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr v-for="item in disponibilidadAulasPaginadas" :key="item.aula.id" class="hover:bg-gray-50 border-t border-gray-300">
-										<td class="border-r border-gray-300 px-3 py-2 sticky left-0 bg-white font-medium">
-											<div class="flex items-center gap-2">
-												<div class="text-gray-900 font-bold">{{ item.aula.nombre }}</div>
-												<span v-if="item.capacidadSimilar" class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
-													Óptima
-												</span>
-											</div>
-											<div class="text-xs text-gray-600">Cap: {{ item.aula.capacidad }}</div>
-											<div class="text-xs text-gray-500 line-clamp-1">{{ item.aula.ubicacion }}</div>
-										</td>
-										<td v-for="dia in diasSemana" :key="dia" class="border-r border-gray-300 p-1">
-											<div class="space-y-1">
-												<div 
-													v-for="bloque in bloquesHorarios" 
-													:key="bloque.inicio"
-													@click="seleccionarBloqueVisual(item, dia, bloque)"
-													:class="getClaseBloque(item, dia, bloque)"
-													class="text-[10px] rounded cursor-pointer transition-all p-1 text-center relative group border-2">
-													<div class="font-medium">{{ bloque.label }}</div>
-													<div v-if="isOcupado(item, dia, bloque)" class="text-[9px] truncate">
-														Grupo {{ getGrupoOcupante(item, dia, bloque) }}
-													</div>
-													<div v-if="isOcupado(item, dia, bloque)" 
-														 class="hidden group-hover:block absolute z-20 bg-gray-900 text-white text-xs rounded p-2 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-40 shadow-lg">
-														<p class="font-bold">{{ getDetallesOcupacion(item, dia, bloque).materia }}</p>
-														<p class="text-gray-300">Grupo: {{ getDetallesOcupacion(item, dia, bloque).grupo }}</p>
-														<p class="text-gray-300">{{ getDetallesOcupacion(item, dia, bloque).horario }}</p>
-													</div>
+					<div class="text-sm text-gray-600 mb-3 flex items-center gap-2">
+						<i class="fas fa-lightbulb text-yellow-500"></i>
+						Aulas ordenadas por capacidad similar ({{ assignForm.capacidad_maxima }} estudiantes)
+					</div>
+
+					<!-- Tabla de disponibilidad -->
+					<div class="overflow-x-auto border border-gray-300 rounded-lg">
+						<table class="w-full text-sm">
+							<thead>
+								<tr class="bg-gray-100">
+									<th class="border-r border-gray-300 px-3 py-2 text-left sticky left-0 bg-gray-100 z-10 min-w-[150px]">
+										<div class="font-bold text-gray-700">Aula</div>
+									</th>
+									<th v-for="dia in diasSemana" :key="dia" class="border-r border-gray-300 px-2 py-2 text-center min-w-[100px]">
+										<div class="font-bold text-gray-700">{{ dia }}</div>
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="item in disponibilidadAulasPaginadas" :key="item.aula.id" class="hover:bg-gray-50 border-t border-gray-300">
+									<td class="border-r border-gray-300 px-3 py-2 sticky left-0 bg-white font-medium">
+										<div class="flex items-center gap-2">
+											<div class="text-gray-900 font-bold">{{ item.aula.nombre }}</div>
+											<span v-if="item.capacidadSimilar" class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
+												Óptima
+											</span>
+										</div>
+										<div class="text-xs text-gray-600">Cap: {{ item.aula.capacidad }}</div>
+										<div class="text-xs text-gray-500 line-clamp-1">{{ item.aula.ubicacion }}</div>
+									</td>
+									<td v-for="dia in diasSemana" :key="dia" class="border-r border-gray-300 p-1">
+										<div class="space-y-1">
+											<div 
+												v-for="bloque in bloquesHorarios" 
+												:key="bloque.inicio"
+												@click="seleccionarBloqueVisual(item, dia, bloque)"
+												:class="getClaseBloque(item, dia, bloque)"
+												class="text-[10px] rounded cursor-pointer transition-all p-1 text-center relative group border-2">
+												<div class="font-medium">{{ bloque.label }}</div>
+												<div v-if="isOcupado(item, dia, bloque)" class="text-[9px] truncate">
+													Grupo {{ getGrupoOcupante(item, dia, bloque) }}
+												</div>
+												<div v-if="isOcupado(item, dia, bloque)" 
+													 class="hidden group-hover:block absolute z-20 bg-gray-900 text-white text-xs rounded p-2 bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-40 shadow-lg">
+													<p class="font-bold">{{ getDetallesOcupacion(item, dia, bloque).materia }}</p>
+													<p class="text-gray-300">Grupo: {{ getDetallesOcupacion(item, dia, bloque).grupo }}</p>
+													<p class="text-gray-300">{{ getDetallesOcupacion(item, dia, bloque).horario }}</p>
 												</div>
 											</div>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-
-						<!-- Paginación -->
-						<div class="flex justify-center items-center gap-4 mt-4 p-4 border-t border-gray-200">
-							<button
-								@click="currentAulaPage--"
-								:disabled="currentAulaPage === 1"
-								class="px-4 py-2 border rounded-lg transition-colors flex items-center gap-2"
-								:class="{ 'bg-gray-200 cursor-not-allowed text-gray-400': currentAulaPage === 1, 'hover:bg-gray-100 text-gray-700': currentAulaPage > 1 }">
-								<i class="fas fa-chevron-left"></i>
-								Anterior
-							</button>
-
-							<div class="flex items-center gap-2">
-								<span class="text-sm text-gray-600">
-									Página {{ currentAulaPage }} de {{ totalAulaPages }}
-								</span>
-								<span class="text-xs text-gray-500">
-									({{ disponibilidadAulasOrdenadas.length }} aulas)
-								</span>
-							</div>
-
-							<button
-								@click="currentAulaPage++"
-								:disabled="currentAulaPage === totalAulaPages"
-								class="px-4 py-2 border rounded-lg transition-colors flex items-center gap-2"
-								:class="{ 'bg-gray-200 cursor-not-allowed text-gray-400': currentAulaPage === totalAulaPages, 'hover:bg-gray-100 text-gray-700': currentAulaPage < totalAulaPages }">
-								Siguiente
-								<i class="fas fa-chevron-right"></i>
-							</button>
-						</div>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 
-					<!-- Sin resultados -->
-					<div v-else class="text-center py-12 text-gray-500">
-						<i class="fas fa-calendar-times text-4xl mb-4"></i>
-						<p>No hay aulas disponibles con la capacidad requerida</p>
+					<!-- Paginación -->
+					<div class="flex justify-center items-center gap-4 mt-4 p-4 border-t border-gray-200">
+						<button
+							@click="currentAulaPage--"
+							:disabled="currentAulaPage === 1"
+							class="px-4 py-2 border rounded-lg transition-colors flex items-center gap-2"
+							:class="{ 'bg-gray-200 cursor-not-allowed text-gray-400': currentAulaPage === 1, 'hover:bg-gray-100 text-gray-700': currentAulaPage > 1 }">
+							<i class="fas fa-chevron-left"></i>
+							Anterior
+						</button>
+
+						<div class="flex items-center gap-2">
+							<span class="text-sm text-gray-600">
+								Página {{ currentAulaPage }} de {{ totalAulaPages }}
+							</span>
+							<span class="text-xs text-gray-500">
+								({{ disponibilidadAulasOrdenadas.length }} aulas)
+							</span>
+						</div>
+
+						<button
+							@click="currentAulaPage++"
+							:disabled="currentAulaPage === totalAulaPages"
+							class="px-4 py-2 border rounded-lg transition-colors flex items-center gap-2"
+							:class="{ 'bg-gray-200 cursor-not-allowed text-gray-400': currentAulaPage === totalAulaPages, 'hover:bg-gray-100 text-gray-700': currentAulaPage < totalAulaPages }">
+							Siguiente
+							<i class="fas fa-chevron-right"></i>
+						</button>
 					</div>
+				</div>
+
+				<!-- Sin resultados -->
+				<div v-else class="text-center py-12 text-gray-500">
+					<i class="fas fa-calendar-times text-4xl mb-4"></i>
+					<p>No hay aulas disponibles con la capacidad requerida</p>
 				</div>
 			</div>
 		</div>
@@ -648,6 +642,20 @@ const serverErrors = ref([]);
 const selectedOption = ref('view-all');
 const filterForm = ref({ materia_id: '', docente_id: '', ciclo_id: '' });
 
+//notificaciones
+const notifications = ref([]);
+let notificationId = 0;
+
+const showNotification = (message, type = 'success') => {
+	const id = notificationId++;
+	notifications.value.push({ id, message, type });
+	
+	setTimeout(() => {
+		notifications.value = notifications.value.filter(n => n.id !== id);
+	}, 4000);
+};
+
+
 // Variables para modal de asignar aula
 const showAssignModal = ref(false);
 const assignSubmitting = ref(false);
@@ -658,14 +666,13 @@ const assignForm = ref({
 	capacidad_maxima: 0,
 	dia_semana: '',
 	hora_inicio: '',
-	hora_fin: ''
+	hora_fin: '',
+	aula_id: null
 });
-const assignErrors = ref({});
 const assignServerError = ref('');
 const assignedAulaInfo = ref(null);
 
 // Variables para mapa de disponibilidad
-const assignTab = ref('form');
 const loadingDisponibilidad = ref(false);
 const disponibilidadAulas = ref([]);
 const bloqueSeleccionado = ref(null);
@@ -697,7 +704,6 @@ const disponibilidadAulasOrdenadas = computed(() => {
 	const capacidadNecesaria = assignForm.value.capacidad_maxima || 0;
 	
 	return [...disponibilidadAulas.value].sort((a, b) => {
-		
 		const capA = a.aula.capacidad_pupitres || a.aula.capacidad || 0;
 		const capB = b.aula.capacidad_pupitres || b.aula.capacidad || 0;
 		
@@ -731,8 +737,12 @@ const fetchAll = async () => {
 	try {
 		const res = await axios.get(`${API_URL}/groups/get/all`, getAuthHeaders());
 		list.value = res.data.data || [];
-		await populateRelatedNames(list.value);
-	} catch (e) { console.error(e); list.value = []; } finally { loading.value = false; }
+	} catch (e) { 
+		console.error(e); 
+		list.value = []; 
+	} finally { 
+		loading.value = false; 
+	}
 };
 
 const fetchSelectOptions = async () => {
@@ -924,58 +934,39 @@ const loadGroupAssignments = async (grupoId) => {
 		if (!Array.isArray(assignments)) {
 			assignments = Object.values(assignments);
 		}
-		
-		for (let assignment of assignments) {
-			if (assignment.aula_id && !assignment.aula) {
-				try {
-					const aulaRes = await axios.get(
-						`${API_URL}/classrooms/get/${assignment.aula_id}`,
-						getAuthHeaders()
-					);
-					assignment.aula = aulaRes.data.data || aulaRes.data;
-				} catch (e) {
-					console.warn(`No se pudo cargar aula ${assignment.aula_id}:`, e);
-				}
-			}
-		}
-		
 		groupAssignments.value = assignments;
+		
 	} catch (e) {
-		console.error('Error loading assignments:', e);
-		groupAssignments.value = [];
+		if (e?.response?.status === 404) {
+			groupAssignments.value = [];
+		} else {
+			showNotification('Error al cargar asignaciones: ' + (e.response?.data?.message || e.message), 'error');
+			groupAssignments.value = [];
+		}
 	} finally {
 		loadingAssignments.value = false;
 	}
 };
-
 const deleteAssignment = async (assignmentId) => {
 	if (!confirm('¿Está seguro de eliminar esta asignación?')) return;
 	
-	console.log('Intentando eliminar asignación ID:', assignmentId);
-	
 	try {
-		const response = await axios.delete(
+		await axios.delete(
 			`${API_URL}/schedules/delete/${assignmentId}`,
 			getAuthHeaders()
 		);
 		
-		console.log('Respuesta del servidor:', response.data);
+		showNotification('✅ Asignación eliminada correctamente', 'success');
 		
-		// Mostrar mensaje de éxito
-		alert('Asignación eliminada correctamente');
-		
-		// Recargar datos
 		await loadGroupAssignments(currentGroupAssignments.value.id);
 		await fetchAll();
-	} catch (e) {
-		console.error('Error completo:', e);
-		console.error('Respuesta del error:', e.response?.data);
 		
+	} catch (e) {
 		const errorMsg = e.response?.data?.message || 
 		                 e.response?.data?.error || 
-		                 'Error al eliminar la asignación. Intente nuevamente.';
+		                 'Error al eliminar la asignación';
 		
-		alert(errorMsg);
+		showNotification('❌ ' + errorMsg, 'error');
 	}
 };
 
@@ -1133,7 +1124,7 @@ const openEditModal = (g) => {
 
 const closeModal = () => { showModal.value = false; };
 
-const openAssignModal = (g) => {
+const openAssignModal = async (g) => {
 	assignForm.value = {
 		grupo_id: g.id,
 		numero_grupo: g.numero_grupo || g.id,
@@ -1141,17 +1132,20 @@ const openAssignModal = (g) => {
 		capacidad_maxima: g.capacidad_maxima || 0,
 		dia_semana: '',
 		hora_inicio: '',
-		hora_fin: ''
+		hora_fin: '',
+		aula_id: null
 	};
-	assignErrors.value = {};
 	assignServerError.value = '';
 	assignedAulaInfo.value = null;
+	bloqueSeleccionado.value = null;
 	showAssignModal.value = true;
+	
+	// Cargar automáticamente el mapa
+	await loadDisponibilidad();
 };
 
 const closeAssignModal = () => {
 	showAssignModal.value = false;
-	assignTab.value = 'form';
 	assignForm.value = {
 		grupo_id: null,
 		numero_grupo: '',
@@ -1159,9 +1153,9 @@ const closeAssignModal = () => {
 		capacidad_maxima: 0,
 		dia_semana: '',
 		hora_inicio: '',
-		hora_fin: ''
+		hora_fin: '',
+		aula_id: null
 	};
-	assignErrors.value = {};
 	assignServerError.value = '';
 	assignedAulaInfo.value = null;
 	bloqueSeleccionado.value = null;
@@ -1170,41 +1164,57 @@ const closeAssignModal = () => {
 
 const submitAssignAula = async () => {
 	assignSubmitting.value = true;
-	assignErrors.value = {};
 	assignServerError.value = '';
 	assignedAulaInfo.value = null;
 
 	try {
 		const payload = {
+			grupo_id: assignForm.value.grupo_id,
+			aula_id: assignForm.value.aula_id,
 			dia_semana: assignForm.value.dia_semana,
 			hora_inicio: assignForm.value.hora_inicio,
 			hora_fin: assignForm.value.hora_fin
 		};
 
 		const res = await axios.post(
-			`${API_URL}/groups/assign-classroom/${assignForm.value.grupo_id}`,
+			`${API_URL}/schedules/new`,
 			payload,
 			getAuthHeaders()
 		);
-
-		if (res.data.success) {
-			assignedAulaInfo.value = res.data.data;
-			await fetchAll();
+		if (res.data.success || res.data.data) {
+			const aulaRes = await axios.get(
+				`${API_URL}/classrooms/get/${assignForm.value.aula_id}`,
+				getAuthHeaders()
+			);
+			
+			assignedAulaInfo.value = {
+				aula: aulaRes.data.data || aulaRes.data,
+				horario: res.data.data || payload
+			};
+			
+			showNotification(' Aula asignada exitosamente', 'success');
 		}
+
+		await fetchAll();
+		
 	} catch (e) {
 		const data = e?.response?.data ?? null;
 		
-		if (data && data.errors && typeof data.errors === 'object') {
-			assignErrors.value = data.errors;
-		}
-		
-		if (data && data.message) {
+		if (e?.response?.status === 409) {
+			const conflictMsg = data?.message || 'Conflicto de horario detectado';
+			assignServerError.value = `⚠️ ${conflictMsg}`;
+			showNotification(conflictMsg, 'warning');
+			await loadDisponibilidad();
+		} 
+		else if (data && data.message) {
 			assignServerError.value = data.message;
-		} else {
+			showNotification('❌ ' + data.message, 'error');
+		} 
+		else {
 			assignServerError.value = 'Error al asignar aula. Intente nuevamente.';
+			showNotification('❌ Error al asignar aula', 'error');
 		}
 		
-		console.error('Error asignando aula:', e);
 	} finally {
 		assignSubmitting.value = false;
 	}
@@ -1221,27 +1231,22 @@ const loadDisponibilidad = async () => {
 		disponibilidadAulas.value = res.data.data || [];
 		
 	} catch (e) {
-		console.error('Error loading disponibilidad:', e);
 		disponibilidadAulas.value = [];
 	} finally {
 		loadingDisponibilidad.value = false;
 	}
 };
-
 const isOcupado = (item, dia, bloque) => {
 	return item.horarios_ocupados.some(h => {
 		if (h.dia !== dia) return false;
-		const ocupadoInicio = h.hora_inicio;
-		const ocupadoFin = h.hora_fin;
-		const bloqueInicio = bloque.inicio;
-		const bloqueFin = bloque.fin;
+		const ocupadoInicio = h.hora_inicio.padStart(5, '0');
+		const ocupadoFin = h.hora_fin.padStart(5, '0');
+		const bloqueInicio = bloque.inicio.padStart(5, '0');
+		const bloqueFin = bloque.fin.padStart(5, '0');
 		
-		return (
-			(ocupadoInicio < bloqueFin && ocupadoFin > bloqueInicio)
-		);
+		return ocupadoInicio < bloqueFin && ocupadoFin > bloqueInicio;
 	});
 };
-
 const getClaseBloque = (item, dia, bloque) => {
 	const ocupado = isOcupado(item, dia, bloque);
 	const seleccionado = bloqueSeleccionado.value && 
@@ -1278,8 +1283,41 @@ const getDetallesOcupacion = (item, dia, bloque) => {
 	} : {};
 };
 
-const seleccionarBloqueVisual = (item, dia, bloque) => {
-	if (isOcupado(item, dia, bloque)) return;
+const verificarConflictoGrupo = async (dia, bloque) => {
+	try {
+		const res = await axios.get(
+			`${API_URL}/schedules/get/group/${assignForm.value.grupo_id}`,
+			getAuthHeaders()
+		);
+		
+		const asignaciones = res.data.data || res.data || [];
+		
+		return asignaciones.some(a => {
+			if (a.dia_semana !== dia && a.dia !== dia) return false;
+			
+			const existeInicio = a.hora_inicio;
+			const existeFin = a.hora_fin;
+			const nuevoInicio = bloque.inicio;
+			const nuevoFin = bloque.fin;
+			
+			return (existeInicio < nuevoFin && existeFin > nuevoInicio);
+		});
+	} catch (e) {
+		return false;
+	}
+};
+
+const seleccionarBloqueVisual = async (item, dia, bloque) => {
+	if (isOcupado(item, dia, bloque)) {
+		alert(' Este bloque está ocupado por otro grupo');
+		return;
+	}
+	
+	const grupoTieneClase = await verificarConflictoGrupo(dia, bloque);
+	if (grupoTieneClase) {
+		const confirmar = confirm(`⚠️ ADVERTENCIA: El grupo ya tiene una clase asignada el ${dia} en el horario ${bloque.inicio} - ${bloque.fin}.\n\n¿Desea continuar de todos modos?`);
+		if (!confirmar) return;
+	}
 	
 	bloqueSeleccionado.value = {
 		aula: item.aula,
@@ -1293,14 +1331,30 @@ const seleccionarBloqueVisual = (item, dia, bloque) => {
 const usarBloqueSeleccionado = async () => {
 	if (!bloqueSeleccionado.value) return;
 	
+	assignForm.value.aula_id = bloqueSeleccionado.value.aula.id;
 	assignForm.value.dia_semana = bloqueSeleccionado.value.dia;
 	assignForm.value.hora_inicio = bloqueSeleccionado.value.bloque.inicio;
 	assignForm.value.hora_fin = bloqueSeleccionado.value.bloque.fin;
 	
-	assignTab.value = 'form';
-	
-	await new Promise(resolve => setTimeout(resolve, 100));
 	await submitAssignAula();
+	
+	if (assignedAulaInfo.value) {
+		bloqueSeleccionado.value = null;
+		await loadDisponibilidad();
+	}
+};
+
+
+const compararHoras = (hora1, hora2) => {
+	const formatear = (h) => {
+		const partes = h.split(':');
+		return partes[0].padStart(2, '0') + ':' + partes[1];
+	};
+	
+	const h1 = formatear(hora1);
+	const h2 = formatear(hora2);
+	
+	return h1.localeCompare(h2);
 };
 
 const submitForm = async () => {
