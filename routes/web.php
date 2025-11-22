@@ -136,6 +136,12 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
                 'mustCheckAuth' => true
             ]);
         })->name('sugerencia-aula');
+
+        Route::get('mantenimientos', function () {
+            return Inertia::render('Administration/General/mantenimiento', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('mantenimientos');
     });
 
 // ===== SISTEMA DE ALIAS PARA COMPATIBILIDAD =====
