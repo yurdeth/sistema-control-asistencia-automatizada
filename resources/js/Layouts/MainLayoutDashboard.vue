@@ -319,6 +319,11 @@ onBeforeUnmount(() => {
                         label: "Sesiones de Clase",
                         href: "/dashboard/sesiones-clase",
                         icon: "fa-solid fa-calendar-check",
+                    },
+                    {
+                        label: "Mantenimiento",
+                        href: "/dashboard/mantenimientos",
+                        icon: "fa-solid fa-screwdriver-wrench",
                     }
                 ]
         },
