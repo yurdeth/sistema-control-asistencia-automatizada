@@ -805,7 +805,7 @@ class ReportesProblemasAulasController extends Controller
         }
     }
 
-    public function getFullReport(): JsonResponse{
+    public function getFullReport(Request $request): JsonResponse{
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -813,7 +813,7 @@ class ReportesProblemasAulasController extends Controller
             ], 401);
         }
 
-        $user_rolName = $this->getUserRoleName();
+        $userRol = $this->getUserRoleName();
         $rolesPermitidos = [
             RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
@@ -821,7 +821,7 @@ class ReportesProblemasAulasController extends Controller
             RolesEnum::COORDINADOR_CARRERAS->value,
         ];
 
-        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+        if (!in_array($userRol?->value ?? $userRol, $rolesPermitidos, true)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -829,9 +829,24 @@ class ReportesProblemasAulasController extends Controller
         }
 
         try {
-            $reporte = (new ReporteProblemaAula())->getFullReport();
+            $reporteQuery = new ReporteProblemaAula();
 
-            if($reporte->isEmpty()){
+            $categoria = $request->input('categoria');
+            $estado = $request->input('estado');
+
+            if ($categoria && $estado) {
+                $reporte = $reporteQuery->getByCategoryAndStatus($categoria, $estado);
+            }
+            elseif ($categoria) {
+                $reporte = $reporteQuery->getFullReportByCategory($categoria);
+            } elseif ($estado) {
+                $reporte = $reporteQuery->getFullReportByStatus($estado);
+            }
+            else {
+                $reporte = $reporteQuery->getFullReport();
+            }
+
+            if ($reporte->isEmpty()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se encontraron reportes'
@@ -842,6 +857,7 @@ class ReportesProblemasAulasController extends Controller
                 'success' => true,
                 'data' => $reporte
             ], 200);
+
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

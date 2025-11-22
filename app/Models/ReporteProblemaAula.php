@@ -61,6 +61,7 @@ class ReporteProblemaAula extends Model
                 'reportes_problemas_aulas.id',
                 'reportes_problemas_aulas.categoria',
                 'reportes_problemas_aulas.descripcion',
+                'reportes_problemas_aulas.estado',
                 'reportes_problemas_aulas.foto_evidencia',
                 'reportes_problemas_aulas.fecha_resolucion',
                 'reportes_problemas_aulas.notas_resolucion',
@@ -71,5 +72,64 @@ class ReporteProblemaAula extends Model
             ->get();
     }
 
+    public function getFullReportByCategory(string $category): Collection {
+        return DB::table( 'reportes_problemas_aulas')
+            ->join('aulas', 'reportes_problemas_aulas.aula_id', '=', 'aulas.id')
+            ->leftJoin('users', 'reportes_problemas_aulas.usuario_asignado_id', '=', 'users.id')
+            ->select(
+                'reportes_problemas_aulas.id',
+                'reportes_problemas_aulas.categoria',
+                'reportes_problemas_aulas.descripcion',
+                'reportes_problemas_aulas.estado',
+                'reportes_problemas_aulas.foto_evidencia',
+                'reportes_problemas_aulas.fecha_resolucion',
+                'reportes_problemas_aulas.notas_resolucion',
+                'reportes_problemas_aulas.created_at as fecha_reporte',
+                'aulas.nombre as aula_nombre',
+                'users.nombre_completo as usuario_asignado'
+            )
+            ->where('reportes_problemas_aulas.categoria', $category)
+            ->get();
+    }
 
+    public function getFullReportByStatus(string $status): Collection {
+        return DB::table( 'reportes_problemas_aulas')
+            ->join('aulas', 'reportes_problemas_aulas.aula_id', '=', 'aulas.id')
+            ->leftJoin('users', 'reportes_problemas_aulas.usuario_asignado_id', '=', 'users.id')
+            ->select(
+                'reportes_problemas_aulas.id',
+                'reportes_problemas_aulas.categoria',
+                'reportes_problemas_aulas.descripcion',
+                'reportes_problemas_aulas.estado',
+                'reportes_problemas_aulas.foto_evidencia',
+                'reportes_problemas_aulas.fecha_resolucion',
+                'reportes_problemas_aulas.notas_resolucion',
+                'reportes_problemas_aulas.created_at as fecha_reporte',
+                'aulas.nombre as aula_nombre',
+                'users.nombre_completo as usuario_asignado'
+            )
+            ->where('reportes_problemas_aulas.estado', $status)
+            ->get();
+    }
+
+    public function getByCategoryAndStatus(string $category, string $status): Collection {
+        return DB::table( 'reportes_problemas_aulas')
+            ->join('aulas', 'reportes_problemas_aulas.aula_id', '=', 'aulas.id')
+            ->leftJoin('users', 'reportes_problemas_aulas.usuario_asignado_id', '=', 'users.id')
+            ->select(
+                'reportes_problemas_aulas.id',
+                'reportes_problemas_aulas.categoria',
+                'reportes_problemas_aulas.descripcion',
+                'reportes_problemas_aulas.estado',
+                'reportes_problemas_aulas.foto_evidencia',
+                'reportes_problemas_aulas.fecha_resolucion',
+                'reportes_problemas_aulas.notas_resolucion',
+                'reportes_problemas_aulas.created_at as fecha_reporte',
+                'aulas.nombre as aula_nombre',
+                'users.nombre_completo as usuario_asignado'
+            )
+            ->where('reportes_problemas_aulas.categoria', $category)
+            ->where('reportes_problemas_aulas.estado', $status)
+            ->get();
+    }
 }

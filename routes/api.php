@@ -359,5 +359,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/classroom-reports/change-status/{id}', [ReportesProblemasAulasController::class, 'cambiarEstado'])->name('classroomReports.cambiarEstado');
     Route::patch('/classroom-reports/assign-user/{id}', [ReportesProblemasAulasController::class, 'asignarUsuario'])->name('classroomReports.asignarUsuario');
     Route::post('/classroom-reports/mark-resolved/{id}', [ReportesProblemasAulasController::class, 'marcarResuelto'])->name('classroomReports.marcarResuelto');
-    Route::get('/classroom-reports/report/all', [ReportesProblemasAulasController::class, 'getFullReport'])->name('classroomReports.getFullReport');
+
+    // New ones
+    Route::post('/classroom-reports/report/all', [ReportesProblemasAulasController::class, 'getFullReport'])->name('classroomReports.getFullReport');
 });
