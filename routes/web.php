@@ -130,6 +130,13 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
             ]);
         })->name('informes');
 
+        // Vista provisional: Todas las notificaciones (acceso desde /dashboard/notificaciones)
+        Route::get('/notificaciones', function () {
+            return Inertia::render('Administration/General/notificaciones', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('notificaciones');
+
         //Para la parte de las sugerencias del aula
         Route::get('/sugerencia-aula', function () {
             return Inertia::render('Administration/classroomManagement/classroomSuggestion', [

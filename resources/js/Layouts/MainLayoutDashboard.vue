@@ -51,7 +51,6 @@
                     <i class="fa-solid fa-grip"></i>
                     Dashboard
                 </Link>
-
                 <Link
                 href="/dashboard/departamentos"
                 class="sidebar-link p-2 rounded flex items-center gap-2 transition-all duration-200"
@@ -64,6 +63,18 @@
                     Departamentos
                 </Link>
 
+                <!-- Acceso directo a la vista completa de notificaciones desde el nav -->
+                <Link
+                    href="/dashboard/notificaciones"
+                    class="sidebar-link p-2 rounded flex items-center gap-2 transition-all duration-200"
+                    :class="{ 'bg-white/10 font-semibold': isActive('/dashboard/departamentos') }"
+                    :style="{
+                        color: colorText,
+                        borderLeft: isActive('/dashboard/notificaciones') ? '3px solid #ffffff' : 'none'
+                    }">
+                    <i class="fa-solid fa-inbox text-base sm:text-lg"></i>
+                    Notificaciones
+                </Link>
             <!-- Submenús -->
             <div v-for="(menu, index) in menus" :key="index">
                 <button
@@ -132,39 +143,52 @@
 
                     <div class="flex items-center gap-2 sm:gap-4" v-if="user && user.nombre_completo">
                         <!-- Notificaciones -->
-                        <div class="relative">
-                            <Link
-                            href="#"
-                            class="sidebar-link flex items-center gap-2 p-3 rounded-lg transition-colors duration-300
-                                    hover:text-white shadow-lg hover:shadow-md min-w-[44px] min-h-[44px]"
-                            :style="{ color: colorText }"
+                        <div class="relative" ref="notificationsRef">
+                            <!-- Botón que abre el panel de notificaciones -->
+                            <button
+                                @click.prevent="toggleNotifications"
+                                class="sidebar-link flex items-center gap-2 p-3 rounded-lg transition-colors duration-300
+                                       hover:text-white shadow-lg hover:shadow-md min-w-[44px] min-h-[44px] bg-transparent border-0"
+                                :style="{ color: colorText }"
+                                type="button"
                             >
-                                <!-- Icono con posición relativa para el badge en móvil -->
-                                <div class="relative">
+                                <div class="relative flex items-center">
                                     <i class="fa-solid fa-bell text-base sm:text-lg"></i>
-                                    <!-- Badge para móvil -->
+                                    <!-- Badge (colocado sobre la campana) -->
                                     <span
                                         v-if="notificationCount > 0"
-                                        class="absolute -top-1 -right-1 text-white text-xs font-bold flex items-center justify-center rounded-full
-                                            transform hover:-translate-y-0.5 transition-all duration-200 shadow-md sm:hidden
-                                            min-w-[16px] min-h-[16px] px-1"
-                                        :style="{background:'#eb6238'}"
+                                        class="notification-badge text-white text-xs font-bold flex items-center justify-center rounded-full
+                                            min-w-[18px] min-h-[18px] px-1"
                                     >
                                         {{ notificationCount }}
                                     </span>
                                 </div>
-                                <span class="hidden sm:inline">Notificaciones</span>
-                            </Link>
-                            <!-- Badge para escritorio -->
-                            <span
-                                v-if="notificationCount > 0"
-                                class="hidden sm:inline absolute top-2 right-0 text-white text-xs font-bold flex items-center justify-center rounded-full
-                                    transform hover:-translate-y-0.5 transition-all duration-200 shadow-md
-                                    min-w-[20px] min-h-[20px] px-1"
-                                :style="{background:'#eb6238'}"
+                                <!-- <span class="hidden sm:inline">Notificaciones</span> -->
+                            </button>
+
+                            <!-- Panel provisional de notificaciones -->
+                            <div
+                                v-if="notificationOpen"
+                                class="notifications-panel absolute right-0 mt-2 w-80 sm:w-96 bg-white text-black rounded-md shadow-lg z-50"
+                                @click.stop
                             >
-                                {{ notificationCount }}
-                            </span>
+                                <div class="px-4 py-2 text-sm font-semibold border-b flex items-center justify-between">
+                                    <span>Notificaciones ({{ notificationCount }})</span>
+                                    <button class="text-xs text-gray-500" @click="markAllRead">Marcar leídas</button>
+                                </div>
+                                <div class="max-h-60 overflow-y-auto">
+                                    <div v-if="notifications.length === 0" class="p-4 text-sm text-gray-600">
+                                        No hay notificaciones.
+                                    </div>
+                                    <div v-for="(n, idx) in notifications" :key="idx" class="notification-item px-4 py-3 border-b last:border-b-0">
+                                        <div class="text-sm font-medium">{{ n.title }}</div>
+                                        <div class="text-xs text-gray-500 mt-1">{{ n.body }}</div>
+                                    </div>
+                                </div>
+                                <div class="px-4 py-2 border-t text-right">
+                                    <button class="text-sm text-[#660D04] hover:underline" @click="goToAllNotifications">Ver todas</button>
+                                </div>
+                            </div>
                         </div>
 
 
@@ -421,11 +445,43 @@ onBeforeUnmount(() => {
         }
     }
 
+    // Estado del panel de notificaciones
+    const notificationOpen = ref(false);
+    const notificationsRef = ref(null);
+    const notifications = ref([
+        { title: 'Bienvenida', body: 'Bienvenido al sistema. Esta es una notificación provisional.' },
+        { title: 'Recordatorio', body: 'Recuerde revisar sus horarios.' },
+        { title: 'Mantenimiento', body: 'Se realizará mantenimiento el viernes.' }
+    ]);
+
+    function toggleNotifications(e) {
+        notificationOpen.value = !notificationOpen.value;
+        if (e && e.stopPropagation) e.stopPropagation();
+    }
+
+    function markAllRead() {
+        // provisional: vaciar lista y contador
+        notifications.value = [];
+        notificationCount.value = 0;
+        notificationOpen.value = false;
+    }
+
+    function goToAllNotifications() {
+        // temporalmente redirigir a una ruta de notificaciones si existe
+        notificationOpen.value = false;
+        router.get('/dashboard/notificaciones');
+    }
+
     // Función que detecta si se ha hecho clic fuera del dropdown
     const handleClickOutside = (event) => {
-        // Verifica si el clic fue fuera del dropdown
-        if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
-                dropdownOpen.value = false // Cierra el dropdown si el clic fue fuera
+        const target = event.target;
+        // Cerrar dropdown usuario si clic fuera
+        if (dropdownRef.value && !dropdownRef.value.contains(target)) {
+            dropdownOpen.value = false;
+        }
+        // Cerrar panel de notificaciones si clic fuera
+        if (notificationsRef.value && !notificationsRef.value.contains(target)) {
+            notificationOpen.value = false;
         }
     }
 
@@ -518,5 +574,26 @@ onBeforeUnmount(() => {
             border-left-width: 3px;
             transform: translateX(0);
         }
+    }
+
+    /* Badge sobre la campana */
+    .notification-badge {
+        background: #eb6238;
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    }
+
+    .notifications-panel {
+        min-width: 18rem;
+    }
+
+    .notification-item {
+        background: white;
     }
 </style>
