@@ -205,7 +205,7 @@
                             type="tel"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             :class="{'border-red-500': formErrors.telefono}"
-                            placeholder="0000-0000"
+                            placeholder="1234-5678"
                             @input="formatPhone"
                             required
                         />
