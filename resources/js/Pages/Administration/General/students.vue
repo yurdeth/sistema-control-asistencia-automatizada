@@ -311,9 +311,10 @@
                     <input
                         v-model="formData.telefono"
                         type="text"
-                        placeholder="+503 1234-5678"
+                        placeholder="1234-5678"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :class="{'border-red-500': formErrors.telefono}"
+                        @input="formatPhone"
                     />
                     <p v-if="formErrors.telefono" class="text-red-500 text-sm mt-1">
                         {{ formErrors.telefono[0] }}
@@ -1217,6 +1218,28 @@ const fetchByCareer = async (career_id) => {
 const handleFetchByCareer = () => {
     // Lógica para manejar el cambio al ver por departamento
     fetchByCareer(formData.value.carrera_id);
+};
+
+const formatPhone = () => {
+    // Eliminar cualquier carácter que no sea dígito
+    let value = formData.value.telefono.replace(/\D/g, '');
+
+    // Verificar si el primer dígito es 2, 6 o 7
+    if (value.length > 0 && !/^[267]/.test(value)) {
+        // Si el primer dígito no es 2, 6 ni 7, borrar todo
+        formData.value.telefono = '';
+    } else {
+        // Si hay más de 8 dígitos, truncar a 8
+        if (value.length > 8) {
+            value = value.slice(0, 8);
+        }
+        // Formatear el número de teléfono con guion después de 4 dígitos
+        if (value.length > 4) {
+            formData.value.telefono = `${value.slice(0, 4)}-${value.slice(4)}`;
+        } else {
+            formData.value.telefono = value;
+        }
+    }
 };
 
 const handleSelectFilter = () => {
