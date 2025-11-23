@@ -318,7 +318,7 @@
                     </div>
 
                     <!-- Columna 2 -->
-                    <div v-if="[4, 5, 6].includes(userFormData.rol_id)" :class="{'display': display}">
+                    <div v-if="[4, 6].includes(userFormData.rol_id)" :class="{'display': display}">
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Carrera <span class="text-red-500">*</span>
                         </label>
