@@ -130,6 +130,13 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
             ]);
         })->name('informes');
 
+        // Vista provisional: Todas las notificaciones (acceso desde /dashboard/notificaciones)
+        Route::get('/notificaciones', function () {
+            return Inertia::render('Administration/General/notificaciones', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('notificaciones');
+
         //Para la parte de las sugerencias del aula
         Route::get('/sugerencia-aula', function () {
             return Inertia::render('Administration/classroomManagement/classroomSuggestion', [
@@ -142,6 +149,12 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
                 'mustCheckAuth' => true
             ]);
         })->name('mantenimientos');
+
+        Route::get('incidencias', function() {
+            return Inertia::render('Administration/General/incidencia', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('incidencias');
     });
 
 // ===== SISTEMA DE ALIAS PARA COMPATIBILIDAD =====

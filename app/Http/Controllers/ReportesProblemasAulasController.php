@@ -805,6 +805,68 @@ class ReportesProblemasAulasController extends Controller
         }
     }
 
+    public function getFullReport(Request $request): JsonResponse{
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $userRol = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
+
+        if (!in_array($userRol?->value ?? $userRol, $rolesPermitidos, true)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $reporteQuery = new ReporteProblemaAula();
+
+            $categoria = $request->input('categoria');
+            $estado = $request->input('estado');
+
+            if ($categoria && $estado) {
+                $reporte = $reporteQuery->getByCategoryAndStatus($categoria, $estado);
+            }
+            elseif ($categoria) {
+                $reporte = $reporteQuery->getFullReportByCategory($categoria);
+            } elseif ($estado) {
+                $reporte = $reporteQuery->getFullReportByStatus($estado);
+            }
+            else {
+                $reporte = $reporteQuery->getFullReport();
+            }
+
+            if ($reporte->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron reportes'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $reporte
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el reporte',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Obtener el nombre del rol del usuario autenticado
      */
