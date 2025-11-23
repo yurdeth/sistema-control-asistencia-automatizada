@@ -376,7 +376,7 @@ onBeforeUnmount(() => {
                 },
                 {
                     label: "Incidencias",
-                    href: "#",
+                    href: "/dashboard/incidencias",
                     icon: "fa-solid fa-triangle-exclamation",
                 },
             ]

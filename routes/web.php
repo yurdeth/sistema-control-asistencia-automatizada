@@ -142,6 +142,12 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
                 'mustCheckAuth' => true
             ]);
         })->name('mantenimientos');
+
+        Route::get('incidencias', function() {
+            return Inertia::render('Administration/General/incidencia', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('incidencias');
     });
 
 // ===== SISTEMA DE ALIAS PARA COMPATIBILIDAD =====
