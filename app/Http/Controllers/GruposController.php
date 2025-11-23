@@ -37,10 +37,7 @@ class GruposController extends Controller {
                 'success' => false
             ], 403);
         }
-
-        $grupos = Cache::remember('grupos_all', 60, function () {
-            return grupos::with(['materia', 'docente', 'ciclo'])->limit(50)->get();
-        });
+        $grupos = grupos::with(['materia', 'docente', 'ciclo'])->get();
 
         if ($grupos->isEmpty()) {
             return response()->json([
@@ -150,33 +147,13 @@ class GruposController extends Controller {
             ], 403);
         }
 
-        $docente_id_existe = DB::table('usuario_roles')
-            ->where('usuario_id', $request->docente_id)
-            ->where('rol_id', 5)
-            ->value('usuario_id');
-
-        if (!$docente_id_existe) {
-            return response()->json([
-                'message' => 'Error: este docente no existe o no tiene el rol adecuado.',
-                'success' => false
-            ], 422);
-        }
-
-        $request->merge([
-            'materia_id' => $this->sanitizeInput($request->materia_id),
-            'ciclo_id' => $this->sanitizeInput($request->ciclo_id),
-            'docente_id' => $this->sanitizeInput($request->docente_id),
-            'numero_grupo' => $this->sanitizeInput($request->numero_grupo),
-            'capacidad_maxima' => $this->sanitizeInput($request->capacidad_maxima),
-            'estado' => $this->sanitizeInput($request->estado)
-        ]);
-
         $rules = [
             'materia_id' => 'required|exists:materias,id',
             'ciclo_id' => 'required|exists:ciclos_academicos,id',
             'docente_id' => 'required|exists:users,id',
             'numero_grupo' => 'required|string|max:10',
             'capacidad_maxima' => 'required|integer|min:1',
+            'estudiantes_inscrito' => 'nullable|integer|min:0',
             'estado' => 'required|in:activo,finalizado,cancelado'
         ];
 
@@ -193,12 +170,15 @@ class GruposController extends Controller {
             'capacidad_maxima.required' => 'El campo capacidad_maxima es obligatorio.',
             'capacidad_maxima.integer' => 'El campo capacidad_maxima debe ser un número entero.',
             'capacidad_maxima.min' => 'El campo capacidad_maxima debe ser al menos 1.',
+            'estudiantes_inscrito.integer' => 'El campo estudiantes_inscrito debe ser un número entero.',
+            'estudiantes_inscrito.min' => 'El campo estudiantes_inscrito debe ser al menos 0.',
             'estado.required' => 'El campo estado es obligatorio.',
             'estado.in' => 'El campo estado debe ser uno de los siguientes valores: activo, finalizado, cancelado.'
         ];
 
         try {
             $validator = Validator::make($request->all(), $rules, $messages);
+            
             if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Error de validación',
@@ -207,10 +187,22 @@ class GruposController extends Controller {
                 ], 422);
             }
 
-            DB::beginTransaction();
-
             $validatedData = $validator->validated();
 
+            // Verificar docente
+            $docente_id_existe = DB::table('usuario_roles')
+                ->where('usuario_id', $validatedData['docente_id'])
+                ->where('rol_id', 5)
+                ->value('usuario_id');
+
+            if (!$docente_id_existe) {
+                return response()->json([
+                    'message' => 'Error: este docente no existe o no tiene el rol adecuado.',
+                    'success' => false
+                ], 422);
+            }
+
+            // Verificar duplicados
             $grupo_existente = grupos::where('materia_id', $validatedData['materia_id'])
                 ->where('ciclo_id', $validatedData['ciclo_id'])
                 ->where('numero_grupo', $validatedData['numero_grupo'])
@@ -223,10 +215,17 @@ class GruposController extends Controller {
                 ], 422);
             }
 
+            // 🔥 FIX: Establecer valor por defecto para estudiantes_inscrito
+            if (!isset($validatedData['estudiantes_inscrito']) || $validatedData['estudiantes_inscrito'] === null) {
+                $validatedData['estudiantes_inscrito'] = 0;
+            }
+
+            DB::beginTransaction();
+
             $grupo = grupos::create($validatedData);
 
             DB::commit();
-            Cache::forget('grupos_all');
+            
             $grupo->load(['materia', 'docente', 'ciclo']);
             
             $grupoData = [
@@ -291,33 +290,13 @@ class GruposController extends Controller {
             ], 404);
         }
 
-        $docente_id_existe = DB::table('usuario_roles')
-            ->where('usuario_id', $request->docente_id)
-            ->where('rol_id', 5)
-            ->value('usuario_id');
-
-        if (!$docente_id_existe) {
-            return response()->json([
-                'message' => 'Error: este docente no existe o no tiene el rol adecuado.',
-                'success' => false
-            ], 422);
-        }
-
-        $request->merge([
-            'materia_id' => $this->sanitizeInput($request->materia_id),
-            'ciclo_id' => $this->sanitizeInput($request->ciclo_id),
-            'docente_id' => $this->sanitizeInput($request->docente_id),
-            'numero_grupo' => $this->sanitizeInput($request->numero_grupo),
-            'capacidad_maxima' => $this->sanitizeInput($request->capacidad_maxima),
-            'estado' => $this->sanitizeInput($request->estado)
-        ]);
-
         $rules = [
             'materia_id' => 'required|exists:materias,id',
             'ciclo_id' => 'required|exists:ciclos_academicos,id',
             'docente_id' => 'required|exists:users,id',
             'numero_grupo' => 'required|string|max:10',
             'capacidad_maxima' => 'required|integer|min:1',
+            'estudiantes_inscrito' => 'nullable|integer|min:0',
             'estado' => 'required|in:activo,finalizado,cancelado'
         ];
 
@@ -334,12 +313,15 @@ class GruposController extends Controller {
             'capacidad_maxima.required' => 'El campo capacidad_maxima es obligatorio.',
             'capacidad_maxima.integer' => 'El campo capacidad_maxima debe ser un número entero.',
             'capacidad_maxima.min' => 'El campo capacidad_maxima debe ser al menos 1.',
+            'estudiantes_inscrito.integer' => 'El campo estudiantes_inscrito debe ser un número entero.',
+            'estudiantes_inscrito.min' => 'El campo estudiantes_inscrito debe ser al menos 0.',
             'estado.required' => 'El campo estado es obligatorio.',
             'estado.in' => 'El campo estado debe ser uno de los siguientes valores: activo, finalizado, cancelado.'
         ];
 
         try {
             $validator = Validator::make($request->all(), $rules, $messages);
+            
             if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Error de validación',
@@ -348,13 +330,31 @@ class GruposController extends Controller {
                 ], 422);
             }
 
+            $validatedData = $validator->validated();
+
+            // Verificar docente
+            $docente_id_existe = DB::table('usuario_roles')
+                ->where('usuario_id', $validatedData['docente_id'])
+                ->where('rol_id', 5)
+                ->value('usuario_id');
+
+            if (!$docente_id_existe) {
+                return response()->json([
+                    'message' => 'Error: este docente no existe o no tiene el rol adecuado.',
+                    'success' => false
+                ], 422);
+            }
+
+            // 🔥 FIX: Establecer valor por defecto para estudiantes_inscrito
+            if (!isset($validatedData['estudiantes_inscrito']) || $validatedData['estudiantes_inscrito'] === null) {
+                $validatedData['estudiantes_inscrito'] = 0;
+            }
+
             DB::beginTransaction();
 
-            $validatedData = $validator->validated();
             $grupo->update($validatedData);
 
             DB::commit();
-            Cache::forget('grupos_all');
 
             $grupo->load(['materia', 'docente', 'ciclo']);
             
@@ -420,7 +420,6 @@ class GruposController extends Controller {
             }
 
             $grupo->delete();
-            Cache::forget('grupos_all');
 
             return response()->json([
                 'message' => 'Grupo eliminado exitosamente',

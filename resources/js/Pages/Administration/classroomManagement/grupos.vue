@@ -956,7 +956,7 @@ const deleteAssignment = async (assignmentId) => {
 			getAuthHeaders()
 		);
 		
-		showNotification('✅ Asignación eliminada correctamente', 'success');
+		showNotification('Asignación eliminada correctamente', 'success');
 		
 		await loadGroupAssignments(currentGroupAssignments.value.id);
 		await fetchAll();
@@ -1369,17 +1369,34 @@ const submitForm = async () => {
 			return;
 		}
 
-		if (isEditMode.value) {
-			await axios.patch(`${API_URL}/groups/edit/${currentId.value}`, form.value, getAuthHeaders());
-		} else {
-			await axios.post(`${API_URL}/groups/new`, form.value, getAuthHeaders());
+		// Limpiar payload
+		const payload = {
+			materia_id: form.value.materia_id,
+			docente_id: form.value.docente_id,
+			ciclo_id: form.value.ciclo_id,
+			numero_grupo: form.value.numero_grupo,
+			capacidad_maxima: parseInt(form.value.capacidad_maxima),
+			estado: form.value.estado || 'activo'
+		};
+
+		if (form.value.estudiantes_inscrito && form.value.estudiantes_inscrito !== '') {
+			payload.estudiantes_inscrito = parseInt(form.value.estudiantes_inscrito);
 		}
-		await fetchAll();
+
+		if (isEditMode.value) {
+			await axios.patch(`${API_URL}/groups/edit/${currentId.value}`, payload, getAuthHeaders());
+			showNotification(' Grupo actualizado exitosamente', 'success');
+		} else {
+			await axios.post(`${API_URL}/groups/new`, payload, getAuthHeaders());
+			showNotification(' Grupo creado exitosamente', 'success');
+		}
+		
 		closeModal();
+		await fetchAll();
+		
 	} catch (e) {
 		const data = e?.response?.data ?? null;
-
-		const known = new Set(['materia_id','docente_id','ciclo_id','numero_grupo','capacidad_maxima','estudiantes_inscrito','estado','nombre']);
+		const known = new Set(['materia_id','docente_id','ciclo_id','numero_grupo','capacidad_maxima','estudiantes_inscrito','estado']);
 
 		if (data && data.errors && typeof data.errors === 'object') {
 			Object.keys(data.errors).forEach(k => {
@@ -1391,7 +1408,9 @@ const submitForm = async () => {
 					serverErrors.value.push(...msgArr.map(m => (typeof m === 'string' ? m : JSON.stringify(m))));
 				}
 			});
-			if (data.message && typeof data.message === 'string') serverErrorMessage.value = data.message;
+			if (data.message && typeof data.message === 'string') {
+				serverErrorMessage.value = data.message;
+			}
 		}
 		else if (data && typeof data === 'string') {
 			serverErrorMessage.value = data;
@@ -1399,7 +1418,7 @@ const submitForm = async () => {
 		else if (data && (data.error || data.message)) {
 			serverErrorMessage.value = data.error || data.message;
 		}
-		else if (e?.response?.status === 422 && e?.response?.data) {
+		else if (e?.response?.status === 422) {
 			const d = e.response.data;
 			if (d.errors && typeof d.errors === 'object') {
 				Object.keys(d.errors).forEach(k => {
@@ -1411,9 +1430,12 @@ const submitForm = async () => {
 				serverErrorMessage.value = d.message || 'Error de validación';
 			}
 		} else {
-			serverErrorMessage.value = e?.message || 'Error en la solicitud. Revisa la consola para más detalles.';
+			serverErrorMessage.value = e?.message || 'Error en la solicitud';
 		}
+		
+		showNotification('❌ ' + (serverErrorMessage.value || 'Error al guardar el grupo'), 'error');
 		console.error(e);
+		
 	} finally {
 		submitting.value = false;
 	}
