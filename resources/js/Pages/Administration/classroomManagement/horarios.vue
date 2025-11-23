@@ -167,109 +167,247 @@
 
 				<!-- Modal sticky header (igual que en grupos.vue) -->
 				<div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-					<div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+					<div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
 						<div class="sticky top-0 bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center z-10">
-							<h2 class="text-base sm:text-lg font-semibold">{{ isEditMode ? 'Editar horario' : 'Nuevo horario' }}</h2>
-							<button @click="closeModal" class="text-gray-500 hover:text-gray-700 text-sm sm:text-base p-1 sm:p-0">Cerrar</button>
+							<div>
+								<h2 class="text-base sm:text-lg font-semibold">
+									{{ isEditMode ? 'Editar horario' : 'Nuevo horario' }}
+								</h2>
+								<p class="text-xs text-gray-500 mt-1">
+									Complete la información para asignar un horario
+								</p>
+							</div>
+							<button @click="closeModal" class="text-gray-500 hover:text-gray-700 text-sm sm:text-base p-1 sm:p-0">
+								<i class="fas fa-times text-xl"></i>
+							</button>
 						</div>
 
-						<!-- server/global error -->
-						<div v-if="serverErrorMessage" class="mb-3 mx-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
-							{{ serverErrorMessage }}
-						</div>
+						<form @submit.prevent="submitForm" class="space-y-6 p-4 sm:p-6">
+							<!-- Paso 1: Selección de Materia -->
+							<div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
+								<div class="flex items-start">
+									<div class="flex-shrink-0">
+										<div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+											1
+										</div>
+									</div>
+									<div class="ml-3 flex-1">
+										<h3 class="text-sm font-medium text-blue-900 mb-3">Seleccione la materia</h3>
+										
+										<SearchableSelect
+											v-model="selectedMateriaId"
+											:options="materiasOptions"
+											label=""
+											placeholder="Buscar materia por nombre o código..."
+											value-key="id"
+											label-key="nombre"
+											sublabel-key="info"
+											:error="errors.materia_id ? errors.materia_id[0] : ''"
+											required
+											@change="onMateriaChange(); validateField('materia_id')"
+										/>
 
-						<!-- Agregado: mostrar errores generales del servidor como una sola frase -->
-						<div v-if="serverErrors && serverErrors.length" class="mb-3 mx-4 p-2 rounded bg-red-50 text-red-800 text-sm">
-							<p class="text-sm">
-								{{ serverErrors.join('. ') + (serverErrors.length ? '.' : '') }}
-							</p>
-						</div>
-
-						<form @submit.prevent="submitForm" class="space-y-3 sm:space-y-4 p-4 sm:p-6">
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-								<!-- Materia select (nuevo) -->
-								<div>
-									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Materia</label>
-									<select ref="materiaRef" v-model="selectedMateriaId" @change="onMateriaChange" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
-										<option value="">Seleccione materia...</option>
-										<option v-for="m in materias" :key="m.id" :value="m.id">{{ m.nombre }}</option>
-									</select>
-									<!-- mostrado errores para materia -->
-									<p v-if="errors.materia_id && errors.materia_id.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
-										{{ errors.materia_id.join('. ') + (errors.materia_id.length ? '.' : '') }}
-									</p>
-								</div>
-
-								<!-- Grupo select dependiente -->
-								<div>
-									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Grupo</label>
-									<select ref="grupoRef" v-model="form.grupo_id" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
-										<option value="">Seleccione un grupo</option>
-										<option v-for="g in subjectGroups" :key="g.id" :value="g.id">
-											{{ g.numero_grupo ?? g.nombre ?? ('#' + g.id) }}
-										</option>
-									</select>
-									<p v-if="errors.grupo_id && errors.grupo_id.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
-										{{ errors.grupo_id.join('. ') + (errors.grupo_id.length ? '.' : '') }}
-									</p>
-								</div>
-
-								<div>
-									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Aula</label>
-									<select ref="aulaRef" v-model="form.aula_id" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
-										<option value="">Seleccione un aula</option>
-										<option v-for="a in classrooms" :key="a.id" :value="a.id">
-											{{ a.nombre ?? a.nombre_aula ?? a.codigo ?? ('#' + a.id) }}
-										</option>
-									</select>
-									<p v-if="errors.aula_id && errors.aula_id.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
-										{{ errors.aula_id.join('. ') + (errors.aula_id.length ? '.' : '') }}
-									</p>
-								</div>
-
-								<div>
-									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Día</label>
-									<select ref="diaRef" v-model="form.dia_semana" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]">
-										<option value="">Seleccione un dia</option>
-										<option>Lunes</option>
-										<option>Martes</option>
-										<option>Miercoles</option>
-										<option>Jueves</option>
-										<option>Viernes</option>
-										<option>Sabado</option>
-										<option>Domingo</option>
-									</select>
-									<p v-if="errors.dia_semana && errors.dia_semana.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
-										{{ errors.dia_semana.join('. ') + (errors.dia_semana.length ? '.' : '') }}
-									</p>
-								</div>
-
-								<div>
-									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Hora Inicio</label>
-									<input ref="horaInicioRef" type="time" v-model="form.hora_inicio" step="60" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]" />
-									<p v-if="errors.hora_inicio && errors.hora_inicio.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
-										{{ errors.hora_inicio.join('. ') + (errors.hora_inicio.length ? '.' : '') }}
-									</p>
-								</div>
-
-								<div>
-									<label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Hora Fin</label>
-									<input ref="horaFinRef" type="time" v-model="form.hora_fin" step="60" class="w-full border border-gray-300 rounded px-2 sm:px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#76180D]" />
-									<p v-if="errors.hora_fin && errors.hora_fin.length" class="text-red-600 text-xs sm:text-sm mt-1 ml-4">
-										{{ errors.hora_fin.join('. ') + (errors.hora_fin.length ? '.' : '') }}
-									</p>
+										<!-- Info de materia seleccionada -->
+										<div v-if="selectedMateriaInfo" class="mt-2 p-2 bg-white rounded border border-blue-200">
+											<p class="text-xs text-gray-600">
+												<i class="fas fa-info-circle text-blue-500 mr-1"></i>
+												<strong>{{ selectedMateriaInfo.nombre }}</strong>
+												<span v-if="selectedMateriaInfo.codigo" class="ml-2">
+													({{ selectedMateriaInfo.codigo }})
+												</span>
+											</p>
+										</div>
+									</div>
 								</div>
 							</div>
 
+							<!-- Paso 2: Selección de Grupo -->
+							<div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+								<div class="flex items-start">
+									<div class="flex-shrink-0">
+										<div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+											2
+										</div>
+									</div>
+									<div class="ml-3 flex-1">
+										<h3 class="text-sm font-medium text-green-900 mb-3">Seleccione el grupo</h3>
+										
+										<SearchableSelect
+											v-model="form.grupo_id"
+											:options="subjectGroupsOptions"
+											label=""
+											placeholder="Buscar grupo..."
+											value-key="id"
+											label-key="nombre"
+											sublabel-key="info"
+											:error="errors.grupo_id ? errors.grupo_id[0] : ''"
+											:disabled="!selectedMateriaId"
+											required
+											@change="validateField('grupo_id')"
+										/>
+
+										<!-- Info de grupo seleccionado -->
+										<div v-if="selectedGrupoInfo" class="mt-2 p-2 bg-white rounded border border-green-200">
+											<div class="grid grid-cols-2 gap-2 text-xs">
+												<div>
+													<i class="fas fa-user text-green-500 mr-1"></i>
+													<strong>Docente:</strong> {{ selectedGrupoInfo.docente_nombre || 'N/A' }}
+												</div>
+												<div>
+													<i class="fas fa-users text-green-500 mr-1"></i>
+													<strong>Capacidad:</strong> {{ selectedGrupoInfo.capacidad_maxima || 0 }} estudiantes
+												</div>
+											</div>
+										</div>
+
+										<p v-if="!selectedMateriaId" class="text-xs text-gray-500 mt-2">
+											<i class="fas fa-arrow-up mr-1"></i>
+											Primero seleccione una materia
+										</p>
+									</div>
+								</div>
+							</div>
+
+							<!-- Paso 3: Selección de Aula y Horario -->
+							<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+								<!-- Aula -->
+								<div class="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4">
+									<div class="flex items-start">
+										<div class="flex-shrink-0">
+											<div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+												3
+											</div>
+										</div>
+										<div class="ml-3 flex-1">
+											<h3 class="text-sm font-medium text-purple-900 mb-3">Seleccione el aula</h3>
+											
+											<SearchableSelect
+												v-model="form.aula_id"
+												:options="classroomsOptions"
+												label=""
+												placeholder="Buscar aula..."
+												value-key="id"
+												label-key="nombre"
+												sublabel-key="info"
+												:error="errors.aula_id ? errors.aula_id[0] : ''"
+												required
+												@change="validateField('aula_id')"
+											/>
+
+											<!-- Info de aula seleccionada -->
+											<div v-if="selectedAulaInfo" class="mt-2 p-2 bg-white rounded border border-purple-200">
+												<p class="text-xs text-gray-600 mb-1">
+													<i class="fas fa-map-marker-alt text-purple-500 mr-1"></i>
+													{{ selectedAulaInfo.ubicacion || 'Sin ubicación' }}
+												</p>
+												<p class="text-xs text-gray-600">
+													<i class="fas fa-chair text-purple-500 mr-1"></i>
+													Capacidad: {{ selectedAulaInfo.capacidad_pupitres || 0 }} pupitres
+												</p>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Día de la semana -->
+								<div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4">
+									<div class="flex items-start">
+										<div class="flex-shrink-0">
+											<div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold">
+												4
+											</div>
+										</div>
+										<div class="ml-3 flex-1">
+											<h3 class="text-sm font-medium text-yellow-900 mb-3">Seleccione el día</h3>
+											
+											<select
+												v-model="form.dia_semana"
+												@change="validateField('dia_semana')"
+												:class="[
+													'w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2',
+													errors.dia_semana ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+												]"
+											>
+												<option value="">Seleccione un día</option>
+												<option value="Lunes">Lunes</option>
+												<option value="Martes">Martes</option>
+												<option value="Miercoles">Miércoles</option>
+												<option value="Jueves">Jueves</option>
+												<option value="Viernes">Viernes</option>
+												<option value="Sabado">Sábado</option>
+											</select>
+
+											<p v-if="errors.dia_semana" class="text-red-600 text-xs mt-1">
+												{{ errors.dia_semana[0] }}
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Paso 5: Horario -->
+							<div class="bg-indigo-50 border-l-4 border-indigo-500 rounded-lg p-4">
+								<div class="flex items-start">
+									<div class="flex-shrink-0">
+										<div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+											5
+										</div>
+									</div>
+									<div class="ml-3 flex-1">
+										<h3 class="text-sm font-medium text-indigo-900 mb-3">Configure el horario</h3>
+										
+										<TimeBlockSelector
+											v-model:model-value-inicio="form.hora_inicio"
+											v-model:model-value-fin="form.hora_fin"
+											label=""
+											:error-inicio="errors.hora_inicio ? errors.hora_inicio[0] : ''"
+											:error-fin="errors.hora_fin ? errors.hora_fin[0] : ''"
+											required
+											@update:model-value-inicio="validateField('horario')"
+											@update:model-value-fin="validateField('horario')"
+										/>
+
+										<!-- Advertencia de conflicto -->
+										<div v-if="aulaDisponibilidad && aulaDisponibilidad.length > 0" class="mt-3 p-2 bg-yellow-100 border border-yellow-300 rounded">
+											<p class="text-xs text-yellow-800 font-medium">
+												<i class="fas fa-exclamation-triangle mr-1"></i>
+												Horarios ocupados en esta aula:
+											</p>
+											<ul class="mt-1 text-xs text-yellow-700 ml-4 list-disc">
+												<li v-for="(ocupado, idx) in aulaDisponibilidad.slice(0, 3)" :key="idx">
+													{{ ocupado.hora_inicio }} - {{ ocupado.hora_fin }} ({{ ocupado.grupo }})
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+						<!-- Errores generales -->
+						<div v-if="serverErrorMessage" class="mb-3 mx-4 sm:mx-6 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+							<i class="fas fa-exclamation-circle mr-2"></i>
+							{{ serverErrorMessage }}
+						</div>
+							<!-- Botones de acción -->
 							<div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t">
-								<button type="button" @click="closeModal" class="w-full sm:w-auto px-4 py-2 text-sm sm:text-base text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors order-2 sm:order-1">
+								<button
+									type="button"
+									@click="closeModal"
+									class="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors order-2 sm:order-1"
+								>
+									<i class="fas fa-times mr-2"></i>
 									Cancelar
 								</button>
-								<button type="submit" :disabled="submitting" class="w-full sm:w-auto px-4 py-2 text-sm sm:text-base text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 order-1 sm:order-2">
-									{{ submitting ? 'Guardando...' : 'Guardar' }}
+								<button
+									type="submit"
+									:disabled="submitting"
+									class="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+								>
+									<i :class="submitting ? 'fas fa-spinner fa-spin' : 'fas fa-check'" class="mr-2"></i>
+									{{ submitting ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear Horario') }}
 								</button>
 							</div>
 						</form>
+
 					</div>
 				</div>
 			</div>
@@ -281,6 +419,8 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
+import TimeBlockSelector from '@/Components/TimeBlockSelector.vue';
 import axios from 'axios';
 import { authService } from '@/Services/authService';
 
@@ -344,162 +484,116 @@ const focusFirstError = async () => {
 	}
 };
 
-/* Fetch y manejo de nombres relacionados (grupo.numero_grupo, aula.nombre, materia y docente) */
+/* Fetch optimizado - UNA SOLA petición con eager loading */
 const fetchAll = async () => {
 	loading.value = true;
 	try {
-		const res = await axios.get(`${API_URL}/schedules/get/all`, getAuthHeaders());
-		list.value = res.data.data || [];
-		await populateRelatedNames(list.value);
-	} catch (e) { console.error(e); list.value = []; } finally { loading.value = false; }
-};
+		// 🔥 OPTIMIZACIÓN: Pedir datos con relaciones incluidas desde el backend
+		const res = await axios.get(`${API_URL}/schedules/get/all?with_relations=true`, getAuthHeaders());
+		const rawData = res.data.data || [];
+		
+		// Transformar datos a formato esperado (sin hacer más peticiones)
+		list.value = rawData.map(h => ({
+			id: h.id,
+			grupo_id: h.grupo_id,
+			aula_id: h.aula_id,
+			dia_semana: h.dia_semana,
+			hora_inicio: h.hora_inicio?.slice(0, 5) || h.hora_inicio,
+			hora_fin: h.hora_fin?.slice(0, 5) || h.hora_fin,
+			// Datos del grupo (ya vienen en la respuesta)
+			numero_grupo: h.grupo?.numero_grupo || h.numero_grupo || null,
+			// Datos de la materia
+			materia_id: h.grupo?.materia_id || h.materia_id || null,
+			materia_nombre: h.grupo?.materia?.nombre || h.materia_nombre || null,
+			// Datos del docente
+			docente_id: h.grupo?.docente_id || h.grupo?.user_id || h.docente_id || null,
+			docente_nombre: h.grupo?.docente?.nombre_completo || h.grupo?.user?.nombre_completo || h.docente_nombre || null,
+			// Datos del aula
+			aula_nombre: h.aula?.nombre || h.aula?.codigo || h.aula_nombre || null,
+			nombre_aula: h.aula?.nombre || h.nombre_aula || null,
+		}));
 
-const populateRelatedNames = async (items) => {
-	try {
-		const groupIds = new Set();
-		const aulaIds = new Set();
-
-		items.forEach(i => {
-			if (!i.numero_grupo && i.grupo_id) groupIds.add(i.grupo_id);
-			if (!i.aula_nombre && i.aula_id) aulaIds.add(i.aula_id);
-		});
-
-		// fetch groups full objects (so we can extract materia_id/docente_id)
-		const groupsMap = {};
-		if (groupIds.size > 0) {
-			await Promise.all(Array.from(groupIds).map(async id => {
-				try {
-					const r = await axios.get(`${API_URL}/groups/get/${id}`, getAuthHeaders());
-					let d = r.data?.data ?? r.data ?? null;
-					// si la API devuelve un array u objeto con primer nivel, tomar el primer elemento útil
-					if (Array.isArray(d) && d.length) d = d[0];
-					if (d && typeof d === 'object' && !('id' in d) && Object.values(d).length) {
-						const firstObj = Object.values(d).find(v => v && typeof v === 'object');
-						if (firstObj) d = firstObj;
-					}
-					if (d) groupsMap[id] = d;
-				} catch (e) { console.warn('failed fetch group', id, e?.message); }
-			}));
-		}
-
-		// fetch aulas names
-		const aulasMap = {};
-		if (aulaIds.size > 0) {
-			await Promise.all(Array.from(aulaIds).map(async id => {
-				try {
-					const r = await axios.get(`${API_URL}/classrooms/get/${id}`, getAuthHeaders());
-					let d = r.data?.data ?? r.data ?? null;
-					if (Array.isArray(d) && d.length) d = d[0];
-					if (d && typeof d === 'object' && !('nombre' in d) && Object.values(d).length) {
-						const firstObj = Object.values(d).find(v => v && typeof v === 'object');
-						if (firstObj) d = firstObj;
-					}
-					if (d) aulasMap[id] = d.nombre ?? d.nombre_aula ?? d.codigo ?? `${d.id}`;
-				} catch (e) { console.warn('failed fetch aula', id, e?.message); }
-			}));
-		}
-
-		// collect subjectIds and profesorIds from groupsMap and items
-		const subjectIds = new Set();
-		const profesorIds = new Set();
-
-		items.forEach(i => {
-			const g = groupsMap[i.grupo_id];
-			if (g) {
-				if (!i.numero_grupo) i.numero_grupo = g.numero_grupo ?? g.numero ?? g.id;
-				// materias en distintas propiedades
-				const mid = g.materia_id ?? g.subject_id ?? g.subject?.id ?? g.materia?.id;
-				if (mid) subjectIds.add(mid);
-				// docentes en distintas propiedades
-				const pid = g.docente_id ?? g.user_id ?? g.docente?.id ?? g.user?.id;
-				if (pid) profesorIds.add(pid);
-				// store ids on item if missing
-				if (!i.materia_id && mid) i.materia_id = mid;
-				if (!i.docente_id && pid) i.docente_id = pid;
-			}
-			// include already-present ids
-			if (i.materia_id) subjectIds.add(i.materia_id);
-			if (i.docente_id) profesorIds.add(i.docente_id);
-			// aula name from aulasMap
-			if (!i.aula_nombre && i.aula_id && aulasMap[i.aula_id]) i.aula_nombre = aulasMap[i.aula_id];
-		});
-
-		// fetch subject names
-		const subjectsMap = {};
-		if (subjectIds.size > 0) {
-			await Promise.all(Array.from(subjectIds).map(async id => {
-				try {
-					const r = await axios.get(`${API_URL}/subjects/get/${id}`, getAuthHeaders());
-					let d = r.data?.data ?? r.data ?? null;
-					if (Array.isArray(d) && d.length) d = d[0];
-					if (d && typeof d === 'object' && !('nombre' in d) && Object.values(d).length) {
-						const firstObj = Object.values(d).find(v => v && typeof v === 'object');
-						if (firstObj) d = firstObj;
-					}
-					if (d) subjectsMap[id] = d.nombre ?? d.name ?? `${d.id}`;
-				} catch (e) { console.warn('failed fetch subject', id, e?.message); }
-			}));
-		}
-
-		// fetch profesores names
-		const profesoresMap = {};
-		if (profesorIds.size > 0) {
-			await Promise.all(Array.from(profesorIds).map(async id => {
-				try {
-					const r = await axios.get(`${API_URL}/users/get/${id}`, getAuthHeaders());
-					let d = r.data?.data ?? r.data ?? null;
-					if (Array.isArray(d) && d.length) d = d[0];
-					if (d && typeof d === 'object' && !('id' in d) && Object.values(d).length) {
-						const firstObj = Object.values(d).find(v => v && typeof v === 'object');
-						if (firstObj) d = firstObj;
-					}
-					if (d) profesoresMap[id] = d.nombre_completo ?? d.name ?? d.nombre ?? `${d.id}`;
-				} catch (e) { console.warn('failed fetch profesor', id, e?.message); }
-			}));
-		}
-
-		// attach resolved names back to items
-		items.forEach(i => {
-			if ((!i.numero_grupo || i.numero_grupo === '') && groupsMap[i.grupo_id]) {
-				i.numero_grupo = groupsMap[i.grupo_id].numero_grupo ?? groupsMap[i.grupo_id].numero ?? (`#${i.grupo_id}`);
-			}
-			if (!i.materia_nombre && i.materia_id && subjectsMap[i.materia_id]) i.materia_nombre = subjectsMap[i.materia_id];
-			if (!i.docente_nombre && i.docente_id && profesoresMap[i.docente_id]) i.docente_nombre = profesoresMap[i.docente_id];
-		});
 	} catch (e) {
-		console.error('populateRelatedNames error', e);
+		console.error('Error fetching horarios:', e);
+		
+		if (e.response?.status === 500) {
+			const errorMsg = e.response?.data?.error || e.response?.data?.message;
+			
+			if (errorMsg?.includes('MySQL') || errorMsg?.includes('2006')) {
+				alert('⚠️ Error de conexión con la base de datos.\n\nPor favor:\n1. Verifica que MySQL esté corriendo\n2. Recarga la página\n3. Contacta al administrador si persiste');
+			} else {
+				alert('Error del servidor al cargar horarios. Intenta recargar la página.');
+			}
+		}
+		
+		list.value = [];
+	} finally {
+		loading.value = false;
 	}
 };
 
-/* Select options fetch (materias y profesores para modal) */
+// 🔥 ELIMINAR función populateRelatedNames() - ya no es necesaria
+
+/* Select options fetch - OPTIMIZADO con Promise.all */
 const fetchSelectOptions = async () => {
 	try {
-		const [groupsRes, classroomsRes, materiasRes, profesoresRes] = await Promise.all([
-			axios.get(`${API_URL}/groups/get/all`, getAuthHeaders()),
+		// 🔥 Hacer todas las peticiones en paralelo
+		const [groupsRes, classroomsRes, materiasRes] = await Promise.all([
+			axios.get(`${API_URL}/groups/get/all?with_relations=true`, getAuthHeaders()),
 			axios.get(`${API_URL}/classrooms/get/all`, getAuthHeaders()),
-			axios.get(`${API_URL}/subjects/get/all`, getAuthHeaders()),
-			axios.get(`${API_URL}/users/get/professors/all`, getAuthHeaders())
+			axios.get(`${API_URL}/subjects/get/all`, getAuthHeaders())
 		]);
-		groups.value = groupsRes.data.data || [];
+		
+		// Procesar grupos con sus relaciones
+		groups.value = (groupsRes.data.data || []).map(g => ({
+			...g,
+			materia_id: g.materia_id || g.subject_id,
+			docente_id: g.docente_id || g.user_id,
+			docente_nombre: g.docente?.nombre_completo || g.user?.nombre_completo || g.docente_nombre,
+			materia_nombre: g.materia?.nombre || g.subject?.nombre || g.materia_nombre
+		}));
+		
 		classrooms.value = classroomsRes.data.data || [];
 		materias.value = materiasRes.data.data || [];
-		profesores.value = profesoresRes.data.data || [];
-	} catch (e) { console.error('fetchSelectOptions error', e); groups.value = []; classrooms.value = []; materias.value = []; profesores.value = []; }
+		
+	} catch (e) {
+		console.error('fetchSelectOptions error', e);
+		groups.value = [];
+		classrooms.value = [];
+		materias.value = [];
+	}
 };
 
-/* Cargar grupos por materia para el select dependiente */
+/* Cargar grupos por materia - OPTIMIZADO */
 const fetchGroupsForSubject = async (subjectId) => {
 	subjectGroups.value = [];
 	if (!subjectId) return;
+	
+	// 🔥 Primero buscar en caché
+	const cached = groups.value.filter(g => 
+		g.materia_id === subjectId || g.subject_id === subjectId
+	);
+	
+	if (cached.length > 0) {
+		subjectGroups.value = cached;
+		return;
+	}
+	
+	// Si no está en caché, hacer petición
 	loading.value = true;
 	try {
-		const res = await axios.get(`${API_URL}/groups/get/subject/${subjectId}`, getAuthHeaders());
+		const res = await axios.get(
+			`${API_URL}/groups/get/subject/${subjectId}?with_relations=true`, 
+			getAuthHeaders()
+		);
 		const payload = res.data?.data ?? res.data ?? [];
 		subjectGroups.value = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
 	} catch (e) {
 		console.error('fetchGroupsForSubject error', e);
 		subjectGroups.value = [];
-	} finally { loading.value = false; }
+	} finally {
+		loading.value = false;
+	}
 };
 
 const onMateriaChange = async () => {
@@ -770,13 +864,163 @@ const handleExcelUpload = (e) => {
 	console.info('Excel seleccionado:', file.name);
 };
 
-/* Montaje inicial */
+/* Montaje inicial - OPTIMIZADO */
 onMounted(async () => {
 	await authService.verifyToken(localStorage.getItem('token'));
-	await fetchSelectOptions();
-	await fetchAll();
+	
+	// 🔥 Cargar todo en paralelo
+	await Promise.all([
+		fetchSelectOptions(),
+		fetchAll()
+	]);
+	
 	isLoading.value = false;
 });
+
+// Computed para preparar opciones de los selects con información adicional
+const materiasOptions = computed(() => {
+	return materias.value.map(m => ({
+		id: m.id,
+		nombre: m.nombre,
+		codigo: m.codigo,
+		// Sublabel con información adicional
+		info: m.codigo ? `Código: ${m.codigo}` : ''
+	}));
+});
+
+const subjectGroupsOptions = computed(() => {
+	return subjectGroups.value.map(g => ({
+		id: g.id,
+		nombre: `Grupo ${g.numero_grupo || g.nombre || g.id}`,
+		// Información del docente y capacidad
+		info: `${g.docente_nombre || 'Sin docente'} | Cap: ${g.capacidad_maxima || 0}`
+	}));
+});
+
+const classroomsOptions = computed(() => {
+	return classrooms.value.map(a => ({
+		id: a.id,
+		nombre: a.nombre || a.codigo || `Aula ${a.id}`,
+		// Información de capacidad y ubicación
+		info: `Cap: ${a.capacidad_pupitres || 0} | ${a.ubicacion || 'Sin ubicación'}`
+	}));
+});
+
+// Estado para información contextual
+const selectedMateriaInfo = ref(null);
+const selectedGrupoInfo = ref(null);
+const selectedAulaInfo = ref(null);
+const aulaDisponibilidad = ref(null);
+
+// Watchers para cargar información adicional
+watch(selectedMateriaId, async (newVal) => {
+	if (newVal) {
+		selectedMateriaInfo.value = materias.value.find(m => m.id === newVal);
+	} else {
+		selectedMateriaInfo.value = null;
+		selectedGrupoInfo.value = null;
+	}
+});
+
+watch(() => form.value.grupo_id, async (newVal) => {
+	if (newVal) {
+		selectedGrupoInfo.value = subjectGroups.value.find(g => g.id === newVal);
+	} else {
+		selectedGrupoInfo.value = null;
+	}
+});
+
+watch(() => form.value.aula_id, async (newVal) => {
+	if (newVal) {
+		selectedAulaInfo.value = classrooms.value.find(a => a.id === newVal);
+		// Cargar disponibilidad del aula
+		await checkAulaDisponibilidad(newVal);
+	} else {
+		selectedAulaInfo.value = null;
+		aulaDisponibilidad.value = null;
+	}
+});
+
+// Verificar disponibilidad del aula
+const checkAulaDisponibilidad = async (aulaId) => {
+	// if (!aulaId || !form.value.dia_semana) return;
+	
+	// try {
+	// 	const res = await axios.get(
+	// 		`${API_URL}/classrooms/get/${aulaId}/availability?dia=${form.value.dia_semana}`,
+	// 		getAuthHeaders()
+	// 	);
+	// 	aulaDisponibilidad.value = res.data.data || [];
+	// } catch (e) {
+	// 	console.warn('Error checking aula availability:', e);
+	// 	aulaDisponibilidad.value = null;
+	// }
+};
+
+// Watch para revalidar cuando cambia el día
+watch(() => form.value.dia_semana, async () => {
+	if (form.value.aula_id) {
+		await checkAulaDisponibilidad(form.value.aula_id);
+	}
+});
+
+// Validación mejorada en tiempo real
+const validateField = (field) => {
+	const errs = { ...errors.value };
+	
+	switch(field) {
+		case 'materia_id':
+			if (!selectedMateriaId.value) {
+				errs.materia_id = [friendlyField.materia_id];
+			} else {
+				delete errs.materia_id;
+			}
+			break;
+		case 'grupo_id':
+			if (!form.value.grupo_id) {
+				errs.grupo_id = [friendlyField.grupo_id];
+			} else {
+				delete errs.grupo_id;
+			}
+			break;
+		case 'aula_id':
+			if (!form.value.aula_id) {
+				errs.aula_id = [friendlyField.aula_id];
+			} else {
+				delete errs.aula_id;
+			}
+			break;
+		case 'dia_semana':
+			if (!form.value.dia_semana) {
+				errs.dia_semana = [friendlyField.dia_semana];
+			} else {
+				delete errs.dia_semana;
+			}
+			break;
+		case 'horario':
+			if (!form.value.hora_inicio) {
+				errs.hora_inicio = [friendlyField.hora_inicio];
+			} else {
+				delete errs.hora_inicio;
+			}
+			
+			if (!form.value.hora_fin) {
+				errs.hora_fin = [friendlyField.hora_fin];
+			} else {
+				delete errs.hora_fin;
+			}
+			
+			// Validar que fin sea después de inicio
+			if (form.value.hora_inicio && form.value.hora_fin) {
+				if (form.value.hora_fin <= form.value.hora_inicio) {
+					errs.hora_fin = ['La hora de fin debe ser posterior a la hora de inicio.'];
+				}
+			}
+			break;
+	}
+	
+	errors.value = errs;
+};
 </script>
 
 <style scoped>

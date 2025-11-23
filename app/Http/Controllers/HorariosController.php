@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\grupos;
 use App\Models\horarios;
-use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
-class HorariosController extends Controller {
-
-    public function index(): JsonResponse {
+class HorariosController extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -22,62 +20,102 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rolName = $this->getUserRoleName();
-
         try {
-            if ($user_rolName == RolesEnum::DOCENTE->value) {
-                $horarios = Cache::remember('horarios_index', 60, function () {
-                    return horarios::with(['grupo.materia', 'grupo.docente', 'grupo.ciclo', 'aula'])
-                        ->whereHas('grupo', function ($query) {
-                            $query->where('docente_id', Auth::id());
-                        })
-                        ->get();
-                });
+            // 🔥 OPTIMIZACIÓN: Eager loading con relaciones anidadas
+            $withRelations = $request->query('with_relations', 'false') === 'true';
+            
+            $query = horarios::query();
+            
+            if ($withRelations) {
+                // Cargar todas las relaciones necesarias en UNA SOLA query
+                $query->with([
+                    'grupo:id,numero_grupo,materia_id,docente_id',
+                    'grupo.materia:id,nombre,codigo',
+                    'grupo.docente:id,nombre_completo',
+                    'aula:id,nombre,codigo,ubicacion,capacidad_pupitres'
+                ]);
             } else {
-                $horarios = Cache::remember('horarios_index_all', 60, function () {
-                    return horarios::with(['grupo.materia', 'grupo.docente', 'grupo.ciclo', 'aula'])->get();
-                });
+                // Solo relaciones básicas
+                $query->with(['grupo:id,numero_grupo', 'aula:id,nombre']);
+            }
+            
+            $horarios = $query
+                ->select('id', 'grupo_id', 'aula_id', 'dia_semana', 'hora_inicio', 'hora_fin')
+                ->orderBy('dia_semana')
+                ->orderBy('hora_inicio')
+                ->get();
+
+            if ($horarios->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay horarios disponibles',
+                    'success' => true,
+                    'data' => []
+                ], 200);
             }
 
-            if (!$horarios || $horarios->isEmpty()) {
-                return response()->json([
-                    'message' => 'No se encontraron horarios',
-                    'data' => []
-                ], 404);
-            }
-            $horarios = $horarios->map(function ($horario) {
-                return [
+            // 🔥 Mapear con relaciones ya cargadas (sin N+1)
+            $horariosData = $horarios->map(function ($horario) use ($withRelations) {
+                $data = [
                     'id' => $horario->id,
                     'grupo_id' => $horario->grupo_id,
                     'aula_id' => $horario->aula_id,
                     'dia_semana' => $horario->dia_semana,
-                    'hora_inicio' => $horario->hora_inicio,
-                    'hora_fin' => $horario->hora_fin,
-                    'aula' => $horario->aula ? [
-                        'id' => $horario->aula->id,
-                        'nombre' => $horario->aula->nombre ?? $horario->aula->codigo,
-                        'codigo' => $horario->aula->codigo,
-                        'capacidad' => $horario->aula->capacidad_pupitres,
-                        'ubicacion' => $horario->aula->ubicacion,
-                    ] : null,
-                    'grupo' => $horario->grupo ? [
+                    'hora_inicio' => substr($horario->hora_inicio ?? '', 0, 5),
+                    'hora_fin' => substr($horario->hora_fin ?? '', 0, 5),
+                ];
+
+                if ($withRelations && $horario->grupo) {
+                    $data['grupo'] = [
                         'id' => $horario->grupo->id,
                         'numero_grupo' => $horario->grupo->numero_grupo,
-                        'materia_nombre' => $horario->grupo->materia->nombre ?? null,
-                        'docente_nombre' => $horario->grupo->docente->nombre_completo ?? null,
-                        'ciclo_nombre' => $horario->grupo->ciclo->nombre ?? null,
-                    ] : null,
-                ];
+                        'materia_id' => $horario->grupo->materia_id,
+                        'docente_id' => $horario->grupo->docente_id,
+                        'materia' => $horario->grupo->materia ? [
+                            'id' => $horario->grupo->materia->id,
+                            'nombre' => $horario->grupo->materia->nombre,
+                            'codigo' => $horario->grupo->materia->codigo ?? null,
+                        ] : null,
+                        'docente' => $horario->grupo->docente ? [
+                            'id' => $horario->grupo->docente->id,
+                            'nombre_completo' => $horario->grupo->docente->nombre_completo,
+                        ] : null,
+                    ];
+                } else {
+                    $data['numero_grupo'] = $horario->grupo->numero_grupo ?? null;
+                }
+
+                if ($withRelations && $horario->aula) {
+                    $data['aula'] = [
+                        'id' => $horario->aula->id,
+                        'nombre' => $horario->aula->nombre,
+                        'codigo' => $horario->aula->codigo ?? null,
+                        'ubicacion' => $horario->aula->ubicacion ?? null,
+                        'capacidad_pupitres' => $horario->aula->capacidad_pupitres ?? 0,
+                    ];
+                } else {
+                    $data['aula_nombre'] = $horario->aula->nombre ?? null;
+                }
+
+                return $data;
             });
 
             return response()->json([
                 'message' => 'Horarios obtenidos exitosamente',
-                'data' => $horarios
+                'success' => true,
+                'data' => $horariosData
             ], 200);
+
         } catch (Exception $e) {
+            Log::error('Error en HorariosController@index', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
             return response()->json([
                 'message' => 'Error al obtener los horarios',
-                'error' => $e->getMessage()
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor',
+                'success' => false
             ], 500);
         }
     }

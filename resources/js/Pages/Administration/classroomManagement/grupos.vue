@@ -124,14 +124,25 @@
 								<i class="fas fa-chevron-left"></i>
 							</button>
 
-							<button
-								v-for="p in totalPages"
-								:key="p"
-								@click="goToPage(p)"
-								class="px-4 py-2 border rounded-lg font-bold text-white transition-colors"
-								:style="{ background: p===currentPage ? '#d93f3f' : 'transparent' }">
-								{{ p }}
-							</button>
+							<!-- Botones de paginación inteligente -->
+							<template v-for="(page, index) in visiblePages" :key="index">
+								<!-- Puntos suspensivos -->
+								<span v-if="page === '...'" class="px-2 text-gray-500 flex items-center">...</span>
+
+								<!-- Botón de página -->
+								<button
+									v-else
+									@click="goToPage(page)"
+									class="px-4 py-2 border rounded-lg font-bold transition-colors"
+									:class="[
+										page === currentPage
+											? 'text-white'
+											: 'text-gray-700 hover:bg-gray-100'
+									]"
+									:style="{ background: page === currentPage ? '#d93f3f' : 'transparent' }">
+									{{ page }}
+								</button>
+							</template>
 
 							<button
 								@click="nextPage"
@@ -187,105 +198,254 @@
 			</div>
 		</div>
 
-	<!-- Modal CRUD Grupos -->
+	<!-- Modal CRUD Grupos - VERSIÓN MEJORADA -->
 	<div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-		<div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-			<div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
-				<h2 class="text-lg font-semibold">{{ isEditMode ? 'Editar grupo' : 'Nuevo grupo' }}</h2>
-				<button @click="closeModal" class="text-gray-500 hover:text-gray-700">Cerrar</button>
+		<div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+			<div class="sticky top-0 bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center z-10">
+				<div>
+					<h2 class="text-base sm:text-lg font-semibold">
+						{{ isEditMode ? 'Editar grupo' : 'Nuevo grupo' }}
+					</h2>
+					<p class="text-xs text-gray-500 mt-1">
+						Complete la información para {{ isEditMode ? 'actualizar' : 'crear' }} un grupo
+					</p>
+				</div>
+				<button @click="closeModal" class="text-gray-500 hover:text-gray-700 text-sm sm:text-base p-1 sm:p-0">
+					<i class="fas fa-times text-xl"></i>
+				</button>
 			</div>
-			<form @submit.prevent="submitForm" class="space-y-3 p-4">
-				<div class="grid grid-cols-2 gap-3">
-					<div>
-						<label class="block text-sm">Materia</label>
-						<select v-model="form.materia_id" :class="['w-full rounded px-2 py-1 border', errors.materia_id ? 'border-red-600' : '']">
-							<option value="">Seleccionar materia...</option>
-							<option v-for="m in materias" :key="m.id" :value="m.id">{{ m.nombre }}</option>
-						</select>
-						<div v-if="errors.materia_id" class="text-sm text-red-600 mt-1 list-disc ml-4">
-							<template v-if="Array.isArray(errors.materia_id)">
-								<p v-for="(m, idx) in errors.materia_id" :key="idx">{{ m }}</p>
-							</template>
-							<p v-else>{{ errors.materia_id }}</p>
+
+			<!-- Errores generales del servidor -->
+			<div v-if="serverErrorMessage" class="mb-3 mx-4 sm:mx-6 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+				<i class="fas fa-exclamation-circle mr-2"></i>
+				{{ serverErrorMessage }}
+			</div>
+			<div v-if="serverErrors && serverErrors.length" class="mb-3 mx-4 sm:mx-6 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+				<ul class="list-disc pl-5">
+					<li v-for="(msg, idx) in serverErrors" :key="idx">{{ msg }}</li>
+				</ul>
+			</div>
+
+			<form @submit.prevent="submitForm" class="space-y-6 p-4 sm:p-6">
+				<!-- Paso 1: Selección de Materia -->
+				<div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
+					<div class="flex items-start">
+						<div class="flex-shrink-0">
+							<div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+								1
+							</div>
 						</div>
-					</div>
-					<div>
-						<label class="block text-sm">Docente</label>
-						<select v-model="form.docente_id" :class="['w-full rounded px-2 py-1 border', errors.docente_id ? 'border-red-600' : '']">
-							<option value="">Seleccionar docente...</option>
-							<option v-for="d in docentes" :key="d.id" :value="d.id">{{ d.nombre_completo }}</option>
-						</select>
-						<div v-if="errors.docente_id" class="text-sm text-red-600 mt-1 list-disc ml-4">
-							<template v-if="Array.isArray(errors.docente_id)">
-								<p v-for="(m, idx) in errors.docente_id" :key="idx">{{ m }}</p>
-							</template>
-							<p v-else>{{ errors.docente_id }}</p>
+						<div class="ml-3 flex-1">
+							<h3 class="text-sm font-medium text-blue-900 mb-3">Seleccione la materia</h3>
+							
+							<SearchableSelect
+								v-model="form.materia_id"
+								:options="materiasSelectOptions"
+								label=""
+								placeholder="Buscar materia por nombre o código..."
+								value-key="id"
+								label-key="nombre"
+								sublabel-key="info"
+								:error="errors.materia_id ? (Array.isArray(errors.materia_id) ? errors.materia_id[0] : errors.materia_id) : ''"
+								required
+								@change="validateField('materia_id')"
+							/>
+
+							<!-- Info de materia seleccionada -->
+							<div v-if="selectedMateriaInfo" class="mt-2 p-2 bg-white rounded border border-blue-200">
+								<p class="text-xs text-gray-600">
+									<i class="fas fa-info-circle text-blue-500 mr-1"></i>
+									<strong>{{ selectedMateriaInfo.nombre }}</strong>
+									<span v-if="selectedMateriaInfo.codigo" class="ml-2">
+										({{ selectedMateriaInfo.codigo }})
+									</span>
+								</p>
+							</div>
 						</div>
-					</div>
-					<div>
-						<label class="block text-sm">Ciclo</label>
-						<select v-model="form.ciclo_id" :class="['w-full rounded px-2 py-1 border', errors.ciclo_id ? 'border-red-600' : '']">
-							<option value="">Seleccionar ciclo...</option>
-							<option v-for="c in ciclos" :key="c.id" :value="c.id">{{ c.nombre }}</option>
-						</select>
-						<div v-if="errors.ciclo_id" class="text-sm text-red-600 mt-1 list-disc ml-4">
-							<template v-if="Array.isArray(errors.ciclo_id)">
-								<p v-for="(m, idx) in errors.ciclo_id" :key="idx">{{ m }}</p>
-							</template>
-							<p v-else>{{ errors.ciclo_id }}</p>
-						</div>
-					</div>
-					<div>
-						<label class="block text-sm">Nº Grupo</label>
-						<input
-							v-model="form.numero_grupo"
-							type="text"
-							inputmode="numeric"
-							pattern="\d*"
-							autocomplete="off"
-							:class="['w-full rounded px-2 py-1 border', errors.numero_grupo ? 'border-red-600' : '']"
-							@input="handleNumeroInput"
-							@keydown="handleNumeroKeydown"
-							@paste.prevent
-							@copy.prevent
-							@cut.prevent
-						/>
-						<div v-if="errors.numero_grupo" class="text-sm text-red-600 mt-1 list-disc ml-4">
-							<template v-if="Array.isArray(errors.numero_grupo)">
-								<p v-for="(m, idx) in errors.numero_grupo" :key="idx">{{ m }}</p>
-							</template>
-							<p v-else>{{ errors.numero_grupo }}</p>
-						</div>
-					</div>
-					<div>
-						<label class="block text-sm">Capacidad máxima</label>
-						<input v-model="form.capacidad_maxima" type="number" :class="['w-full rounded px-2 py-1 border', errors.capacidad_maxima ? 'border-red-600' : '']" />
-						<div v-if="errors.capacidad_maxima" class="text-sm text-red-600 mt-1 list-disc ml-4">
-							<template v-if="Array.isArray(errors.capacidad_maxima)">
-								<p v-for="(m, idx) in errors.capacidad_maxima" :key="idx">{{ m }}</p>
-							</template>
-							<p v-else>{{ errors.capacidad_maxima }}</p>
-						</div>
-					</div>
-					<div>
-						<label class="block text-sm">Estado</label>
-						<select v-model="form.estado" class="w-full border rounded px-2 py-1">
-							<option value="activo">Activo</option>
-							<option value="inactivo">Inactivo</option>
-						</select>
 					</div>
 				</div>
 
-				<div v-if="serverErrorMessage" class="mb-3 p-2 rounded bg-red-50 text-red-800">
-					{{ serverErrorMessage }}
+				<!-- Paso 2: Selección de Docente -->
+				<div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+					<div class="flex items-start">
+						<div class="flex-shrink-0">
+							<div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+								2
+							</div>
+						</div>
+						<div class="ml-3 flex-1">
+							<h3 class="text-sm font-medium text-green-900 mb-3">Seleccione el docente</h3>
+							
+							<SearchableSelect
+								v-model="form.docente_id"
+								:options="docentesSelectOptions"
+								label=""
+								placeholder="Buscar docente por nombre..."
+								value-key="id"
+								label-key="nombre_completo"
+								sublabel-key="info"
+								:error="errors.docente_id ? (Array.isArray(errors.docente_id) ? errors.docente_id[0] : errors.docente_id) : ''"
+								required
+								@change="validateField('docente_id')"
+							/>
+
+							<!-- Info de docente seleccionado -->
+							<div v-if="selectedDocenteInfo" class="mt-2 p-2 bg-white rounded border border-green-200">
+								<p class="text-xs text-gray-600">
+									<i class="fas fa-user text-green-500 mr-1"></i>
+									<strong>{{ selectedDocenteInfo.nombre_completo }}</strong>
+									<span v-if="selectedDocenteInfo.email" class="ml-2 text-gray-500">
+										({{ selectedDocenteInfo.email }})
+									</span>
+								</p>
+							</div>
+						</div>
+					</div>
 				</div>
-				<div v-if="serverErrors && serverErrors.length" class="mb-3 p-2 rounded bg-red-50 text-red-800">
-					<ul class="list-disc pl-5">
-						<p v-for="(msg, idx) in serverErrors" :key="idx">{{ msg }}</p>
-					</ul>
+
+				<!-- Paso 3: Selección de Ciclo -->
+				<div class="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-4">
+					<div class="flex items-start">
+						<div class="flex-shrink-0">
+							<div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+								3
+							</div>
+						</div>
+						<div class="ml-3 flex-1">
+							<h3 class="text-sm font-medium text-purple-900 mb-3">Seleccione el ciclo académico</h3>
+							
+							<SearchableSelect
+								v-model="form.ciclo_id"
+								:options="ciclosSelectOptions"
+								label=""
+								placeholder="Buscar ciclo..."
+								value-key="id"
+								label-key="nombre"
+								sublabel-key="info"
+								:error="errors.ciclo_id ? (Array.isArray(errors.ciclo_id) ? errors.ciclo_id[0] : errors.ciclo_id) : ''"
+								required
+								@change="validateField('ciclo_id')"
+							/>
+
+							<!-- Info de ciclo seleccionado -->
+							<div v-if="selectedCicloInfo" class="mt-2 p-2 bg-white rounded border border-purple-200">
+								<p class="text-xs text-gray-600">
+									<i class="fas fa-calendar text-purple-500 mr-1"></i>
+									<strong>{{ selectedCicloInfo.nombre }}</strong>
+									<span v-if="selectedCicloInfo.fecha_inicio && selectedCicloInfo.fecha_fin" class="ml-2 text-gray-500">
+										({{ selectedCicloInfo.fecha_inicio }} - {{ selectedCicloInfo.fecha_fin }})
+									</span>
+								</p>
+							</div>
+						</div>
+					</div>
 				</div>
-				<div class="flex justify-end">
-					<button type="submit" :disabled="submitting" class="bg-green-600 text-white px-4 py-2 rounded">Guardar</button>
+
+				<!-- Paso 4: Información del Grupo -->
+				<div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4">
+					<div class="flex items-start">
+						<div class="flex-shrink-0">
+							<div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold">
+								4
+							</div>
+						</div>
+						<div class="ml-3 flex-1">
+							<h3 class="text-sm font-medium text-yellow-900 mb-3">Configuración del grupo</h3>
+							
+							<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+								<!-- Número de grupo -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-1">
+										Nº de Grupo <span class="text-red-500">*</span>
+									</label>
+									<input
+										v-model="form.numero_grupo"
+										type="text"
+										inputmode="numeric"
+										pattern="\d*"
+										autocomplete="off"
+										placeholder="Ej: 1, 2, 3..."
+										:class="[
+											'w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2',
+											errors.numero_grupo ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+										]"
+										@input="handleNumeroInput"
+										@keydown="handleNumeroKeydown"
+										@paste.prevent
+										@copy.prevent
+										@cut.prevent
+										@change="validateField('numero_grupo')"
+									/>
+									<p v-if="errors.numero_grupo" class="text-red-600 text-xs mt-1">
+										{{ Array.isArray(errors.numero_grupo) ? errors.numero_grupo[0] : errors.numero_grupo }}
+									</p>
+								</div>
+
+								<!-- Capacidad máxima -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-1">
+										Capacidad Máxima <span class="text-red-500">*</span>
+									</label>
+									<input
+										v-model="form.capacidad_maxima"
+										type="number"
+										min="1"
+										placeholder="Ej: 30"
+										:class="[
+											'w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2',
+											errors.capacidad_maxima ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+										]"
+										@change="validateField('capacidad_maxima')"
+									/>
+									<p v-if="errors.capacidad_maxima" class="text-red-600 text-xs mt-1">
+										{{ Array.isArray(errors.capacidad_maxima) ? errors.capacidad_maxima[0] : errors.capacidad_maxima }}
+									</p>
+								</div>
+
+								<!-- Estado -->
+								<div>
+									<label class="block text-sm font-medium text-gray-700 mb-1">
+										Estado
+									</label>
+									<select
+										v-model="form.estado"
+										class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+									>
+										<option value="activo">Activo</option>
+										<option value="inactivo">Inactivo</option>
+									</select>
+								</div>
+							</div>
+
+							<!-- Info de validación -->
+							<div class="mt-3 p-2 bg-white rounded border border-yellow-200">
+								<p class="text-xs text-gray-600">
+									<i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
+									El número de grupo debe ser único por materia y ciclo
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Botones de acción -->
+				<div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t">
+					<button
+						type="button"
+						@click="closeModal"
+						class="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors order-2 sm:order-1"
+					>
+						<i class="fas fa-times mr-2"></i>
+						Cancelar
+					</button>
+					<button
+						type="submit"
+						:disabled="submitting"
+						class="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+					>
+						<i :class="submitting ? 'fas fa-spinner fa-spin' : 'fas fa-check'" class="mr-2"></i>
+						{{ submitting ? 'Guardando...' : (isEditMode ? 'Actualizar Grupo' : 'Crear Grupo') }}
+					</button>
 				</div>
 			</form>
 		</div>
@@ -364,6 +524,97 @@
 							class="mt-3 w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
 							Cerrar
 						</button>
+					</div>
+
+					<!-- NUEVA SECCIÓN: Asignación Manual Opcional -->
+					<div class="mb-6 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-300 rounded-lg">
+						<details class="cursor-pointer group">
+							<summary class="font-semibold text-gray-800 select-none flex items-center justify-between hover:text-orange-600 transition-colors">
+								<span>
+									<i class="fas fa-clock mr-2 text-orange-500"></i>
+									Asignación Manual de Horario (Opcional)
+								</span>
+								<i class="fas fa-chevron-down group-open:rotate-180 transition-transform text-orange-500"></i>
+							</summary>
+							
+							<div class="mt-4 space-y-4">
+								<div class="bg-white rounded-lg p-4 border border-orange-200">
+									<p class="text-xs text-gray-600 mb-4 flex items-start gap-2">
+										<i class="fas fa-info-circle text-orange-500 mt-0.5"></i>
+										<span>
+											Esta opción permite asignar un horario personalizado. 
+											<strong>Se recomienda usar el mapa visual de disponibilidad</strong> para evitar conflictos de horario.
+										</span>
+									</p>
+									
+									<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+										<!-- Selección de Aula -->
+										<div class="md:col-span-1">
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												Aula <span class="text-red-500">*</span>
+											</label>
+											<select
+												v-model="manualAssignForm.aula_id"
+												class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+											>
+												<option value="">Seleccione un aula</option>
+												<option 
+													v-for="aulaItem in disponibilidadAulasOrdenadas" 
+													:key="aulaItem.aula.id" 
+													:value="aulaItem.aula.id"
+												>
+													{{ aulaItem.aula.nombre }} (Cap: {{ aulaItem.aula.capacidad }})
+												</option>
+											</select>
+										</div>
+
+										<!-- Día de la Semana -->
+										<div class="md:col-span-1">
+											<label class="block text-sm font-medium text-gray-700 mb-1">
+												Día <span class="text-red-500">*</span>
+											</label>
+											<select
+												v-model="manualAssignForm.dia_semana"
+												class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+											>
+												<option value="">Seleccione un día</option>
+												<option v-for="dia in diasSemana" :key="dia" :value="dia">{{ dia }}</option>
+											</select>
+										</div>
+
+										<!-- Hora de Inicio -->
+										<div class="md:col-span-1">
+											<TimePickerClock
+												v-model="manualAssignForm.hora_inicio"
+												label="Hora de Inicio"
+												placeholder="Ej: 07:00"
+											/>
+										</div>
+
+										<!-- Hora de Fin -->
+										<div class="md:col-span-1">
+											<TimePickerClock
+												v-model="manualAssignForm.hora_fin"
+												label="Hora de Fin"
+												placeholder="Ej: 09:00"
+											/>
+										</div>
+									</div>
+
+									<!-- Botón Asignar Manual -->
+									<div class="mt-4">
+										<button
+											@click="submitManualAssignment"
+											:disabled="!isManualFormValid || assignSubmitting"
+											class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg font-medium transition-all disabled:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2"
+										>
+											<i :class="assignSubmitting ? 'fas fa-spinner fa-spin' : 'fas fa-calendar-plus'"></i>
+											{{ assignSubmitting ? 'Asignando...' : 'Asignar Horario Manual' }}
+										</button>
+									</div>
+								</div>
+							</div>
+						</details>
 					</div>
 
 					<!-- Header con leyenda y botón actualizar -->
@@ -610,6 +861,8 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
+import TimePickerClock from '@/Components/TimePickerClock.vue';
 import axios from 'axios';
 import { authService } from '@/Services/authService';
 
@@ -730,6 +983,50 @@ const disponibilidadAulasPaginadas = computed(() => {
 	const start = (currentAulaPage.value - 1) * aulasPerPage.value;
 	const end = start + aulasPerPage.value;
 	return disponibilidadAulasOrdenadas.value.slice(start, end);
+});
+
+// Computed para paginación inteligente
+const visiblePages = computed(() => {
+	const total = totalPages.value;
+	const current = currentPage.value;
+	const pages = [];
+
+	// Si hay pocas páginas (7 o menos), mostrar todas
+	if (total <= 7) {
+		for (let i = 1; i <= total; i++) {
+			pages.push(i);
+		}
+		return pages;
+	}
+
+	// Siempre mostrar la primera página
+	pages.push(1);
+
+	// Calcular rango alrededor de la página actual (solo 1 a cada lado)
+	const startPage = Math.max(2, current - 1);
+	const endPage = Math.min(total - 1, current + 1);
+
+	// Si no estamos cerca del inicio, agregar puntos suspensivos
+	if (startPage > 2) {
+		pages.push('...');
+	}
+
+	// Agregar páginas alrededor de la actual
+	for (let i = startPage; i <= endPage; i++) {
+		pages.push(i);
+	}
+
+	// Si no estamos cerca del final, agregar puntos suspensivos
+	if (endPage < total - 1) {
+		pages.push('...');
+	}
+
+	// Siempre mostrar la última página (si es diferente de la primera)
+	if (total > 1) {
+		pages.push(total);
+	}
+
+	return pages;
 });
 
 const fetchAll = async () => {
@@ -1124,6 +1421,98 @@ const openEditModal = (g) => {
 
 const closeModal = () => { showModal.value = false; };
 
+
+// Variables para asignación manual
+const manualAssignForm = ref({
+	aula_id: null,
+	dia_semana: '',
+	hora_inicio: '',
+	hora_fin: ''
+});
+
+// Computed para validar formulario manual
+const isManualFormValid = computed(() => {
+	return manualAssignForm.value.aula_id && 
+	       manualAssignForm.value.dia_semana && 
+	       manualAssignForm.value.hora_inicio && 
+	       manualAssignForm.value.hora_fin &&
+	       manualAssignForm.value.hora_inicio < manualAssignForm.value.hora_fin;
+});
+
+// Función para asignación manual
+const submitManualAssignment = async () => {
+	if (!isManualFormValid.value) {
+		showNotification('⚠️ Complete todos los campos correctamente', 'warning');
+		return;
+	}
+
+	assignSubmitting.value = true;
+	assignServerError.value = '';
+	assignedAulaInfo.value = null;
+
+	try {
+		const payload = {
+			grupo_id: assignForm.value.grupo_id,
+			aula_id: manualAssignForm.value.aula_id,
+			dia_semana: manualAssignForm.value.dia_semana,
+			hora_inicio: manualAssignForm.value.hora_inicio,
+			hora_fin: manualAssignForm.value.hora_fin
+		};
+
+		const res = await axios.post(
+			`${API_URL}/schedules/new`,
+			payload,
+			getAuthHeaders()
+		);
+
+		if (res.data.success || res.data.data) {
+			const aulaRes = await axios.get(
+				`${API_URL}/classrooms/get/${manualAssignForm.value.aula_id}`,
+				getAuthHeaders()
+			);
+			
+			assignedAulaInfo.value = {
+				aula: aulaRes.data.data || aulaRes.data,
+				horario: res.data.data || payload
+			};
+			
+			showNotification('✅ Aula asignada exitosamente', 'success');
+			
+			// Limpiar formulario manual
+			manualAssignForm.value = {
+				aula_id: null,
+				dia_semana: '',
+				hora_inicio: '',
+				hora_fin: ''
+			};
+		}
+
+		await fetchAll();
+		await loadDisponibilidad();
+		
+	} catch (e) {
+		const data = e?.response?.data ?? null;
+		
+		if (e?.response?.status === 409) {
+			const conflictMsg = data?.message || 'Conflicto de horario detectado';
+			assignServerError.value = `⚠️ ${conflictMsg}`;
+			showNotification(conflictMsg, 'warning');
+			await loadDisponibilidad();
+		} 
+		else if (data && data.message) {
+			assignServerError.value = data.message;
+			showNotification('❌ ' + data.message, 'error');
+		} 
+		else {
+			assignServerError.value = 'Error al asignar aula. Intente nuevamente.';
+			showNotification('❌ Error al asignar aula', 'error');
+		}
+		
+	} finally {
+		assignSubmitting.value = false;
+	}
+};
+
 const openAssignModal = async (g) => {
 	assignForm.value = {
 		grupo_id: g.id,
@@ -1142,6 +1531,14 @@ const openAssignModal = async (g) => {
 	
 	// Cargar automáticamente el mapa
 	await loadDisponibilidad();
+	
+	// Limpiar formulario manual
+	manualAssignForm.value = {
+		aula_id: null,
+		dia_semana: '',
+		hora_inicio: '',
+		hora_fin: ''
+	};
 };
 
 const closeAssignModal = () => {
@@ -1254,6 +1651,7 @@ const getClaseBloque = (item, dia, bloque) => {
 		bloqueSeleccionado.value.dia === dia &&
 		bloqueSeleccionado.value.bloque.inicio === bloque.inicio;
 	
+	
 	if (seleccionado) {
 		return 'bg-yellow-100 border-yellow-500 hover:bg-yellow-200';
 	}
@@ -1356,149 +1754,259 @@ const compararHoras = (hora1, hora2) => {
 	
 	return h1.localeCompare(h2);
 };
-
+return;
 const submitForm = async () => {
-	submitting.value = true;
+	submitting.value = true;	if (selectedOption.value === 'view-actives') {
 	errors.value = {};
 	serverErrorMessage.value = '';
 	serverErrors.value = [];
-
-	try {
-		if (!validateForm()) {
+ctedOption.value === 'view-inactives') {
+	try {tivo');
+		if (!validateForm()) {return;
 			submitting.value = false;
-			return;
+			return;};
 		}
-
-		// Limpiar payload
-		const payload = {
+c () => {
+		// Limpiar payload {
+		const payload = {	await fetchAll();
 			materia_id: form.value.materia_id,
 			docente_id: form.value.docente_id,
-			ciclo_id: form.value.ciclo_id,
+			ciclo_id: form.value.ciclo_id,erForm.value.materia_id);
 			numero_grupo: form.value.numero_grupo,
 			capacidad_maxima: parseInt(form.value.capacidad_maxima),
-			estado: form.value.estado || 'activo'
-		};
-
+			estado: form.value.estado || 'activo' async () => {
+		};(!filterForm.value.ciclo_id) {
+etchAll();
 		if (form.value.estudiantes_inscrito && form.value.estudiantes_inscrito !== '') {
 			payload.estudiantes_inscrito = parseInt(form.value.estudiantes_inscrito);
-		}
+		}id);
 
 		if (isEditMode.value) {
-			await axios.patch(`${API_URL}/groups/edit/${currentId.value}`, payload, getAuthHeaders());
-			showNotification(' Grupo actualizado exitosamente', 'success');
-		} else {
+			await axios.patch(`${API_URL}/groups/edit/${currentId.value}`, payload, getAuthHeaders());t handleFilterByProfessor = async () => {
+			showNotification(' Grupo actualizado exitosamente', 'success');terForm.value.docente_id) {
+		} else {;
 			await axios.post(`${API_URL}/groups/new`, payload, getAuthHeaders());
 			showNotification(' Grupo creado exitosamente', 'success');
-		}
+		}hGroupsByProfessor(filterForm.value.docente_id);
 		
 		closeModal();
-		await fetchAll();
-		
+		await fetchAll();(async () => {
+		ifyToken(localStorage.getItem('token'));
 	} catch (e) {
 		const data = e?.response?.data ?? null;
-		const known = new Set(['materia_id','docente_id','ciclo_id','numero_grupo','capacidad_maxima','estudiantes_inscrito','estado']);
+		const known = new Set(['materia_id','docente_id','ciclo_id','numero_grupo','capacidad_maxima','estudiantes_inscrito','estado']);value = false;
 
 		if (data && data.errors && typeof data.errors === 'object') {
-			Object.keys(data.errors).forEach(k => {
-				const raw = data.errors[k];
+			Object.keys(data.errors).forEach(k => {les para información contextual
+				const raw = data.errors[k];= ref(null);
 				const msgArr = Array.isArray(raw) ? raw : [raw];
 				if (known.has(k)) {
 					errors.value[k] = msgArr;
-				} else {
-					serverErrors.value.push(...msgArr.map(m => (typeof m === 'string' ? m : JSON.stringify(m))));
+				} else { para opciones de los selects con información adicional
+					serverErrors.value.push(...msgArr.map(m => (typeof m === 'string' ? m : JSON.stringify(m))));omputed(() => {
 				}
 			});
-			if (data.message && typeof data.message === 'string') {
+			if (data.message && typeof data.message === 'string') {nombre,
 				serverErrorMessage.value = data.message;
-			}
-		}
+			}o: m.codigo ? `Código: ${m.codigo}` : ''
+		};
 		else if (data && typeof data === 'string') {
 			serverErrorMessage.value = data;
-		}
-		else if (data && (data.error || data.message)) {
-			serverErrorMessage.value = data.error || data.message;
-		}
-		else if (e?.response?.status === 422) {
-			const d = e.response.data;
+		}onst docentesSelectOptions = computed(() => {
+		else if (data && (data.error || data.message)) {e.map(d => ({
+			serverErrorMessage.value = data.error || data.message;id: d.id,
+		}completo: d.nombre_completo || d.nombre || `Docente ${d.id}`,
+		else if (e?.response?.status === 422) {		email: d.email,
+			const d = e.response.data;l || ''
 			if (d.errors && typeof d.errors === 'object') {
 				Object.keys(d.errors).forEach(k => {
 					const raw = d.errors[k];
-					errors.value[k] = Array.isArray(raw) ? raw : [raw];
-				});
+					errors.value[k] = Array.isArray(raw) ? raw : [raw];mputed(() => {
+				});p(c => ({
 				serverErrorMessage.value = d.message || 'Error de validación';
-			} else {
-				serverErrorMessage.value = d.message || 'Error de validación';
-			}
-		} else {
-			serverErrorMessage.value = e?.message || 'Error en la solicitud';
-		}
-		
-		showNotification('❌ ' + (serverErrorMessage.value || 'Error al guardar el grupo'), 'error');
-		console.error(e);
-		
-	} finally {
-		submitting.value = false;
-	}
-};
+			} else {	nombre: c.nombre,
+				serverErrorMessage.value = d.message || 'Error de validación';inicio: c.fecha_inicio,
 
-const deleteItem = async (id) => {
-	if (!confirm('¿Eliminar grupo?')) return;
-	try { await axios.delete(`${API_URL}/groups/delete/${id}`, getAuthHeaders()); await fetchAll(); } catch (e) { console.error(e); }
-};
 
-const performCleanSearch = () => {
-	searchTerm.value = '';
-};
 
-const prevPage = () => { if (currentPage.value > 1) currentPage.value--; };
-const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++; };
-const goToPage = (p) => { if (p>=1 && p<=totalPages.value) currentPage.value = p; };
 
-const handleSelectFilter = async () => {
-	if (!selectedOption.value || selectedOption.value === 'view-all') {
-		await fetchAll();
-		return;
-	}
-	if (selectedOption.value === 'view-actives') {
-		await fetchGroupsByStatus('activo');
-		return;
-	}
-	if (selectedOption.value === 'view-inactives') {
-		await fetchGroupsByStatus('inactivo');
-		return;
-	}
-};
 
-const handleFilterBySubject = async () => {
-	if (!filterForm.value.materia_id) {
-		await fetchAll();
-		return;
-	}
-	await fetchGroupsBySubject(filterForm.value.materia_id);
-};
 
-const handleFilterByCycle = async () => {
-	if (!filterForm.value.ciclo_id) {
-		await fetchAll();
-		return;
-	}
-	await fetchGroupsByCycle(filterForm.value.ciclo_id);
-};
 
-const handleFilterByProfessor = async () => {
-	if (!filterForm.value.docente_id) {
-		await fetchAll();
-		return;
-	}
-	await fetchGroupsByProfessor(filterForm.value.docente_id);
-};
 
-onMounted(async () => {
-	await authService.verifyToken(localStorage.getItem('token'));
-	await fetchSelectOptions();
-	await fetchAll();
-	isLoading.value = false;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</style>}	line-clamp: 1;	-webkit-line-clamp: 1;	-webkit-box-orient: vertical;	display: -webkit-box;	overflow: hidden;.line-clamp-1 {<style scoped></script>};	errors.value = errs;		}			break;			}				}					delete errs.capacidad_maxima;				} else {					errs.capacidad_maxima = ['La capacidad debe ser un número entero mayor a 0.'];				if (!Number.isInteger(capNum) || capNum <= 0) {				const capNum = Number(cap);			} else {				errs.capacidad_maxima = ['Ingrese la capacidad máxima.'];			if (cap === '' || cap === null || typeof cap === 'undefined') {			const cap = form.value.capacidad_maxima;		case 'capacidad_maxima':			break;			}				delete errs.numero_grupo;			} else {				errs.numero_grupo = ['Ingrese el número de grupo.'];			if (!form.value.numero_grupo || String(form.value.numero_grupo).trim() === '') {		case 'numero_grupo':			break;			}				delete errs.ciclo_id;			} else {				errs.ciclo_id = ['Seleccione un ciclo.'];			if (!form.value.ciclo_id) {		case 'ciclo_id':			break;			}				delete errs.docente_id;			} else {				errs.docente_id = ['Seleccione un docente.'];			if (!form.value.docente_id) {		case 'docente_id':			break;			}				delete errs.materia_id;			} else {				errs.materia_id = ['Seleccione una materia.'];			if (!form.value.materia_id) {		case 'materia_id':	switch(field) {		const errs = { ...errors.value };const validateField = (field) => {// Validación en tiempo real por campo});	}		selectedCicloInfo.value = null;	} else {		selectedCicloInfo.value = ciclos.value.find(c => c.id === newVal);	if (newVal) {watch(() => form.value.ciclo_id, (newVal) => {});	}		selectedDocenteInfo.value = null;	if (!selectedOption.value || selectedOption.value === 'view-all') {const handleSelectFilter = async () => {const goToPage = (p) => { if (p>=1 && p<=totalPages.value) currentPage.value = p; };const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++; };const prevPage = () => { if (currentPage.value > 1) currentPage.value--; };};	searchTerm.value = '';const performCleanSearch = () => {};	try { await axios.delete(`${API_URL}/groups/delete/${id}`, getAuthHeaders()); await fetchAll(); } catch (e) { console.error(e); }	if (!confirm('¿Eliminar grupo?')) return;const deleteItem = async (id) => {};	}		submitting.value = false;	} finally {				console.error(e);		showNotification('❌ ' + (serverErrorMessage.value || 'Error al guardar el grupo'), 'error');				}			serverErrorMessage.value = e?.message || 'Error en la solicitud';		} else {			}		fecha_fin: c.fecha_fin,
+		info: c.fecha_inicio && c.fecha_fin ? `${c.fecha_inicio} - ${c.fecha_fin}` : ''
+	}));
 });
+
+// Watchers para cargar información adicional
+watch(() => form.value.materia_id, (newVal) => {
+	if (newVal) {
+		selectedMateriaInfo.value = materias.value.find(m => m.id === newVal);
+	} else {
+		selectedMateriaInfo.value = null;
+	}
+});
+
+watch(() => form.value.docente_id, (newVal) => {
+	if (newVal) {
+		selectedDocenteInfo.value = docentes.value.find(d => d.id === newVal);
+	} else {
+		selectedDocenteInfo.value = null;
+	}
+});
+
+watch(() => form.value.ciclo_id, (newVal) => {
+	if (newVal) {
+		selectedCicloInfo.value = ciclos.value.find(c => c.id === newVal);
+	} else {
+		selectedCicloInfo.value = null;
+	}
+});
+
+// Validación en tiempo real por campo
+const validateField = (field) => {
+	const errs = { ...errors.value };
+	
+	switch(field) {
+		case 'materia_id':
+			if (!form.value.materia_id) {
+				errs.materia_id = ['Seleccione una materia.'];
+			} else {
+				delete errs.materia_id;
+			}
+			break;
+		case 'docente_id':
+			if (!form.value.docente_id) {
+				errs.docente_id = ['Seleccione un docente.'];
+			} else {
+				delete errs.docente_id;
+			}
+			break;
+		case 'ciclo_id':
+			if (!form.value.ciclo_id) {
+				errs.ciclo_id = ['Seleccione un ciclo.'];
+			} else {
+				delete errs.ciclo_id;
+			}
+			break;
+		case 'numero_grupo':
+			if (!form.value.numero_grupo || String(form.value.numero_grupo).trim() === '') {
+				errs.numero_grupo = ['Ingrese el número de grupo.'];
+			} else {
+				delete errs.numero_grupo;
+			}
+			break;
+		case 'capacidad_maxima':
+			const cap = form.value.capacidad_maxima;
+			if (cap === '' || cap === null || typeof cap === 'undefined') {
+				errs.capacidad_maxima = ['Ingrese la capacidad máxima.'];
+			} else {
+				const capNum = Number(cap);
+				if (!Number.isInteger(capNum) || capNum <= 0) {
+					errs.capacidad_maxima = ['La capacidad debe ser un número entero mayor a 0.'];
+				} else {
+					delete errs.capacidad_maxima;
+				}
+			}
+			break;
+	}
+	
+	errors.value = errs;
+};
 </script>
 
 <style scoped>

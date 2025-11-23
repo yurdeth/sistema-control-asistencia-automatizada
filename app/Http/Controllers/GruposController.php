@@ -12,9 +12,10 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class GruposController extends Controller {
-
-    public function index(): JsonResponse {
+class GruposController extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -37,37 +38,59 @@ class GruposController extends Controller {
                 'success' => false
             ], 403);
         }
-        $grupos = grupos::with(['materia', 'docente', 'ciclo'])->get();
 
-        if ($grupos->isEmpty()) {
+        try {
+            // 🔥 Agregar parámetro para cargar relaciones
+            $withRelations = $request->query('with_relations', 'false') === 'true';
+            
+            $query = grupos::query();
+            
+            if ($withRelations) {
+                $query->with([
+                    'materia:id,nombre,codigo',
+                    'docente:id,nombre_completo',
+                    'ciclo:id,nombre'
+                ]);
+            }
+            
+            $grupos = $query->get();
+
+            if ($grupos->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay grupos disponibles',
+                    'success' => true,
+                    'data' => []
+                ], 200);
+            }
+
+            $grupos = $grupos->map(function ($grupo) {
+                return [
+                    'id' => $grupo->id,
+                    'numero_grupo' => $grupo->numero_grupo,
+                    'capacidad_maxima' => $grupo->capacidad_maxima,
+                    'estudiantes_inscrito' => $grupo->estudiantes_inscrito,
+                    'estado' => $grupo->estado,
+                    'materia_id' => $grupo->materia_id,
+                    'materia_nombre' => $grupo->materia->nombre ?? null,
+                    'docente_id' => $grupo->docente_id,
+                    'docente_nombre' => $grupo->docente->nombre_completo ?? null,
+                    'ciclo_id' => $grupo->ciclo_id,
+                    'ciclo_nombre' => $grupo->ciclo->nombre ?? null,
+                ];
+            });
+
             return response()->json([
-                'message' => 'No hay grupos disponibles',
+                'message' => 'Grupos obtenidos exitosamente',
                 'success' => true,
-                'data' => []
+                'data' => $grupos
             ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener los grupos',
+                'error' => $e->getMessage(),
+                'success' => false
+            ], 500);
         }
-
-        $grupos = $grupos->map(function ($grupo) {
-            return [
-                'id' => $grupo->id,
-                'numero_grupo' => $grupo->numero_grupo,
-                'capacidad_maxima' => $grupo->capacidad_maxima,
-                'estudiantes_inscrito' => $grupo->estudiantes_inscrito,
-                'estado' => $grupo->estado,
-                'materia_id' => $grupo->materia_id,
-                'materia_nombre' => $grupo->materia->nombre ?? null,
-                'docente_id' => $grupo->docente_id,
-                'docente_nombre' => $grupo->docente->nombre_completo ?? null,
-                'ciclo_id' => $grupo->ciclo_id,
-                'ciclo_nombre' => $grupo->ciclo->nombre ?? null,
-            ];
-        });
-
-        return response()->json([
-            'message' => 'Grupos obtenidos exitosamente',
-            'success' => true,
-            'data' => $grupos
-        ], 200);
     }
 
     public function show($id): JsonResponse {
@@ -435,7 +458,7 @@ class GruposController extends Controller {
         }
     }
 
-    public function getGroupsBySubject($id): JsonResponse {
+    public function getGroupsBySubject($id, Request $request): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -460,9 +483,20 @@ class GruposController extends Controller {
         }
 
         try {
-            $grupos = grupos::with(['materia', 'docente', 'ciclo'])
-                ->where('materia_id', $id)
-                ->get();
+            // 🔥 Agregar eager loading
+            $withRelations = $request->query('with_relations', 'false') === 'true';
+            
+            $query = grupos::where('materia_id', $id);
+            
+            if ($withRelations) {
+                $query->with([
+                    'materia:id,nombre,codigo',
+                    'docente:id,nombre_completo',
+                    'ciclo:id,nombre'
+                ]);
+            }
+            
+            $grupos = $query->get();
 
             if ($grupos->isEmpty()) {
                 return response()->json([

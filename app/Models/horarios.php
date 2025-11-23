@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class horarios extends Model {
     /** @use HasFactory<\Database\Factories\HorariosFactory> */
@@ -26,6 +27,9 @@ class horarios extends Model {
         'hora_inicio',
         'hora_fin',
     ];
+
+    // 🔥 Optimización: No cargar timestamps si no se usan
+    public $timestamps = true;
 
     private function horarioBaseQuery()
     {
@@ -149,18 +153,14 @@ class horarios extends Model {
             ->get();
     }
 
-    public function grupo()
+    // Relaciones optimizadas
+    public function grupo(): BelongsTo
     {
         return $this->belongsTo(grupos::class, 'grupo_id', 'id');
     }
 
-    public function aula()
+    public function aula(): BelongsTo
     {
         return $this->belongsTo(aulas::class, 'aula_id', 'id');
-    }
-
-    public function sesiones()
-    {
-        return $this->hasMany(sesiones_clase::class, 'horario_id', 'id');
     }
 }
