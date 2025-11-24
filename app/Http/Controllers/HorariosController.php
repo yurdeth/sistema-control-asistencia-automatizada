@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\grupos;
 use App\Models\horarios;
+use App\RolesEnum;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class HorariosController extends Controller
 {
@@ -21,13 +24,12 @@ class HorariosController extends Controller
         }
 
         try {
-            // 🔥 OPTIMIZACIÓN: Eager loading con relaciones anidadas
+
             $withRelations = $request->query('with_relations', 'false') === 'true';
             
             $query = horarios::query();
             
             if ($withRelations) {
-                // Cargar todas las relaciones necesarias en UNA SOLA query
                 $query->with([
                     'grupo:id,numero_grupo,materia_id,docente_id',
                     'grupo.materia:id,nombre,codigo',
@@ -35,7 +37,7 @@ class HorariosController extends Controller
                     'aula:id,nombre,codigo,ubicacion,capacidad_pupitres'
                 ]);
             } else {
-                // Solo relaciones básicas
+  
                 $query->with(['grupo:id,numero_grupo', 'aula:id,nombre']);
             }
             
@@ -53,7 +55,6 @@ class HorariosController extends Controller
                 ], 200);
             }
 
-            // 🔥 Mapear con relaciones ya cargadas (sin N+1)
             $horariosData = $horarios->map(function ($horario) use ($withRelations) {
                 $data = [
                     'id' => $horario->id,
@@ -650,7 +651,7 @@ class HorariosController extends Controller
                 return response()->json([
                     'message' => 'No se encontraron horarios para el grupo especificado',
                     'success' => false
-                ], 404);
+                ], 200);
             }
 
             $horarios = $horarios->map(function ($horario) {

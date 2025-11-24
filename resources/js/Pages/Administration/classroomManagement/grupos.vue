@@ -414,14 +414,18 @@
 							<tbody>
 								<tr v-for="item in disponibilidadAulasPaginadas" :key="item.aula.id" class="hover:bg-gray-50 border-t border-gray-300">
 									<td class="border-r border-gray-300 px-3 py-2 sticky left-0 bg-white font-medium">
-										<div class="flex items-center gap-2">
-											<div class="text-gray-900 font-bold">{{ item.aula.nombre }}</div>
-											<span v-if="item.capacidadSimilar" class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
-												Óptima
-											</span>
-										</div>
-										<div class="text-xs text-gray-600">Cap: {{ item.aula.capacidad }}</div>
-										<div class="text-xs text-gray-500 line-clamp-1">{{ item.aula.ubicacion }}</div>
+									<div class="flex items-center gap-2">
+										<div class="text-gray-900 font-bold">{{ item.aula.nombre }}</div>
+										
+										<span v-if="assignedAulaIds.includes(item.aula.id)" 
+											class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold"
+											title="Este grupo ya tiene horarios en esta aula">
+											<i class="fas fa-history mr-1"></i> Asignada
+										</span>
+										<span v-if="item.capacidadSimilar" class="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
+											Óptima
+										</span>
+									</div>
 									</td>
 									<td v-for="dia in diasSemana" :key="dia" class="border-r border-gray-300 p-1">
 										<div class="space-y-1">
@@ -677,6 +681,9 @@ const loadingDisponibilidad = ref(false);
 const disponibilidadAulas = ref([]);
 const bloqueSeleccionado = ref(null);
 
+//para mapa disponibilidad
+const assignedAulaIds = ref([]);
+
 // Variables para paginación de aulas
 const currentAulaPage = ref(1);
 const aulasPerPage = ref(5);
@@ -697,28 +704,38 @@ const bloquesHorarios = [
 	{ inicio: '17:00', fin: '19:00', label: '5-7 PM' },
 ];
 
-// ordenar las aulas por capacidad similar
 const disponibilidadAulasOrdenadas = computed(() => {
-	if (!disponibilidadAulas.value.length) return [];
-	
-	const capacidadNecesaria = assignForm.value.capacidad_maxima || 0;
-	
-	return [...disponibilidadAulas.value].sort((a, b) => {
-		const capA = a.aula.capacidad_pupitres || a.aula.capacidad || 0;
-		const capB = b.aula.capacidad_pupitres || b.aula.capacidad || 0;
-		
-		const diffA = Math.abs(capA - capacidadNecesaria);
-		const diffB = Math.abs(capB - capacidadNecesaria);
-		
-		const margen = capacidadNecesaria * 0.2;
-		a.capacidadSimilar = diffA <= margen && capA >= capacidadNecesaria;
-		b.capacidadSimilar = diffB <= margen && capB >= capacidadNecesaria;
-		
-		if (a.capacidadSimilar && !b.capacidadSimilar) return -1;
-		if (!a.capacidadSimilar && b.capacidadSimilar) return 1;
-		
-		return diffA - diffB;
-	});
+    if (!disponibilidadAulas.value.length) return [];
+    
+    const capacidadNecesaria = assignForm.value.capacidad_maxima || 0;
+    const aulasAsignadas = new Set(assignedAulaIds.value); 
+    
+    return [...disponibilidadAulas.value].sort((a, b) => {
+        const capA = a.aula.capacidad_pupitres || a.aula.capacidad || 0;
+        const capB = b.aula.capacidad_pupitres || b.aula.capacidad || 0;
+        
+       
+        const aEsAsignada = aulasAsignadas.has(a.aula.id);
+        const bEsAsignada = aulasAsignadas.has(b.aula.id);
+        
+        if (aEsAsignada && !bEsAsignada) return -1; 
+        if (!aEsAsignada && bEsAsignada) return 1;  
+        
+      
+        const diffA = Math.abs(capA - capacidadNecesaria);
+        const diffB = Math.abs(capB - capacidadNecesaria);
+        
+        const margen = capacidadNecesaria * 0.2;
+        a.capacidadSimilar = diffA <= margen && capA >= capacidadNecesaria;
+        b.capacidadSimilar = diffB <= margen && capB >= capacidadNecesaria;
+        
+
+        if (a.capacidadSimilar && !b.capacidadSimilar) return -1;
+        if (!a.capacidadSimilar && b.capacidadSimilar) return 1;
+        
+     
+        return diffA - diffB;
+    });
 });
 
 // Computed para paginación de aulas
@@ -922,30 +939,31 @@ const getAulaTipo = (assignment) => {
 };
 
 const loadGroupAssignments = async (grupoId) => {
-	loadingAssignments.value = true;
-	try {
-		const res = await axios.get(
-			`${API_URL}/schedules/get/group/${grupoId}`,
-			getAuthHeaders()
-		);
-		
-		let assignments = res.data.data || res.data || [];
-		
-		if (!Array.isArray(assignments)) {
-			assignments = Object.values(assignments);
-		}
-		groupAssignments.value = assignments;
-		
-	} catch (e) {
-		if (e?.response?.status === 404) {
-			groupAssignments.value = [];
-		} else {
-			showNotification('Error al cargar asignaciones: ' + (e.response?.data?.message || e.message), 'error');
-			groupAssignments.value = [];
-		}
-	} finally {
-		loadingAssignments.value = false;
-	}
+    loadingAssignments.value = true;
+    try {
+        const res = await axios.get(
+            `${API_URL}/schedules/get/group/${grupoId}`,
+            getAuthHeaders()
+        );
+        
+        let assignments = res.data.data || res.data || [];
+        
+        if (!Array.isArray(assignments)) {
+            assignments = Object.values(assignments);
+        }
+        
+        const cleanAssignments = assignments.filter(a => 
+            (a.aula_id !== null && a.aula_id !== 0) && 
+            (a.dia_semana || a.dia) && 
+            (a.hora_inicio) 
+        );
+        
+        groupAssignments.value = cleanAssignments; 
+        
+    } catch (e) {
+    } finally {
+        loadingAssignments.value = false;
+    }
 };
 const deleteAssignment = async (assignmentId) => {
 	if (!confirm('¿Está seguro de eliminar esta asignación?')) return;
@@ -1141,7 +1159,10 @@ const openAssignModal = async (g) => {
 	showAssignModal.value = true;
 	
 	// Cargar automáticamente el mapa
-	await loadDisponibilidad();
+	await loadAssignedAulaIds(g.id); 
+
+    showAssignModal.value = true;
+    await loadDisponibilidad();
 };
 
 const closeAssignModal = () => {
@@ -1160,7 +1181,32 @@ const closeAssignModal = () => {
 	assignedAulaInfo.value = null;
 	bloqueSeleccionado.value = null;
 	disponibilidadAulas.value = [];
+	assignedAulaIds.value = [];
 };
+
+
+const loadAssignedAulaIds = async (grupoId) => {
+    assignedAulaIds.value = [];
+    try {
+        const res = await axios.get(
+            `${API_URL}/schedules/get/group/${grupoId}`,
+            getAuthHeaders()
+        );
+        
+        let assignments = res.data.data || res.data || [];
+        if (!Array.isArray(assignments)) {
+            assignments = Object.values(assignments);
+        }
+        
+        const ids = new Set(assignments.map(a => a.aula_id).filter(id => id));
+        assignedAulaIds.value = Array.from(ids);
+        
+    } catch (e) {
+        console.error('Error al cargar IDs de aulas asignadas:', e);
+        assignedAulaIds.value = [];
+    }
+};
+
 
 const submitAssignAula = async () => {
 	assignSubmitting.value = true;
