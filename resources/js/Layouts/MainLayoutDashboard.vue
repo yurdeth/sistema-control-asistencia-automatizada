@@ -67,7 +67,7 @@
                 <Link
                     href="/dashboard/notificaciones"
                     class="sidebar-link p-2 rounded flex items-center gap-2 transition-all duration-200"
-                    :class="{ 'bg-white/10 font-semibold': isActive('/dashboard/departamentos') }"
+                    :class="{ 'bg-white/10 font-semibold': isActive('/dashboard/notificaciones') }"
                     :style="{
                         color: colorText,
                         borderLeft: isActive('/dashboard/notificaciones') ? '3px solid #ffffff' : 'none'
@@ -163,7 +163,7 @@
                                         {{ notificationCount }}
                                     </span>
                                 </div>
-                                <!-- <span class="hidden sm:inline">Notificaciones</span> -->
+                                <span class="hidden sm:inline">Notificaciones</span>
                             </button>
 
                             <!-- Panel provisional de notificaciones -->

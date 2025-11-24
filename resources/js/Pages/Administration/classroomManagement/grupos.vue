@@ -115,31 +115,78 @@
 							</tbody>
 						</table>
 
-						<div class="flex justify-center items-center space-x-2 p-4 border-t border-gray-200">
-							<button
-								@click="prevPage"
-								:disabled="currentPage === 1"
-								class="p-2 border rounded-lg transition-colors"
-								:class="{ 'bg-gray-200 cursor-not-allowed': currentPage === 1, 'hover:bg-gray-100': currentPage > 1 }">
-								<i class="fas fa-chevron-left"></i>
-							</button>
+						<!-- Sección de paginación de grupos (después de la tabla principal) -->
+						<div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-gray-200 bg-gray-50">
+							<div class="text-sm text-gray-600 font-medium">
+								Mostrando <span class="font-bold text-gray-900">{{ (currentPage - 1) * perPage + 1 }}</span> 
+								a <span class="font-bold text-gray-900">{{ Math.min(currentPage * perPage, filtered.length) }}</span> 
+								de <span class="font-bold text-gray-900">{{ filtered.length }}</span> grupos
+							</div>
 
-							<button
-								v-for="p in totalPages"
-								:key="p"
-								@click="goToPage(p)"
-								class="px-4 py-2 border rounded-lg font-bold text-white transition-colors"
-								:style="{ background: p===currentPage ? '#d93f3f' : 'transparent' }">
-								{{ p }}
-							</button>
+							<div class="flex items-center gap-2">
+								<button
+									@click="prevPage"
+									:disabled="currentPage === 1"
+									class="p-2 rounded-lg border border-gray-300 transition-all"
+									:class="{ 
+										'bg-gray-200 text-gray-400 cursor-not-allowed': currentPage === 1, 
+										'bg-white hover:bg-gray-100 text-gray-700 hover:border-gray-400': currentPage > 1 
+									}"
+									title="Página anterior">
+									<i class="fas fa-chevron-left"></i>
+								</button>
 
-							<button
-								@click="nextPage"
-								:disabled="currentPage === totalPages"
-								class="p-2 border rounded-lg transition-colors"
-								:class="{ 'bg-gray-200 cursor-not-allowed': currentPage === totalPages, 'hover:bg-gray-100': currentPage < totalPages }">
-								<i class="fas fa-chevron-right"></i>
-							</button>
+								<div class="flex items-center gap-1">
+									<button
+										v-if="currentPage > 2"
+										@click="goToPage(1)"
+										class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all text-sm font-medium">
+										1
+									</button>
+									<span v-if="currentPage > 3" class="px-2 text-gray-500">...</span>
+
+									<button
+										v-if="currentPage > 1"
+										@click="goToPage(currentPage - 1)"
+										class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all text-sm font-medium">
+										{{ currentPage - 1 }}
+									</button>
+
+									<button
+										@click="goToPage(currentPage)"
+										class="px-4 py-2 rounded-lg text-white font-bold transition-all shadow-md text-sm"
+										:style="{ background: '#d93f3f' }">
+										{{ currentPage }}
+									</button>
+
+									<button
+										v-if="currentPage < totalPages"
+										@click="goToPage(currentPage + 1)"
+										class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all text-sm font-medium">
+										{{ currentPage + 1 }}
+									</button>
+									<span v-if="currentPage < totalPages - 2" class="px-2 text-gray-500">...</span>
+
+									<button
+										v-if="currentPage < totalPages - 1"
+										@click="goToPage(totalPages)"
+										class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all text-sm font-medium">
+										{{ totalPages }}
+									</button>
+								</div>
+
+								<button
+									@click="nextPage"
+									:disabled="currentPage === totalPages"
+									class="p-2 rounded-lg border border-gray-300 transition-all"
+									:class="{ 
+										'bg-gray-200 text-gray-400 cursor-not-allowed': currentPage === totalPages, 
+										'bg-white hover:bg-gray-100 text-gray-700 hover:border-gray-400': currentPage < totalPages 
+									}"
+									title="Página siguiente">
+									<i class="fas fa-chevron-right"></i>
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -196,96 +243,200 @@
 			</div>
 			<form @submit.prevent="submitForm" class="space-y-3 p-4">
 				<div class="grid grid-cols-2 gap-3">
+					<!-- Selector Materia con búsqueda -->
 					<div>
-						<label class="block text-sm">Materia</label>
-						<select v-model="form.materia_id" :class="['w-full rounded px-2 py-1 border', errors.materia_id ? 'border-red-600' : '']">
-							<option value="">Seleccionar materia...</option>
-							<option v-for="m in materias" :key="m.id" :value="m.id">{{ m.nombre }}</option>
-						</select>
-						<div v-if="errors.materia_id" class="text-sm text-red-600 mt-1 list-disc ml-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Materia</label>
+						<div class="relative">
+							<input
+								v-model="searchMaterias"
+								type="text"
+								placeholder="Buscar materia..."
+								class="w-full rounded px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+								@focus="showDropdownMaterias = true"
+							/>
+							<div v-if="showDropdownMaterias" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-48 overflow-y-auto">
+								<div v-if="filteredMaterias.length === 0" class="px-3 py-2 text-gray-500 text-sm">
+									No hay materias disponibles
+								</div>
+								<button
+									v-for="m in filteredMaterias"
+									:key="m.id"
+									type="button"
+									@click="selectMateria(m)"
+									class="w-full text-left px-3 py-2 hover:bg-blue-100 transition-colors flex items-center justify-between"
+									:class="{ 'bg-blue-200': form.materia_id === m.id }">
+									<span>{{ m.nombre }}</span>
+									<i v-if="form.materia_id === m.id" class="fas fa-check text-blue-600"></i>
+								</button>
+							</div>
+						</div>
+						<div v-if="form.materia_id && materiaSeleccionada" class="mt-2 p-2 bg-blue-50 rounded text-sm text-blue-700 flex items-center gap-2">
+							<i class="fas fa-check-circle"></i>
+							{{ materiaSeleccionada.nombre }}
+						</div>
+						<div v-if="errors.materia_id" class="text-sm text-red-600 mt-1">
 							<template v-if="Array.isArray(errors.materia_id)">
 								<p v-for="(m, idx) in errors.materia_id" :key="idx">{{ m }}</p>
 							</template>
 							<p v-else>{{ errors.materia_id }}</p>
 						</div>
 					</div>
+
+					<!-- Selector Docente con búsqueda -->
 					<div>
-						<label class="block text-sm">Docente</label>
-						<select v-model="form.docente_id" :class="['w-full rounded px-2 py-1 border', errors.docente_id ? 'border-red-600' : '']">
-							<option value="">Seleccionar docente...</option>
-							<option v-for="d in docentes" :key="d.id" :value="d.id">{{ d.nombre_completo }}</option>
-						</select>
-						<div v-if="errors.docente_id" class="text-sm text-red-600 mt-1 list-disc ml-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Docente</label>
+						<div class="relative">
+							<input
+								v-model="searchDocentes"
+								type="text"
+								placeholder="Buscar docente..."
+								class="w-full rounded px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+								@focus="showDropdownDocentes = true"
+							/>
+							<div v-if="showDropdownDocentes" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-48 overflow-y-auto">
+								<div v-if="filteredDocentes.length === 0" class="px-3 py-2 text-gray-500 text-sm">
+									No hay docentes disponibles
+								</div>
+								<button
+									v-for="d in filteredDocentes"
+									:key="d.id"
+									type="button"
+									@click="selectDocente(d)"
+									class="w-full text-left px-3 py-2 hover:bg-green-100 transition-colors flex items-center justify-between"
+									:class="{ 'bg-green-200': form.docente_id === d.id }">
+									<div class="flex-1">
+										<div class="font-medium text-sm">{{ d.nombre_completo }}</div>
+										<div v-if="d.email" class="text-xs text-gray-500">{{ d.email }}</div>
+									</div>
+									<i v-if="form.docente_id === d.id" class="fas fa-check text-green-600"></i>
+								</button>
+							</div>
+						</div>
+						<div v-if="form.docente_id && docenteSeleccionado" class="mt-2 p-2 bg-green-50 rounded text-sm text-green-700 flex items-center gap-2">
+							<i class="fas fa-check-circle"></i>
+							{{ docenteSeleccionado.nombre_completo }}
+						</div>
+						<div v-if="errors.docente_id" class="text-sm text-red-600 mt-1">
 							<template v-if="Array.isArray(errors.docente_id)">
 								<p v-for="(m, idx) in errors.docente_id" :key="idx">{{ m }}</p>
 							</template>
 							<p v-else>{{ errors.docente_id }}</p>
 						</div>
 					</div>
+
+					<!-- Selector Ciclo con búsqueda -->
 					<div>
-						<label class="block text-sm">Ciclo</label>
-						<select v-model="form.ciclo_id" :class="['w-full rounded px-2 py-1 border', errors.ciclo_id ? 'border-red-600' : '']">
-							<option value="">Seleccionar ciclo...</option>
-							<option v-for="c in ciclos" :key="c.id" :value="c.id">{{ c.nombre }}</option>
-						</select>
-						<div v-if="errors.ciclo_id" class="text-sm text-red-600 mt-1 list-disc ml-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Ciclo</label>
+						<div class="relative">
+							<input
+								v-model="searchCiclos"
+								type="text"
+								placeholder="Buscar ciclo..."
+								class="w-full rounded px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+								@focus="showDropdownCiclos = true"
+							/>
+							<div v-if="showDropdownCiclos" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-48 overflow-y-auto">
+								<div v-if="filteredCiclos.length === 0" class="px-3 py-2 text-gray-500 text-sm">
+									No hay ciclos disponibles
+								</div>
+								<button
+									v-for="c in filteredCiclos"
+									:key="c.id"
+									type="button"
+									@click="selectCiclo(c)"
+									class="w-full text-left px-3 py-2 hover:bg-purple-100 transition-colors flex items-center justify-between"
+									:class="{ 'bg-purple-200': form.ciclo_id === c.id }">
+									<span>{{ c.nombre }}</span>
+									<i v-if="form.ciclo_id === c.id" class="fas fa-check text-purple-600"></i>
+								</button>
+							</div>
+						</div>
+						<div v-if="form.ciclo_id && cicloSeleccionado" class="mt-2 p-2 bg-purple-50 rounded text-sm text-purple-700 flex items-center gap-2">
+							<i class="fas fa-check-circle"></i>
+							{{ cicloSeleccionado.nombre }}
+						</div>
+						<div v-if="errors.ciclo_id" class="text-sm text-red-600 mt-1">
 							<template v-if="Array.isArray(errors.ciclo_id)">
 								<p v-for="(m, idx) in errors.ciclo_id" :key="idx">{{ m }}</p>
 							</template>
 							<p v-else>{{ errors.ciclo_id }}</p>
 						</div>
 					</div>
+
+					<!-- Nº Grupo -->
 					<div>
-						<label class="block text-sm">Nº Grupo</label>
+						<label class="block text-sm font-medium text-gray-700 mb-2">Nº Grupo</label>
 						<input
 							v-model="form.numero_grupo"
 							type="text"
 							inputmode="numeric"
 							pattern="\d*"
 							autocomplete="off"
-							:class="['w-full rounded px-2 py-1 border', errors.numero_grupo ? 'border-red-600' : '']"
+							placeholder="Ej: 01"
+							:class="['w-full rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500', errors.numero_grupo ? 'border-red-600' : 'border-gray-300']"
 							@input="handleNumeroInput"
 							@keydown="handleNumeroKeydown"
 							@paste.prevent
 							@copy.prevent
 							@cut.prevent
 						/>
-						<div v-if="errors.numero_grupo" class="text-sm text-red-600 mt-1 list-disc ml-4">
+						<div v-if="errors.numero_grupo" class="text-sm text-red-600 mt-1">
 							<template v-if="Array.isArray(errors.numero_grupo)">
 								<p v-for="(m, idx) in errors.numero_grupo" :key="idx">{{ m }}</p>
 							</template>
 							<p v-else>{{ errors.numero_grupo }}</p>
 						</div>
 					</div>
+
+					<!-- Capacidad máxima -->
 					<div>
-						<label class="block text-sm">Capacidad máxima</label>
-						<input v-model="form.capacidad_maxima" type="number" :class="['w-full rounded px-2 py-1 border', errors.capacidad_maxima ? 'border-red-600' : '']" />
-						<div v-if="errors.capacidad_maxima" class="text-sm text-red-600 mt-1 list-disc ml-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Capacidad máxima</label>
+						<input
+							v-model="form.capacidad_maxima"
+							type="number"
+							min="1"
+							placeholder="Ej: 30"
+							:class="['w-full rounded px-3 py-2 border focus:outline-none focus:ring-2 focus:ring-blue-500', errors.capacidad_maxima ? 'border-red-600' : 'border-gray-300']"
+						/>
+						<div v-if="errors.capacidad_maxima" class="text-sm text-red-600 mt-1">
 							<template v-if="Array.isArray(errors.capacidad_maxima)">
 								<p v-for="(m, idx) in errors.capacidad_maxima" :key="idx">{{ m }}</p>
 							</template>
 							<p v-else>{{ errors.capacidad_maxima }}</p>
 						</div>
 					</div>
+
+					<!-- Estado -->
 					<div>
-						<label class="block text-sm">Estado</label>
-						<select v-model="form.estado" class="w-full border rounded px-2 py-1">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+						<select v-model="form.estado" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
 							<option value="activo">Activo</option>
 							<option value="inactivo">Inactivo</option>
 						</select>
 					</div>
 				</div>
 
-				<div v-if="serverErrorMessage" class="mb-3 p-2 rounded bg-red-50 text-red-800">
+				<div v-if="serverErrorMessage" class="mb-3 p-3 rounded bg-red-50 text-red-800 text-sm border border-red-200">
 					{{ serverErrorMessage }}
 				</div>
-				<div v-if="serverErrors && serverErrors.length" class="mb-3 p-2 rounded bg-red-50 text-red-800">
+				<div v-if="serverErrors && serverErrors.length" class="mb-3 p-3 rounded bg-red-50 text-red-800 text-sm border border-red-200">
 					<ul class="list-disc pl-5">
-						<p v-for="(msg, idx) in serverErrors" :key="idx">{{ msg }}</p>
+						<li v-for="(msg, idx) in serverErrors" :key="idx">{{ msg }}</li>
 					</ul>
 				</div>
-				<div class="flex justify-end">
-					<button type="submit" :disabled="submitting" class="bg-green-600 text-white px-4 py-2 rounded">Guardar</button>
+				<div class="flex justify-end gap-3 pt-4">
+					<button
+						type="button"
+						@click="closeModal"
+						class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors font-medium">
+						Cancelar
+					</button>
+					<button
+						type="submit"
+						:disabled="submitting"
+						class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed">
+						{{ submitting ? 'Guardando...' : 'Guardar' }}
+					</button>
 				</div>
 			</form>
 		</div>
@@ -453,34 +604,75 @@
 						</table>
 					</div>
 
-					<!-- Paginación -->
-					<div class="flex justify-center items-center gap-4 mt-4 p-4 border-t border-gray-200">
-						<button
-							@click="currentAulaPage--"
-							:disabled="currentAulaPage === 1"
-							class="px-4 py-2 border rounded-lg transition-colors flex items-center gap-2"
-							:class="{ 'bg-gray-200 cursor-not-allowed text-gray-400': currentAulaPage === 1, 'hover:bg-gray-100 text-gray-700': currentAulaPage > 1 }">
-							<i class="fas fa-chevron-left"></i>
-							Anterior
-						</button>
-
-						<div class="flex items-center gap-2">
-							<span class="text-sm text-gray-600">
-								Página {{ currentAulaPage }} de {{ totalAulaPages }}
-							</span>
-							<span class="text-xs text-gray-500">
-								({{ disponibilidadAulasOrdenadas.length }} aulas)
-							</span>
+					<!-- Paginación de aulas mejorada -->
+					<div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 p-4 border-t border-gray-200 bg-gray-50 rounded-lg">
+						<div class="text-sm text-gray-600 font-medium">
+							Mostrando <span class="font-bold text-gray-900">{{ (currentAulaPage - 1) * aulasPerPage + 1 }}</span> 
+							a <span class="font-bold text-gray-900">{{ Math.min(currentAulaPage * aulasPerPage, disponibilidadAulasOrdenadas.length) }}</span> 
+							de <span class="font-bold text-gray-900">{{ disponibilidadAulasOrdenadas.length }}</span> aulas
 						</div>
 
-						<button
-							@click="currentAulaPage++"
-							:disabled="currentAulaPage === totalAulaPages"
-							class="px-4 py-2 border rounded-lg transition-colors flex items-center gap-2"
-							:class="{ 'bg-gray-200 cursor-not-allowed text-gray-400': currentAulaPage === totalAulaPages, 'hover:bg-gray-100 text-gray-700': currentAulaPage < totalAulaPages }">
-							Siguiente
-							<i class="fas fa-chevron-right"></i>
-						</button>
+						<div class="flex items-center gap-2">
+							<button
+								@click="currentAulaPage--"
+								:disabled="currentAulaPage === 1"
+								class="p-2 rounded-lg border border-gray-300 transition-all"
+								:class="{ 
+									'bg-gray-200 text-gray-400 cursor-not-allowed': currentAulaPage === 1, 
+									'bg-white hover:bg-gray-100 text-gray-700 hover:border-gray-400': currentAulaPage > 1 
+								}">
+								<i class="fas fa-chevron-left"></i>
+							</button>
+
+							<div class="flex items-center gap-1">
+								<button
+									v-if="currentAulaPage > 2"
+									@click="currentAulaPage = 1"
+									class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all text-sm font-medium">
+									1
+								</button>
+								<span v-if="currentAulaPage > 3" class="px-2 text-gray-500">...</span>
+
+								<button
+									v-if="currentAulaPage > 1"
+									@click="currentAulaPage--"
+									class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all text-sm font-medium">
+									{{ currentAulaPage - 1 }}
+								</button>
+
+								<button
+									class="px-4 py-2 rounded-lg text-white font-bold transition-all shadow-md text-sm"
+									:style="{ background: '#d93f3f' }">
+									{{ currentAulaPage }}
+								</button>
+
+								<button
+									v-if="currentAulaPage < totalAulaPages"
+									@click="currentAulaPage++"
+									class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all text-sm font-medium">
+									{{ currentAulaPage + 1 }}
+								</button>
+								<span v-if="currentAulaPage < totalAulaPages - 2" class="px-2 text-gray-500">...</span>
+
+								<button
+									v-if="currentAulaPage < totalAulaPages - 1"
+									@click="currentAulaPage = totalAulaPages"
+									class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all text-sm font-medium">
+									{{ totalAulaPages }}
+								</button>
+							</div>
+
+							<button
+								@click="currentAulaPage++"
+								:disabled="currentAulaPage === totalAulaPages"
+								class="p-2 rounded-lg border border-gray-300 transition-all"
+								:class="{ 
+									'bg-gray-200 text-gray-400 cursor-not-allowed': currentAulaPage === totalAulaPages, 
+									'bg-white hover:bg-gray-100 text-gray-700 hover:border-gray-400': currentAulaPage < totalAulaPages 
+								}">
+								<i class="fas fa-chevron-right"></i>
+							</button>
+						</div>
 					</div>
 				</div>
 
@@ -643,8 +835,67 @@ const errors = ref({});
 const serverErrorMessage = ref('');
 const serverErrors = ref([]);
 
-const selectedOption = ref('view-all');
-const filterForm = ref({ materia_id: '', docente_id: '', ciclo_id: '' });
+// Variables para búsqueda en selectores
+const searchMaterias = ref('');
+const searchDocentes = ref('');
+const searchCiclos = ref('');
+const showDropdownMaterias = ref(false);
+const showDropdownDocentes = ref(false);
+const showDropdownCiclos = ref(false);
+
+// Computed para filtrar opciones
+const filteredMaterias = computed(() => {
+	if (!searchMaterias.value) return materias.value;
+	const term = searchMaterias.value.toLowerCase();
+	return materias.value.filter(m => m.nombre.toLowerCase().includes(term));
+});
+
+const filteredDocentes = computed(() => {
+	if (!searchDocentes.value) return docentes.value;
+	const term = searchDocentes.value.toLowerCase();
+	return docentes.value.filter(d =>
+		d.nombre_completo.toLowerCase().includes(term) ||
+		(d.email && d.email.toLowerCase().includes(term))
+	);
+});
+
+const filteredCiclos = computed(() => {
+	if (!searchCiclos.value) return ciclos.value;
+	const term = searchCiclos.value.toLowerCase();
+	return ciclos.value.filter(c => c.nombre.toLowerCase().includes(term));
+});
+
+// Computed para obtener elementos seleccionados
+const materiaSeleccionada = computed(() =>
+	materias.value.find(m => m.id === form.value.materia_id)
+);
+
+const docenteSeleccionado = computed(() =>
+	docentes.value.find(d => d.id === form.value.docente_id)
+);
+
+const cicloSeleccionado = computed(() =>
+	ciclos.value.find(c => c.id === form.value.ciclo_id)
+);
+
+// Métodos para seleccionar opciones
+const selectMateria = (m) => {
+	form.value.materia_id = m.id;
+	searchMaterias.value = '';
+	showDropdownMaterias.value = false;
+};
+
+const selectDocente = (d) => {
+	form.value.docente_id = d.id;
+	searchDocentes.value = '';
+	showDropdownDocentes.value = false;
+};
+
+const selectCiclo = (c) => {
+	form.value.ciclo_id = c.id;
+	searchCiclos.value = '';
+	showDropdownCiclos.value = false;
+};
 
 //notificaciones
 const notifications = ref([]);
@@ -1127,6 +1378,12 @@ const openCreateModal = () => {
 	errors.value = {};
 	serverErrorMessage.value = '';
 	serverErrors.value = [];
+	searchMaterias.value = '';
+	searchDocentes.value = '';
+	searchCiclos.value = '';
+	showDropdownMaterias.value = false;
+	showDropdownDocentes.value = false;
+	showDropdownCiclos.value = false;
 	showModal.value = true;
 };
 
@@ -1137,10 +1394,21 @@ const openEditModal = (g) => {
 	errors.value = {};
 	serverErrorMessage.value = '';
 	serverErrors.value = [];
+	searchMaterias.value = '';
+	searchDocentes.value = '';
+	searchCiclos.value = '';
+	showDropdownMaterias.value = false;
+	showDropdownDocentes.value = false;
+	showDropdownCiclos.value = false;
 	showModal.value = true;
 };
 
-const closeModal = () => { showModal.value = false; };
+const closeModal = () => {
+	showModal.value = false;
+	showDropdownMaterias.value = false;
+	showDropdownDocentes.value = false;
+	showDropdownCiclos.value = false;
+};
 
 const openAssignModal = async (g) => {
 	assignForm.value = {
@@ -1544,6 +1812,15 @@ onMounted(async () => {
 	await fetchSelectOptions();
 	await fetchAll();
 	isLoading.value = false;
+
+	// Cerrar dropdowns al hacer click fuera
+	document.addEventListener('click', (e) => {
+		if (!e.target.closest('.relative')) {
+			showDropdownMaterias.value = false;
+			showDropdownDocentes.value = false;
+			showDropdownCiclos.value = false;
+		}
+	});
 });
 </script>
 

@@ -5,7 +5,7 @@
 		<div class="p-4 md:p-6">
 			<div class="mb-6">
 				<h1 class="text-2xl font-bold text-gray-900 mb-1">Notificaciones</h1>
-				<p class="text-gray-600 text-sm">Vista provisional: revisa y marca notificaciones como leídas</p>
+				<p class="text-gray-600 text-sm">Revisa y administre las notificaciones recibidas</p>
 			</div>
 
 			<div class="bg-white rounded-lg shadow p-4 sm:p-6">
