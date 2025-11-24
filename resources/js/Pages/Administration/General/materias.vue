@@ -37,7 +37,7 @@
                         </select>
                         <select
                             v-model="filterEstado"
-                            class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            class="px-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                             <option value="">Todos los estados</option>
                             <option value="activa">Activas</option>
@@ -50,7 +50,7 @@
                             <label class="text-sm text-gray-600 whitespace-nowrap">Mostrar:</label>
                             <select
                                 v-model="perPage"
-                                class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
+                                class="px-6 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm appearance-none bg-white cursor-pointer"
                             >
                                 <option v-for="option in perPageOptions" :key="option" :value="option">
                                     {{ option }}

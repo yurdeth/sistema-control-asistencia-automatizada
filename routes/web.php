@@ -87,6 +87,20 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
             ]);
         })->name('grupos');
 
+        // Consultar disponibilidad de aulas por día y hora
+        Route::get('/consultar-disponibilidad', function () {
+            return Inertia::render('Administration/classroomManagement/consultarDisponibilidad', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('consultar-disponibilidad'); // role:5 = DOCENTE
+        
+        // Historial personal de uso de aulas del docente
+        Route::get('/mi-historial-aulas', function () {
+            return Inertia::render('Administration/classroomManagement/historialAulas', [
+                'mustCheckAuth' => true
+            ]);
+        })->name('mi-historial-aulas'); // role:5 = DOCENTE
+
         // Gestión General
         Route::get('/departamentos', function () {
             return Inertia::render('Administration/General/departments', [

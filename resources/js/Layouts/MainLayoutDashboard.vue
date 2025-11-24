@@ -177,12 +177,17 @@
                                     <button class="text-xs text-gray-500" @click="markAllRead">Marcar leídas</button>
                                 </div>
                                 <div class="max-h-60 overflow-y-auto">
-                                    <div v-if="notifications.length === 0" class="p-4 text-sm text-gray-600">
-                                        No hay notificaciones.
+                                    <div v-if="unreadList.length === 0" class="p-4 text-sm text-gray-600">
+                                        No tienes notificaciones sin leer.
                                     </div>
-                                    <div v-for="(n, idx) in notifications" :key="idx" class="notification-item px-4 py-3 border-b last:border-b-0">
-                                        <div class="text-sm font-medium">{{ n.title }}</div>
-                                        <div class="text-xs text-gray-500 mt-1">{{ n.body }}</div>
+                                    <div v-else>
+                                        <div v-for="(n, idx) in unreadList" :key="n.id ?? idx" class="notification-item px-4 py-3 border-b last:border-b-0">
+                                            <div class="text-sm font-medium">{{ n.titulo ?? n.title ?? 'Sin título' }}</div>
+                                            <div class="text-xs text-gray-500 mt-1">{{ n.mensaje ?? n.body ?? '' }}</div>
+                                        </div>
+                                        <div v-if="totalUnread > unreadLimit" class="px-4 py-2 text-xs text-gray-500">
+                                            Mostrando {{ unreadLimit }} de {{ totalUnread }} no leídas.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="px-4 py-2 border-t text-right">
@@ -243,14 +248,15 @@
 </template>
 
 <script setup>
-    import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+    import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue";
     import { Link } from "@inertiajs/vue3";
     import { router } from '@inertiajs/vue3';
     import { authService } from "@/Services/authService";
+    import axios from 'axios';
 
 const user = ref(null);
 const sidebarOpen = ref(false); // Control del sidebar en móviles
-const notificationCount = ref(5); // simulando como se veria
+const notificationCount = ref(0); // contador real de no leídas
 
 // Obtener la ruta actual para el estado activo
 const currentPath = ref(window.location.pathname);
@@ -296,6 +302,9 @@ onMounted(() => {
         updateCurrentPath();
         initializeMenuStates(); // Re-inicializar menús al cambiar de ruta
     };
+
+    // intentamos cargar notificaciones no leídas
+    fetchUnreadNotifications();
 });
 
 onBeforeUnmount(() => {
@@ -343,6 +352,18 @@ onBeforeUnmount(() => {
                         label: "Sesiones de Clase",
                         href: "/dashboard/sesiones-clase",
                         icon: "fa-solid fa-calendar-check",
+                    },
+                    {
+                        label: "Consultar Disponibilidad",
+                        href: "/dashboard/consultar-disponibilidad",
+                        icon: "fa-solid fa-search",
+                        roles: [5], // Solo para docentes
+                    },
+                    {
+                        label: "Mi Historial de Aulas",
+                        href: "/dashboard/mi-historial-aulas",
+                        icon: "fa-solid fa-history",
+                        roles: [5], // Solo para docentes
                     },
                     {
                         label: "Mantenimiento",
@@ -448,23 +469,83 @@ onBeforeUnmount(() => {
     // Estado del panel de notificaciones
     const notificationOpen = ref(false);
     const notificationsRef = ref(null);
-    const notifications = ref([
-        { title: 'Bienvenida', body: 'Bienvenido al sistema. Esta es una notificación provisional.' },
-        { title: 'Recordatorio', body: 'Recuerde revisar sus horarios.' },
-        { title: 'Mantenimiento', body: 'Se realizará mantenimiento el viernes.' }
-    ]);
+    const notifications = ref([]); // lista completa (o limitada) de no leídas
+
+    const API_URL = '/api';
+    const unreadLimit = ref(5); // límite de items a mostrar en el panel
+
+    const getAuthHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+
+    const totalUnread = computed(() => notifications.value.length > 0 && notifications._totalCount ? notifications._totalCount : notifications.value.length);
+
+    // lista limitada para mostrar en panel
+    const unreadList = computed(() => {
+        // notifications.value puede venir ya limitada; aquí aseguramos el slice por seguridad
+        return (notifications.value || []).slice(0, unreadLimit.value);
+    });
 
     function toggleNotifications(e) {
         notificationOpen.value = !notificationOpen.value;
         if (e && e.stopPropagation) e.stopPropagation();
     }
 
-    function markAllRead() {
-        // provisional: vaciar lista y contador
-        notifications.value = [];
-        notificationCount.value = 0;
-        notificationOpen.value = false;
+    async function fetchUnreadNotifications() {
+        const token = authService.getToken();
+        if (!token) {
+            // no hay token; no intentamos llamada
+            notificationCount.value = 0;
+            notifications.value = [];
+            return;
+        }
+        try {
+            const res = await axios.get(`${API_URL}/notifications/get/my/unread`, getAuthHeaders());
+            if (res.data?.success) {
+                // backend devuelve array; guardamos los items y el conteo real
+                const data = res.data.data || [];
+                // Guardamos total en una propiedad no reactiva formal (simple hack)
+                notifications.value = data.slice(0, unreadLimit.value); // mostrar limitado
+                // si el backend devolviera más, queremos el conteo real; intentar leer header o usar longitud real
+                // asumimos que data contiene sólo las no leídas; si desea contar total real, ajustar backend.
+                notificationCount.value = (res.data.data ?? []).length;
+            } else {
+                notifications.value = [];
+                notificationCount.value = 0;
+            }
+        } catch (e) {
+            console.error('Error fetching unread notifications', e);
+            notifications.value = [];
+            notificationCount.value = 0;
+        }
     }
+
+    function markAllRead() {
+        // Marcar todas las no leídas visibles como leídas (llamar endpoint para cada id)
+        const token = authService.getToken();
+        if (!token) {
+            notifications.value = [];
+            notificationCount.value = 0;
+            notificationOpen.value = false;
+            return;
+        }
+        const ids = (notifications.value || []).map(n => n.id).filter(Boolean);
+        if (!ids.length) {
+            // nada que marcar
+            notifications.value = [];
+            notificationCount.value = 0;
+            notificationOpen.value = false;
+            return;
+        }
+        Promise.all(ids.map(id => axios.patch(`${API_URL}/notifications/mark-read/${id}`, {}, getAuthHeaders()).catch(()=>null)))
+            .then(()=> {
+                // refrescar bandeja y contador
+                notifications.value = [];
+                notificationCount.value = 0;
+                notificationOpen.value = false;
+            })
+            .catch((err)=> {
+                console.error('Error marcando notificaciones como leídas', err);
+            });
+     }
 
     function goToAllNotifications() {
         // temporalmente redirigir a una ruta de notificaciones si existe
