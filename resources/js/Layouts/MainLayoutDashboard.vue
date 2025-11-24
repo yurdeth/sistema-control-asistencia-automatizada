@@ -345,6 +345,18 @@ onBeforeUnmount(() => {
                         icon: "fa-solid fa-calendar-check",
                     },
                     {
+                        label: "Consultar Disponibilidad",
+                        href: "/dashboard/consultar-disponibilidad",
+                        icon: "fa-solid fa-search",
+                        roles: [5], // Solo para docentes
+                    },
+                    {
+                        label: "Mi Historial de Aulas",
+                        href: "/dashboard/mi-historial-aulas",
+                        icon: "fa-solid fa-history",
+                        roles: [5], // Solo para docentes
+                    },
+                    {
                         label: "Mantenimiento",
                         href: "/dashboard/mantenimientos",
                         icon: "fa-solid fa-screwdriver-wrench",

@@ -25,6 +25,7 @@ use App\Http\Controllers\SolicitudesInscripcionController;
 use App\Http\Controllers\SystemLogsController;
 use App\Http\Controllers\TiposNotificacionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DisponibilidadAulasController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -362,4 +363,9 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
 
     // New ones
     Route::post('/classroom-reports/report/all', [ReportesProblemasAulasController::class, 'getFullReport'])->name('classroomReports.getFullReport');
+
+    //Disponibilidad e Historial de Aulas
+    Route::post('/disponibilidad/consultar', [DisponibilidadAulasController::class, 'consultarDisponibilidad'])->name('disponibilidad.consultar');
+    Route::get('/disponibilidad/mi-historial', [DisponibilidadAulasController::class, 'miHistorialAulas'])->name('disponibilidad.miHistorial');
+    Route::get('/disponibilidad/mi-historial/filtrado', [DisponibilidadAulasController::class, 'miHistorialConFiltros'])->name('disponibilidad.miHistorialFiltrado');
 });
