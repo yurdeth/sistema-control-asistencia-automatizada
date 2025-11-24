@@ -16,7 +16,8 @@
         "simplesoftwareio/simple-qrcode": "^4.2",
         "symfony/http-client": "^7.3",
         "symfony/mailgun-mailer": "^7.3",
-        "tightenco/ziggy": "^2.0"
+        "tightenco/ziggy": "^2.0",
+        "ext-zip": "*"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.6",
