@@ -55,120 +55,122 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
             return Inertia::render('Administration/classroomManagement/catalogo', [
                 'mustCheckAuth' => true
             ]);
-        })->middleware('role:1,6')->name('catalogo'); // Roles específicos o permitidos por rutas
+        })->middleware('role:1,6')->name('catalogo'); // ROOT y Estudiantes
 
         Route::get('/disponibilidad', function () {
             return Inertia::render('Administration/classroomManagement/availability', [
                 'mustCheckAuth' => true
             ]);
-        })->name('disponibilidad');
+        })->middleware('role:1,2,3,4')->name('disponibilidad'); // Administrativos y Gestores
 
         Route::get('/horarios', function () {
             return Inertia::render('Administration/classroomManagement/horarios', [
                 'mustCheckAuth' => true
             ]);
-        })->name('horarios');
+        })->middleware('role:1,2')->name('horarios'); // Administradores Académicos
 
         Route::get('/tipos-recursos', function () {
             return Inertia::render('Administration/classroomManagement/tiposRecursos', [
                 'mustCheckAuth' => true
             ]);
-        })->name('tipos-recursos');
+        })->middleware('role:1,2')->name('tipos-recursos'); // Administradores Académicos
 
         Route::get('/sesiones-clase', function () {
             return Inertia::render('Administration/classroomManagement/sesionesClase', [
                 'mustCheckAuth' => true
             ]);
-        })->name('sesiones-clase');
+        })->middleware('role:1,2,3,4,5')->name('sesiones-clase'); // Administrativos y Docentes
 
         Route::get('/grupos', function () {
             return Inertia::render('Administration/classroomManagement/grupos', [
                 'mustCheckAuth' => true
             ]);
-        })->name('grupos');
+        })->middleware('role:1,2')->name('grupos'); // Administradores Académicos
 
-        // Consultar disponibilidad de aulas por día y hora
+        // Consultar disponibilidad de aulas por día y hora - Exclusivo para docentes
         Route::get('/consultar-disponibilidad', function () {
             return Inertia::render('Administration/classroomManagement/consultarDisponibilidad', [
                 'mustCheckAuth' => true
             ]);
-        })->name('consultar-disponibilidad'); // role:5 = DOCENTE
-        
-        // Historial personal de uso de aulas del docente
+        })->middleware('role:5')->name('consultar-disponibilidad'); // Solo DOCENTES
+
+        // Historial personal de uso de aulas del docente - Exclusivo para docentes
         Route::get('/mi-historial-aulas', function () {
             return Inertia::render('Administration/classroomManagement/historialAulas', [
                 'mustCheckAuth' => true
             ]);
-        })->name('mi-historial-aulas'); // role:5 = DOCENTE
+        })->middleware('role:5')->name('mi-historial-aulas'); // Solo DOCENTES
 
-        // Gestión General
+        // Gestión General - Administración Académica
         Route::get('/departamentos', function () {
             return Inertia::render('Administration/General/departments', [
                 'mustCheckAuth' => true
             ]);
-        })->name('departamentos');
+        })->middleware('role:1,2')->name('departamentos'); // ROOT y Administrador Académico
 
         Route::get('/docentes', function () {
             return Inertia::render('Administration/General/docentes', [
                 'mustCheckAuth' => true
             ]);
-        })->name('docentes');
+        })->middleware('role:1,2')->name('docentes'); // ROOT y Administrador Académico
 
         Route::get('/estudiantes', function () {
             return Inertia::render('Administration/General/students', [
                 'mustCheckAuth' => true
             ]);
-        })->name('estudiantes');
+        })->middleware('role:1,2')->name('estudiantes'); // ROOT y Administrador Académico
 
         Route::get('/solicitudes-inscripcion', function () {
             return Inertia::render('Administration/General/solicitudesInscripcion', [
                 'mustCheckAuth' => true
             ]);
-        })->name('solicitudes-inscripcion');
+        })->middleware('role:1,2,5')->name('solicitudes-inscripcion'); // Administradores y Docentes
 
         Route::get('/roles', function () {
             return Inertia::render('Administration/General/roles', [
                 'mustCheckAuth' => true
             ]);
-        })->name('roles');
+        })->middleware('role:1')->name('roles'); // Solo ROOT
 
         Route::get('/materias', function () {
             return Inertia::render('Administration/General/materias', [
                 'mustCheckAuth' => true
             ]);
-        })->name('materias');
+        })->middleware('role:1,2,3,4')->name('materias'); // Administrativos y Gestores
 
         Route::get('/informes', function () {
             return Inertia::render('Administration/General/reports', [
                 'mustCheckAuth' => true
             ]);
-        })->name('informes');
+        })->middleware('role:1,2')->name('informes'); // ROOT y Administrador Académico
 
-        // Vista provisional: Todas las notificaciones (acceso desde /dashboard/notificaciones)
+        // Vista de notificaciones - Acceso para todos los roles autenticados
         Route::get('/notificaciones', function () {
             return Inertia::render('Administration/General/notificaciones', [
                 'mustCheckAuth' => true
             ]);
-        })->name('notificaciones');
+        })->name('notificaciones'); // Todos los usuarios autenticados
 
-        //Para la parte de las sugerencias del aula
+        // Sugerencia de aulas - Docentes y administrativos
         Route::get('/sugerencia-aula', function () {
             return Inertia::render('Administration/classroomManagement/classroomSuggestion', [
                 'mustCheckAuth' => true
             ]);
-        })->name('sugerencia-aula');
+        })->middleware('role:1,2,5')->name('sugerencia-aula'); // Administradores y Docentes
 
+        // Gestión de Mantenimientos
         Route::get('mantenimientos', function () {
             return Inertia::render('Administration/General/mantenimiento', [
                 'mustCheckAuth' => true
             ]);
-        })->name('mantenimientos');
+        })->middleware('role:1,2,3')->name('mantenimientos'); // ROOT, Admin Académico y Gestor Departamento
 
+        // Gestión de Incidencias
         Route::get('incidencias', function() {
             return Inertia::render('Administration/General/incidencia', [
                 'mustCheckAuth' => true
             ]);
-        })->name('incidencias');
+        })->middleware('role:1,2,3,4')->name('incidencias'); // Administrativos, Gestores y Docentes
     });
 
 // ===== SISTEMA DE ALIAS PARA COMPATIBILIDAD =====
