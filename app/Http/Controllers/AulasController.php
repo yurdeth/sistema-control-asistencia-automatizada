@@ -1208,4 +1208,6 @@ class AulasController extends Controller {
             ], 500);
         }
     }
+
+    
 }

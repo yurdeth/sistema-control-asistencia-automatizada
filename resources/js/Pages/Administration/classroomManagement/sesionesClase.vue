@@ -253,7 +253,7 @@
             </div>
 
             <form @submit.prevent="submitForm" class="p-6 space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Horario <span class="text-red-500">*</span>
@@ -267,7 +267,7 @@
                         >
                             <option value="">Seleccione un horario</option>
                             <option v-for="horario in horarios" :key="horario.id" :value="horario.id">
-                                {{ horario.descripcion }}
+                                {{ horario.dia_semana }} | {{ horario.hora_inicio }} - {{ horario.hora_fin }} | Grupo: {{ horario.numero_grupo }} | Aula: {{ horario.aula_nombre }}
                             </option>
                         </select>
                         <p v-if="formErrors.horario_id" class="text-red-500 text-sm mt-1">
@@ -284,6 +284,7 @@
                             type="date"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             :class="{'border-red-500': formErrors.fecha_clase}"
+                            :min="new Date().toISOString().split('T')[0]"
                             required
                         />
                         <p v-if="formErrors.fecha_clase" class="text-red-500 text-sm mt-1">
@@ -393,7 +394,7 @@
 
                         <div>
                             <label class="text-sm font-medium text-gray-600">Grupo</label>
-                            <p class="text-gray-900">{{ sesionDetalle.horario?.grupo?.nombre || 'N/A' }}</p>
+                            <p class="text-gray-900">{{ sesionDetalle.horario?.grupo?.numero_grupo || 'N/A' }}</p>
                         </div>
 
                         <div>
@@ -880,6 +881,7 @@ const verDetalles = async (id) => {
 
         if (response.data.success) {
             sesionDetalle.value = response.data.data;
+            console.log(sesionDetalle.value);
         }
     } catch (err) {
         console.error('Error al cargar detalles:', err);
@@ -918,6 +920,8 @@ async function fetchSesiones() {
         const payload = res.data?.data;
         const raw = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
 
+        console.log(raw);
+
         allSesiones.value = raw.map(sesion => ({
             id: sesion.id ?? 'N/A',
             horario_id: sesion.horario_id ?? null,
@@ -927,7 +931,7 @@ async function fetchSesiones() {
             duracion_minutos: sesion.duracion_minutos ?? null,
             estado: sesion.estado ?? 'programada',
             retraso_minutos: sesion.retraso_minutos ?? null,
-            grupo_nombre: sesion.horario?.grupo?.nombre ?? 'N/A',
+            grupo_nombre: sesion.horario?.grupo?.numero_grupo ?? 'N/A',
             grupo_id: sesion.horario?.grupo?.id ?? null,
             aula_codigo: sesion.horario?.aula?.codigo ?? 'N/A',
             profesor_id: sesion.horario?.grupo?.docente_id ?? null,

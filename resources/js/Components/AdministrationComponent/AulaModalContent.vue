@@ -169,7 +169,7 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium">Fecha</label>
-                        <input type="date" v-model="reserva.fecha" class="input" required/>
+                        <input type="date" v-model="reserva.fecha" class="input" :min="new Date().toISOString().split('T')[0]" required/>
                     </div>
 
                     <div>
@@ -346,6 +346,42 @@ const reservar = () => {
 };
 
 const handleEditClassroomInfo = () => {
+    try {
+
+        const body = JSON.stringify({
+            nombre: form.nombre,
+            codigo: form.codigo,
+            capacidad_pupitres: form.capacidad_pupitres,
+            ubicacion: form.ubicacion,
+            estado: form.estado,
+            recursos: form.recursos.map(recurso => recurso.id),
+            imagen_url: form.imagen_url
+        });
+
+        axios.patch(`/api/classrooms/edit/${form.id}`, body, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }}).then(response => {
+            const data = response.data;
+            console.log(data);
+
+            if(!data.success){
+                alert("Error al actualizar la información del aula: " + data.message);
+                return;
+            }
+
+            alert("Información del aula actualizada correctamente.");
+            emit('close');
+            window.location.reload();
+        });
+
+    } catch (error) {
+        console.error('Error updating classroom info:', error);
+    }
+}
+
+const handleSendReservation = () => {
     try {
 
         const body = JSON.stringify({
