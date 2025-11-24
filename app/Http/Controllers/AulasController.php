@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Concerns\ValidatesRoles;
 use App\Models\AulaFoto;
 use App\Models\aulas;
 use App\Models\AulaVideo;
@@ -17,6 +18,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
 class AulasController extends Controller {
+    // Temporalmente comentado para resolver el error
+    // use ValidatesRoles;
     public function index(): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
