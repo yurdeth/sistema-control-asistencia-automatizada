@@ -88,7 +88,7 @@
                     >
                         <option value="">Todos los grupos</option>
                         <option v-for="grupo in grupos" :key="grupo.id" :value="grupo.id">
-                            {{ grupo.nombre }}
+                            {{ grupo.numero_grupo }}
                         </option>
                     </select>
 
