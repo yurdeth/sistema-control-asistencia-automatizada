@@ -30,6 +30,35 @@
                         class="flex-1 px-4 py-3 border border-gray-300 rounded-lg
                                focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
+
+                    <select
+                        v-model="filtroCategoria"
+                        @change="aplicarFiltros"
+                        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Ver todas las categorías</option>
+                        <option v-for="c in categorias" :key="c" :value="c">
+                            {{ formatCategory(c) }}
+                        </option>
+                    </select>
+
+                    <select
+                        v-model="filtroEstado"
+                        @change="aplicarFiltros"
+                        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Ver todos los estados</option>
+                        <option v-for="s in estados" :key="s" :value="s">
+                            {{ formatEstado(s) }}
+                        </option>
+                    </select>
+
+                    <button
+                        @click="limpiarFiltros"
+                        class="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                        Limpiar filtros
+                    </button>
                 </div>
 
                 <br>
@@ -55,7 +84,8 @@
                                     <th class="text-white px-4 py-2">Categoría</th>
                                     <th class="text-white px-4 py-2">Descripción</th>
                                     <!-- <th class="text-white px-4 py-2">Reportado Por</th> -->
-                                    <th class="text-white px-4 py-2">Fecha</th>
+                                    <th class="text-white px-4 py-2">Fecha Reporte</th>
+                                    <th class="text-white px-4 py-2">Foto</th>
                                     <th class="text-white px-4 py-2">Estado</th>
                                 </tr>
                             </thead>
@@ -80,12 +110,12 @@
                                         {{ item.descripcion }}
                                     </td>
 
-                                    <!-- <td class="px-6 py-3 text-sm text-gray-600">
-                                        {{ obtenerNombreUsuario(item) }}
-                                    </td> -->
+                                    <td class="px-6 py-3 text-sm text-gray-700">
+                                        {{ formatFecha(item.fecha_reporte) }}
+                                    </td>
 
                                     <td class="px-6 py-3 text-sm text-gray-700">
-                                        {{ formatFecha(item.created_at) }}
+                                        {{ item.foto_evidencia ?? "Sin foto" }}
                                     </td>
 
                                     <td class="px-6 py-3 text-sm">
@@ -160,6 +190,9 @@
     const error = ref(null);
     const terminoBusqueda = ref("");
 
+    const filtroCategoria = ref("");
+    const filtroEstado = ref("");
+
     const incidencias = ref([]);
     const usuarios = ref([]);
 
@@ -175,8 +208,8 @@
 
             await authService.verifyToken(token);
 
-            // await cargarUsuarios();
             await cargarIncidencias();
+            await cargarCatalogos();
         }
     };
 
@@ -185,8 +218,6 @@
         error.value = null;
 
         try {
-            // console.log("Token enviado:", axios.defaults.headers.common["Authorization"]);
-
             const res = await axios.post(`${URL_API}/classroom-reports/report/all`);
             console.log("📌 Datos recibidos:", res.data);
 
@@ -199,51 +230,72 @@
         }
     }
 
-    // async function cargarUsuarios() {
-    //     try {
-    //         const res = await axios.get(`${URL_API}/users/get/all`);
-    //         usuarios.value = res.data.data || res.data;
+    const categorias = ref([]);
+    const estados = ref([]);
 
-    //         console.log(usuarios.value);
-    //     } catch (error) {
-    //         console.error("Error cargando usuarios:", error);
-    //     }
-    // }
+    async function cargarCatalogos() {
+        try {
+            const resCat = await axios.get(`${URL_API}/classroom-reports/catalogs/categories`);
+            categorias.value = (resCat.data.data || resCat.data).map(c =>
+                typeof c === "string" ? c : c.value
+            );
 
-    // const obtenerNombreUsuario = (item) => {
-    //     // 1. Si la API ya devuelve usuario_nombre
-    //     if (item.usuario_nombre) return item.usuario_nombre;
+            const resEst = await axios.get(`${URL_API}/classroom-reports/catalogs/statuses`);
+            estados.value = (resEst.data.data || resEst.data).map(s =>
+                typeof s === "string" ? s : s.value
+            );
+        } catch (e) {
+            console.error("Error cargando catálogos:", e);
+        }
+    }
 
-    //     // 2. Buscar usuario en la lista cargada por ID
-    //     const user = usuarios.value.find(u => u.id === item.usuario_reporta_id);
+    const limpiarFiltros = () => {
+        filtroCategoria.value = "";
+        filtroEstado.value = "";
+        terminoBusqueda.value = "";
+        // paginaActual.value = 1;
+    };
 
-    //     if (user) return user.name || user.nombre;
-
-    //     // 3. Fallback
-    //     if (item.usuario_reporta_id) return `Usuario #${item.usuario_reporta_id}`;
-
-    //     return "Usuario no disponible";
-    // };
-
-    // const obtenerNombreUsuario = (item) => {
-    //     if (item.usuario_nombre) return item.usuario_nombre;
-    //     if (item.user?.name) return item.user.name;
-    //     if (item.usuario?.nombre) return item.usuario.nombre;
-    //     if (item.reportado_por) return item.reportado_por;
-    //     if (item.usuario_reporta_id) return `Usuario #${item.usuario_reporta_id}`;
-    //     return "Usuario no disponible";
-    // };
 
     const incidenciasFiltradas = computed(() => {
-        if (!terminoBusqueda.value) return incidencias.value;
-        const t = terminoBusqueda.value.toLowerCase();
+        let data = incidencias.value;
 
-        return incidencias.value.filter(i =>
-            i.descripcion?.toLowerCase().includes(t) ||
-            (i.aula_nombre || "").toLowerCase().includes(t) ||
-            i.categoria?.toLowerCase().includes(t)
-        );
+        if (filtroCategoria.value) {
+            data = data.filter(i => i.categoria === filtroCategoria.value);
+        }
+
+        if (filtroEstado.value) {
+            data = data.filter(i => i.estado === filtroEstado.value);
+        }
+
+        if (terminoBusqueda.value) {
+            const t = terminoBusqueda.value.toLowerCase();
+
+            data = data.filter(i =>
+                i.descripcion?.toLowerCase().includes(t) ||
+                (i.aula_nombre || "").toLowerCase().includes(t) ||
+                (i.foto_evidencia ?? "").toLowerCase().includes(t)
+            );
+        }
+
+        return data;
     });
+
+    const aplicarFiltros = () => {
+        paginaActual.value = 1;
+    };
+
+    // const incidenciasFiltradas = computed(() => {
+    //     if (!terminoBusqueda.value) return incidencias.value;
+    //     const t = terminoBusqueda.value.toLowerCase();
+
+    //     return incidencias.value.filter(i =>
+    //         i.descripcion?.toLowerCase().includes(t) ||
+    //         (i.aula_nombre || "").toLowerCase().includes(t) ||
+    //         i.categoria?.toLowerCase().includes(t) ||
+    //         i.foto_evidencia
+    //     );
+    // });
 
     const paginaActual = ref(1);
     const porPagina = ref(6);
@@ -273,9 +325,13 @@
     const paginaSiguiente = () => paginaActual.value++;
     const irAPagina = (p) => paginaActual.value = p;
 
-    const formatCategory = (c) => c.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    const formatCategory = (c) => {
+        if (!c || typeof c !== "string") return "Sin categoría";
+        return c.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    };
 
     const formatEstado = (e) => {
+        if (!e || typeof e !== "string") return "Sin estado";
         const map = {
             reportado: "Reportado",
             en_revision: "En Revisión",
@@ -283,9 +339,24 @@
             en_proceso: "En Proceso",
             resuelto: "Resuelto",
             cerrado: "Cerrado",
+            rechazado: "Rechazado",
         };
         return map[e] || e;
     };
+
+    // const formatCategory = (c) => c.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+
+    // const formatEstado = (e) => {
+    //     const map = {
+    //         reportado: "Reportado",
+    //         en_revision: "En Revisión",
+    //         asignado: "Asignado",
+    //         en_proceso: "En Proceso",
+    //         resuelto: "Resuelto",
+    //         cerrado: "Cerrado",
+    //     };
+    //     return map[e] || e;
+    // };
 
     const getStatusBadge = (estado) => {
         const base = "px-3 py-1 text-xs font-bold rounded-full";
