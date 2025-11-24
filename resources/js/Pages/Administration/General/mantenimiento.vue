@@ -23,6 +23,34 @@
                         placeholder="Buscar por motivo o nombre de aula"
                         class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
+
+                    <select
+                        v-model="filtroEstado"
+                        @change="cargarMantenimientos"
+                        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Ver todos los estados</option>
+                        <option value="programado">Programado</option>
+                        <option value="en_proceso">En Proceso</option>
+                        <option value="finalizado">Finalizado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+
+                    <select
+                        v-model="filtroAulaId"
+                        @change="cargarMantenimientos"
+                        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Ver todas las aulas</option>
+                        <option v-for="aula in listaAulas" :key="aula.id" :value="aula.id">
+                            {{ aula.nombre }}
+                        </option>
+                    </select>
+
+                    <button
+                        @click="limpiarFiltros"
+                        class="px-4 py-3 border rounded-lg hover:bg-gray-100 transition-colors">
+                        Limpiar filtros
+                    </button>
+
                     <button
                         @click="abrirModalCreacion"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
@@ -315,6 +343,9 @@
     const paginaActual = ref(1);
     const porPagina = ref(5);
 
+    const filtroEstado = ref(''); // Para el nuevo filtro por estado (programado, en_proceso, etc.)
+    const filtroAulaId = ref(''); // Para el nuevo filtro por ID de aula
+
     // Configuración de axios
     const URL_API = '/api';
     const ENDPOINT_BASE = '/maintenance';
@@ -542,46 +573,151 @@
         cargando.value = true;
         error.value = null;
 
+            axios.get('/api/maintenance/get/classroom/1', {
+        headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+        })
+        .then(res => console.log("RESPUESTA BACKEND:", res.data))
+        .catch(err => console.log("ERROR:", err.response?.status, err.response?.data));
+
         try {
-            console.log('🔍 Intentando cargar mantenimientos desde:', `${URL_API}${ENDPOINT_BASE}/get/all`);
+            let url = `${URL_API}${ENDPOINT_BASE}/get/all`;
 
-            const res = await axios.get(`${URL_API}${ENDPOINT_BASE}/get/all`, obtenerCabecerasAuth());
-
-            const payload = res.data?.data;
-            const datosCrudos = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
-
-            todosMantenimientos.value = datosCrudos.map(item => ({
-                id: item.id ?? 'N/A',
-                aula_id: item.aula_id.toString() ?? 'N/A',
-                motivo: item.motivo ?? 'Sin motivo',
-                fecha_inicio: item.fecha_inicio ?? null,
-                fecha_fin_programada: item.fecha_fin_programada ?? null,
-                fecha_fin_real: item.fecha_fin_real ?? null,
-                estado: item.estado ?? 'programado',
-            }));
-
-            console.log('✅ Mantenimientos cargados:', todosMantenimientos.value.length);
-            error.value = null;
-
-        } catch (err) {
-            console.error("❌ Error al cargar mantenimientos:", err);
-            const status = err.response?.status;
-
-            if (status === 404) {
-                console.warn('⚠️ Endpoint no encontrado o no hay mantenimientos registrados');
-                todosMantenimientos.value = [];
-                error.value = null;
-            } else if (status === 401 || status === 403) {
-                error.value = 'Error de autenticación. Por favor, verifica tu sesión.';
-            } else {
-                error.value = err.response?.data?.message || 'Error desconocido al cargar los mantenimientos';
+            // Si solo hay filtro por estado
+            if (filtroEstado.value && !filtroAulaId.value) {
+                url = `${URL_API}${ENDPOINT_BASE}/get/status/${filtroEstado.value}`;
             }
 
-            todosMantenimientos.value = [];
-        } finally {
+            // Si solo hay filtro por aula
+            if (!filtroEstado.value && filtroAulaId.value) {
+                url = `${URL_API}${ENDPOINT_BASE}/get/classroom/${filtroAulaId.value}`;
+            }
+
+            // Si ambos filtros están seleccionados → usar solo el de AULA
+            if (filtroEstado.value && filtroAulaId.value) {
+                url = `${URL_API}${ENDPOINT_BASE}/get/classroom/${filtroAulaId.value}`;
+            }
+
+            // Consumimos el endpoint seleccionado
+            const res = await axios.get(url, obtenerCabecerasAuth());
+            let datos = Array.isArray(res.data?.data)
+                ? res.data.data
+                : Object.values(res.data?.data || {});
+
+            if (filtroEstado.value && filtroAulaId.value) {
+                datos = datos.filter(item => item.estado === filtroEstado.value);
+            }
+
+            // if (filtroEstado.value && filtroAulaId.value) {
+            //     datos = datos.filter(item =>
+            //         item.estado === filtroEstado.value &&
+            //         item.aula_id == filtroAulaId.value
+            //     );
+            // }
+
+            todosMantenimientos.value = datos;
+        }
+        catch (err) {
+            if (err.response?.status === 404) {
+                todosMantenimientos.value = [];
+                error.value = null;
+            } else {
+                error.value = "Error al cargar mantenimientos";
+            }
+        }
+        finally {
             cargando.value = false;
         }
     }
+
+    // async function cargarMantenimientos() {
+    //     cargando.value = true;
+    //     error.value = null;
+
+    //     try {
+    //         let url = `${URL_API}${ENDPOINT_BASE}/get/all`;
+
+    //         // Si hay filtro por estado
+    //         if (filtroEstado.value) {
+    //             url = `${URL_API}${ENDPOINT_BASE}/get/status/${filtroEstado.value}`;
+    //         }
+
+    //         // Si hay filtro por aula
+    //         if (filtroAulaId.value) {
+    //             url = `${URL_API}${ENDPOINT_BASE}/get/classroom/${filtroAulaId.value}`;
+    //         }
+
+    //         // Si hay ambos filtros → usar endpoint mixto (si existe) o hacer doble fetch
+    //         if (filtroEstado.value && filtroAulaId.value) {
+    //             url = `${URL_API}${ENDPOINT_BASE}/get/status/${filtroEstado.value}/classroom/${filtroAulaId.value}`;
+    //         }
+
+    //         const res = await axios.get(url, obtenerCabecerasAuth());
+
+    //         const datos = Array.isArray(res.data?.data)
+    //             ? res.data.data
+    //             : Object.values(res.data?.data || {});
+
+    //         todosMantenimientos.value = datos;
+            
+    //     } catch (err) {
+    //         // 👉 Si el backend devuelve 404 = no hay datos
+    //         if (err.response?.status === 404) {
+    //             todosMantenimientos.value = [];   // Mostrar vacío
+    //             error.value = null;               // No mostrar error rojo
+    //         } else {
+    //             error.value = "Error al cargar mantenimientos";
+    //         }        
+    //     } finally {
+    //         cargando.value = false;
+    //     }
+    // }
+
+    // async function cargarMantenimientos() {
+    //     cargando.value = true;
+    //     error.value = null;
+
+    //     try {
+    //         console.log('🔍 Intentando cargar mantenimientos desde:', `${URL_API}${ENDPOINT_BASE}/get/all`);
+
+    //         const res = await axios.get(`${URL_API}${ENDPOINT_BASE}/get/all`, obtenerCabecerasAuth());
+
+    //         const payload = res.data?.data;
+    //         const datosCrudos = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
+
+    //         todosMantenimientos.value = datosCrudos.map(item => ({
+    //             id: item.id ?? 'N/A',
+    //             aula_id: item.aula_id.toString() ?? 'N/A',
+    //             motivo: item.motivo ?? 'Sin motivo',
+    //             fecha_inicio: item.fecha_inicio ?? null,
+    //             fecha_fin_programada: item.fecha_fin_programada ?? null,
+    //             fecha_fin_real: item.fecha_fin_real ?? null,
+    //             estado: item.estado ?? 'programado',
+    //         }));
+
+    //         console.log('✅ Mantenimientos cargados:', todosMantenimientos.value.length);
+    //         error.value = null;
+
+    //     } catch (err) {
+    //         console.error("❌ Error al cargar mantenimientos:", err);
+    //         const status = err.response?.status;
+
+    //         if (status === 404) {
+    //             console.warn('⚠️ Endpoint no encontrado o no hay mantenimientos registrados');
+    //             todosMantenimientos.value = [];
+    //             error.value = null;
+    //         } else if (status === 401 || status === 403) {
+    //             error.value = 'Error de autenticación. Por favor, verifica tu sesión.';
+    //         } else {
+    //             error.value = err.response?.data?.message || 'Error desconocido al cargar los mantenimientos';
+    //         }
+
+    //         todosMantenimientos.value = [];
+    //     } finally {
+    //         cargando.value = false;
+    //     }
+    // }
 
     const enviarFormulario = async () => {
         erroresFormulario.value = {};
@@ -721,6 +857,12 @@
     //     console.log('LocalStorage keys:', Object.keys(localStorage));
     //     console.log('==========================');
     // };
+
+    const limpiarFiltros = () => {
+        filtroEstado.value = "";
+        filtroAulaId.value = "";
+        cargarMantenimientos();
+    };
 
     onMounted(async () => {
         const token = localStorage.getItem("token");
