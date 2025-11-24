@@ -1,6 +1,6 @@
 <template>
     <!-- Contenedor principal del formulario-->
-    <div class="p-6 space-y-4">
+    <div class="p-6 space-y-4 ovrflow-y-auto max-h-screen">
 
         <!-- Bloque para visualizar los detalles del aula (modo ver) -->
         <template v-if="modo === 'ver'">
@@ -42,7 +42,24 @@
                 </div>
             </div>
 
-                <!-- GALERÍA DE IMÁGENES -->
+            <!-- Sección de QR -->
+            <div v-if="aula.qrCodeDataUrl" class="text-center">
+                <label class="block text-sm font-medium">Codigo QR</label>
+                <img
+                    :src="aula.qrCodeDataUrl"
+                    alt="Código QR"
+                    class="mx-auto mb-2"
+                />
+                <p class="text-gray-600 text-sm">
+                    Escanea para ver el aula:
+                    <strong>{{ aula.nombre }}</strong>
+                </p>
+            </div>
+            <div v-else class="text-center text-gray-400">
+                <p class="text-sm">Generando código QR...</p>
+            </div>
+
+            <!-- GALERÍA DE IMÁGENES -->
             <div class="pt-2 border-t">
                 <h3 class="text-lg font-semibold mb-2">Imágenes del aula</h3>
                 <!-- Miniaturas -->
@@ -242,11 +259,46 @@ const form = reactive({
     estado: '',
 });
 
-watch(
+/*watch(
     () => props.aula,
     (aula) => {
         if (aula) {
             Object.assign(form, aula);
+        }
+    },
+    { immediate: true }
+);*/
+
+import { toDataURL } from 'qrcode';
+
+watch(
+    () => props.aula,
+    async (aula) => {
+        if (aula) {
+            Object.assign(form, aula);
+
+            // Generate QR code if not already present
+            if (aula.qr_code && !aula.qrCodeDataUrl) {
+                try {
+                    // const baseUrl = window.location.origin;
+                    const qrText = `${aula.qr_code}`;
+
+                    aula.qrCodeDataUrl = await toDataURL(qrText, {
+                        errorCorrectionLevel: 'H',
+                        width: 250,
+                        margin: 2,
+                        color: {
+                            dark: '#000000',
+                            light: '#FFFFFF'
+                        }
+                    });
+
+                    console.log(aula.qrCodeDataUrl);
+                } catch (err) {
+                    console.error('Error generating QR:', err);
+                    aula.qrCodeDataUrl = '';
+                }
+            }
         }
     },
     { immediate: true }

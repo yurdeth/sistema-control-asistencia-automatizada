@@ -621,7 +621,7 @@ import Card from '@/Components/AdministrationComponent/Card.vue';
 import {authService} from "@/Services/authService.js";
 import Modal from "@/Components/Modal.vue";
 import ImagePreviewModal from "@/Components/AdministrationComponent/ImagePreviewModal.vue";
-import {createDeparments, updateDepartment} from "@/Services/deparmentsService.js";
+import QRCode from 'qrcode';
 
 const colorText = ref('#2C2D2F');
 const colorButton = ref('#d93f3f');
@@ -651,6 +651,7 @@ const form = ref({
     estado: 'activo',
     fotos: [],
     videos: '',
+    qrCodeDataUrl: ''
 });
 
 const formErrors = ref({});
@@ -835,6 +836,7 @@ const cargarAulas = async () => {
 
         if (response.data.success) {
             aulas.value = response.data.data;
+            // generateQrCode(aulas.value);
             console.log(aulas.value[0]);
 
             if (aulas.value.length === 0) {
@@ -900,6 +902,7 @@ const cargarAulasPaginadas = async () => {
 
         if (response.data.success) {
             aulasBackend.value = response.data.data;
+            // generateQrCode(aulasBackend.value);
             paginacionBackend.value = {
                 pagina_actual: response.data.pagination.pagina_actual,
                 por_pagina: response.data.pagination.por_pagina,
@@ -1039,6 +1042,7 @@ function openCreateModal() {
         estado: 'activo',
         fotos: [],
         videos: '',
+        qrCodeDataUrl: ''
     }
     // Liberar todas las URLs de objeto para evitar memory leaks
     imagePreviews.value.forEach(preview => {
@@ -1126,6 +1130,7 @@ async function handleSubmit() {
             estado: 'activo',
             fotos: [],
             videos: '',
+            qrCodeDataUrl: ''
         };
         imagePreviews.value = [];
 
@@ -1424,5 +1429,45 @@ function validateCapacity(event) {
         form.value.capacidad_pupitres = Math.min(Number(value), 150);
     }
 }
+
+watch(
+    () => form.value.codigo,
+    async (newCodigo) => {
+        if (newCodigo && newCodigo.trim() !== '') {
+            try {
+                const baseUrl = window.location.origin;
+                const qrText = `${baseUrl}/aula/${newCodigo.trim()}`;
+
+                // Usar QRCode.toDataURL (la función del objeto importado)
+                form.value.qrCodeDataUrl = await QRCode.toDataURL(qrText, {
+                    errorCorrectionLevel: 'H',
+                    width: 250,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                });
+
+                // Actualizar el QR en la aula correspondiente (si está en edición)
+                if (form.value.id) {
+                    const aulaArray = usarPaginacionBackend.value ? aulasBackend.value : aulas.value;
+                    const aulaEncontrada = aulaArray.find(a => a.id === form.value.id);
+                    if (aulaEncontrada) {
+                        aulaEncontrada.qrCodeDataUrl = form.value.qrCodeDataUrl;
+                    }
+                }
+
+                console.log('QR generado correctamente');
+            } catch (err) {
+                console.error('Error generando QR:', err);
+                form.value.qrCodeDataUrl = '';
+            }
+        } else {
+            form.value.qrCodeDataUrl = '';
+        }
+    },
+    { immediate: false }
+);
 
 </script>
