@@ -126,6 +126,11 @@
                 </div>
 
                 <div>
+                    <label>Código</label>
+                    <input v-model="form.codigo" class="input"/>
+                </div>
+
+                <div>
                     <label>Capacidad</label>
                     <input type="number" v-model="form.capacidad_pupitres" class="input"/>
                 </div>
@@ -144,15 +149,16 @@
                     <label>Estado</label>
                     <select v-model="form.estado" class="input">
                         <option value="disponible">Disponible</option>
-                        <option value="ocupado">Ocupado</option>
+                        <option value="ocupada">Ocupada</option>
                         <option value="mantenimiento">Mantenimiento</option>
+                        <option value="inactiva">Inactiva</option>
                     </select>
                 </div>
 
                 <!-- parte donde están los Botones para cancelar o guardar -->
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" class="btn" @click="$emit('close')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-primary" @click="handleEditClassroomInfo()">Guardar</button>
                 </div>
             </form>
         </template>
@@ -253,6 +259,7 @@ onUnmounted(() => {
 // =======| parte donde se trabaja el formulario de editar |=======
 const form = reactive({
     nombre: '',
+    codigo: '',
     capacidad: '',
     ubicacion: '',
     recurso: '',
@@ -337,6 +344,42 @@ const reservar = () => {
 
     emit('close');
 };
+
+const handleEditClassroomInfo = () => {
+    try {
+
+        const body = JSON.stringify({
+            nombre: form.nombre,
+            codigo: form.codigo,
+            capacidad_pupitres: form.capacidad_pupitres,
+            ubicacion: form.ubicacion,
+            estado: form.estado,
+            recursos: form.recursos.map(recurso => recurso.id),
+            imagen_url: form.imagen_url
+        });
+
+        axios.patch(`/api/classrooms/edit/${form.id}`, body, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }}).then(response => {
+            const data = response.data;
+            console.log(data);
+
+            if(!data.success){
+                alert("Error al actualizar la información del aula: " + data.message);
+                return;
+            }
+
+            alert("Información del aula actualizada correctamente.");
+            emit('close');
+            window.location.reload();
+        });
+
+    } catch (error) {
+        console.error('Error updating classroom info:', error);
+    }
+}
 
 </script>
 
