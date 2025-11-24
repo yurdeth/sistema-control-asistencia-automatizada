@@ -716,6 +716,25 @@ const closeDetallesModal = () => {
 };
 
 // Funciones CRUD
+// Función helper para convertir a zona horaria de El Salvador
+const toElSalvadorTime = (dateString) => {
+    if (!dateString) return null;
+    
+    const date = new Date(dateString);
+    const svTime = new Date(date.toLocaleString('en-US', { 
+        timeZone: 'America/El_Salvador' 
+    }));
+    
+    const year = svTime.getFullYear();
+    const month = String(svTime.getMonth() + 1).padStart(2, '0');
+    const day = String(svTime.getDate()).padStart(2, '0');
+    const hours = String(svTime.getHours()).padStart(2, '0');
+    const minutes = String(svTime.getMinutes()).padStart(2, '0');
+    const seconds = String(svTime.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
 const submitForm = async () => {
     formErrors.value = {};
     submitting.value = true;
@@ -728,10 +747,12 @@ const submitForm = async () => {
 
         if (isEditMode.value) {
             if (formData.value.hora_inicio_real) {
-                payload.hora_inicio_real = new Date(formData.value.hora_inicio_real).toISOString().slice(0, 19).replace('T', ' ');
+                // Usar zona horaria de El Salvador en lugar de UTC
+                payload.hora_inicio_real = toElSalvadorTime(formData.value.hora_inicio_real);
             }
             if (formData.value.hora_fin_real) {
-                payload.hora_fin_real = new Date(formData.value.hora_fin_real).toISOString().slice(0, 19).replace('T', ' ');
+                // Usar zona horaria de El Salvador en lugar de UTC
+                payload.hora_fin_real = toElSalvadorTime(formData.value.hora_fin_real);
             }
             payload.estado = formData.value.estado;
         }
