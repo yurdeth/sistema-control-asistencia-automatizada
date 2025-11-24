@@ -40,87 +40,69 @@
                 class="flex flex-col space-y-4"
                 style="padding-bottom: 5rem"
             >
+            <!-- Menús dinámicos completos -->
+            <div v-for="(menu, index) in menus" :key="menu.key || index">
+                <!-- Enlace simple (sin submenús) -->
                 <Link
-                href="/dashboard"
-                class="sidebar-link p-2 rounded flex items-center gap-2 transition-all duration-200"
-                :class="{ 'bg-white/10 font-semibold': isActive('/dashboard') }"
-                :style="{
-                    color: colorText,
-                    borderLeft: isActive('/dashboard') ? '3px solid #ffffff' : 'none'
-                }">
-                    <i class="fa-solid fa-grip"></i>
-                    Dashboard
-                </Link>
-                <Link
-                href="/dashboard/departamentos"
-                class="sidebar-link p-2 rounded flex items-center gap-2 transition-all duration-200"
-                :class="{ 'bg-white/10 font-semibold': isActive('/dashboard/departamentos') }"
-                :style="{
-                    color: colorText,
-                    borderLeft: isActive('/dashboard/departamentos') ? '3px solid #ffffff' : 'none'
-                }">
-                    <i class="fa-solid fa-list"></i>
-                    Departamentos
-                </Link>
-
-                <!-- Acceso directo a la vista completa de notificaciones desde el nav -->
-                <Link
-                    href="/dashboard/notificaciones"
+                    v-if="!menu.items && menu.href"
+                    :href="menu.href"
                     class="sidebar-link p-2 rounded flex items-center gap-2 transition-all duration-200"
-                    :class="{ 'bg-white/10 font-semibold': isActive('/dashboard/notificaciones') }"
+                    :class="{ 'bg-white/10 font-semibold': isActive(menu.href) }"
                     :style="{
                         color: colorText,
-                        borderLeft: isActive('/dashboard/notificaciones') ? '3px solid #ffffff' : 'none'
-                    }">
-                    <i class="fa-solid fa-inbox text-base sm:text-lg"></i>
-                    Notificaciones
-                </Link>
-            <!-- Submenús -->
-            <div v-for="(menu, index) in menus" :key="index">
-                <button
-                    @click="toggleMenu(menu.key)"
-                    class="sidebar-link p-2 rounded flex justify-between items-center w-full transition-all duration-200"
-                    :class="{ 'bg-white/10 font-semibold': isMenuActive(menu.items) }"
-                    :style="{
-                        color: colorText,
-                        borderLeft: isMenuActive(menu.items) ? '3px solid #ffffff' : 'none'
+                        borderLeft: isActive(menu.href) ? '3px solid #ffffff' : 'none'
                     }"
                 >
-                    <span class="flex items-center gap-2">
-                        <i :class="menu.icon" :style="{ color: colorText }"></i>
-                        <span>{{ menu.title }}</span>
-                    </span>
+                    <i :class="menu.icon" :style="{ color: colorText }"></i>
+                    {{ menu.title }}
+                </Link>
 
-                    <svg
-                        :class="{ 'rotate-90': openMenus[menu.key] }"
-                        class="w-4 h-4 transform transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        viewBox="0 0 24 24"
-                        :style="{ color: colorText }"
-                    >
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                </button>
-
-                <div v-if="openMenus[menu.key]" class="pl-4 mt-2 space-y-2">
-                    <Link
-                        v-for="(item, i) in menu.items"
-                        :key="i"
-                        :href="item.href"
-                        class="sidebar-submenu-link block p-2 rounded flex items-center gap-2 transition-all duration-200"
-                        :class="{ 'bg-white/20 font-semibold': isActive(item.href) }"
+                <!-- Menú con submenús -->
+                <div v-else-if="menu.items && menu.items.length > 0">
+                    <button
+                        @click="toggleMenu(menu.key)"
+                        class="sidebar-link p-2 rounded flex justify-between items-center w-full transition-all duration-200"
+                        :class="{ 'bg-white/10 font-semibold': isMenuActive(menu.items) }"
                         :style="{
                             color: colorText,
-                            borderLeft: isActive(item.href) ? '3px solid #ffffff' : 'none',
-                            marginLeft: isActive(item.href) ? '4px' : '0'
+                            borderLeft: isMenuActive(menu.items) ? '3px solid #ffffff' : 'none'
                         }"
                     >
-                        <i :class="item.icon" :style="{ color: colorText }"></i>
-                        {{ item.label }}
-                    </Link>
+                        <span class="flex items-center gap-2">
+                            <i :class="menu.icon" :style="{ color: colorText }"></i>
+                            <span>{{ menu.title }}</span>
+                        </span>
 
+                        <svg
+                            :class="{ 'rotate-90': openMenus[menu.key] }"
+                            class="w-4 h-4 transform transition-transform"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            viewBox="0 0 24 24"
+                            :style="{ color: colorText }"
+                        >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div v-if="openMenus[menu.key]" class="pl-4 mt-2 space-y-2">
+                        <Link
+                            v-for="(item, i) in menu.items"
+                            :key="item.href || i"
+                            :href="item.href"
+                            class="sidebar-submenu-link block p-2 rounded flex items-center gap-2 transition-all duration-200"
+                            :class="{ 'bg-white/20 font-semibold': isActive(item.href) }"
+                            :style="{
+                                color: colorText,
+                                borderLeft: isActive(item.href) ? '3px solid #ffffff' : 'none',
+                                marginLeft: isActive(item.href) ? '4px' : '0'
+                            }"
+                        >
+                            <i :class="item.icon" :style="{ color: colorText }"></i>
+                            {{ item.label }}
+                        </Link>
+                    </div>
                 </div>
             </div>
             </nav>
@@ -317,60 +299,88 @@ onBeforeUnmount(() => {
     const colorText = ref('#FFFFFF');
 
     // =====| Parte donde se trabaja el menu |=====
-    const menus = [
+    const baseMenus = [
         {
-                key: "Aulas",
-                title: "Gestión de Aulas",
-                icon: "fa-solid fa-school",
-                items: [
-                    {
-                        label: "Catálogo.",
-                        href: "/dashboard/catalogo",
-                        icon: "fa-solid fa-list",
-                    },
-                    {
-                        label: "Disponibilidad",
-                        href: "/dashboard/disponibilidad",
-                        icon: "fa-solid fa-calendar-days",
-                    },
-                                        {
-                        label: "Sugerencias",
-                        href: "/dashboard/sugerencia-aula",
-                        icon: "fa-solid fa-lightbulb",
-                    },
-                    {
-                        label: "Horarios",
-                        href: "/dashboard/horarios",
-                        icon: "fa-solid fa-clock",
-                    },
-                    {
-                        label: "Tipos de Recursos",
-                        href: "/dashboard/tipos-recursos",
-                        icon: "fa-solid fa-list-check",
-                    },
-                    {
-                        label: "Sesiones de Clase",
-                        href: "/dashboard/sesiones-clase",
-                        icon: "fa-solid fa-calendar-check",
-                    },
-                    {
-                        label: "Consultar Disponibilidad",
-                        href: "/dashboard/consultar-disponibilidad",
-                        icon: "fa-solid fa-search",
-                        roles: [5], // Solo para docentes
-                    },
-                    {
-                        label: "Mi Historial de Aulas",
-                        href: "/dashboard/mi-historial-aulas",
-                        icon: "fa-solid fa-history",
-                        roles: [5], // Solo para docentes
-                    },
-                    {
-                        label: "Mantenimiento",
-                        href: "/dashboard/mantenimientos",
-                        icon: "fa-solid fa-screwdriver-wrench",
-                    }
-                ]
+            key: "dashboard",
+            title: "Dashboard",
+            icon: "fa-solid fa-grip",
+            href: "/dashboard",
+            roles: [] // Visible para todos los roles autenticados
+        },
+        {
+            key: "departamentos",
+            title: "Departamentos",
+            icon: "fa-solid fa-list",
+            href: "/dashboard/departamentos",
+            roles: [1, 2] // ROOT y Admin Académico
+        },
+        {
+            key: "notificaciones",
+            title: "Notificaciones",
+            icon: "fa-solid fa-inbox",
+            href: "/dashboard/notificaciones",
+            roles: [] // Visible para todos los roles autenticados
+        },
+        {
+            key: "Aulas",
+            title: "Gestión de Aulas",
+            icon: "fa-solid fa-school",
+            items: [
+                {
+                    label: "Catálogo.",
+                    href: "/dashboard/catalogo",
+                    icon: "fa-solid fa-list",
+                    roles: [1, 6] // ROOT y Estudiantes
+                },
+                {
+                    label: "Disponibilidad",
+                    href: "/dashboard/disponibilidad",
+                    icon: "fa-solid fa-calendar-days",
+                    roles: [1, 2, 3, 4] // ROOT, Admin Académico, Gestores
+                },
+                {
+                    label: "Sugerencias",
+                    href: "/dashboard/sugerencia-aula",
+                    icon: "fa-solid fa-lightbulb",
+                    roles: [1, 2, 5] // ROOT, Admin Académico, Docentes
+                },
+                {
+                    label: "Horarios",
+                    href: "/dashboard/horarios",
+                    icon: "fa-solid fa-clock",
+                    roles: [1, 2] // ROOT y Admin Académico
+                },
+                {
+                    label: "Tipos de Recursos",
+                    href: "/dashboard/tipos-recursos",
+                    icon: "fa-solid fa-list-check",
+                    roles: [1, 2] // ROOT y Admin Académico
+                },
+                {
+                    label: "Sesiones de Clase",
+                    href: "/dashboard/sesiones-clase",
+                    icon: "fa-solid fa-calendar-check",
+                    roles: [1, 2, 3, 4, 5] // Administrativos y Docentes
+                },
+                {
+                    label: "Consultar Disponibilidad",
+                    href: "/dashboard/consultar-disponibilidad",
+                    icon: "fa-solid fa-search",
+                    roles: [5], // Solo para docentes
+                },
+                {
+                    label: "Mi Historial de Aulas",
+                    href: "/dashboard/mi-historial-aulas",
+                    icon: "fa-solid fa-history",
+                    roles: [5], // Solo para docentes
+                },
+                {
+                    label: "Mantenimiento",
+                    href: "/dashboard/mantenimientos",
+                    icon: "fa-solid fa-screwdriver-wrench",
+                    roles: [1, 2, 3] // ROOT, Admin Académico, Gestor Departamento
+                }
+            ]
         },
         {
             key: "Usuarios-sistema",
@@ -381,31 +391,37 @@ onBeforeUnmount(() => {
                     label: "Docentes.",
                     href: "/dashboard/docentes",
                     icon: "fa-solid fa-chalkboard-user",
+                    roles: [1, 2] // ROOT y Admin Académico
                 },
                 {
                     label: "Estudiantes.",
                     href: "/dashboard/estudiantes",
                     icon: "fa-solid fa-user",
+                    roles: [1, 2] // ROOT y Admin Académico
                 },
                 {
                     label: "Grupos",
                     href: "/dashboard/grupos",
                     icon: "fa-solid fa-layer-group",
+                    roles: [1, 2] // ROOT y Admin Académico
                 },
                 {
                     label: "Solicitudes Inscripción",
                     href: "/dashboard/solicitudes-inscripcion",
                     icon: "fa-solid fa-file-signature",
+                    roles: [1, 2, 5] // ROOT, Admin Académico, Docentes
                 },
                 {
                     label: "Roles",
                     href: "/dashboard/roles",
                     icon: "fa-solid fa-user-shield",
+                    roles: [1] // Solo ROOT
                 },
                 {
                     label: "Materias",
                     href: "/dashboard/materias",
                     icon: "fa-solid fa-book",
+                    roles: [1, 2, 3, 4] // ROOT, Admin Académico, Gestores
                 }
             ]
         },
@@ -418,25 +434,117 @@ onBeforeUnmount(() => {
                     label: "Gestión de reportes",
                     href: "/dashboard/informes",
                     icon: "fa-solid fa-file",
+                    roles: [1, 2] // ROOT y Admin Académico
                 },
                 {
                     label: "Incidencias",
                     href: "/dashboard/incidencias",
                     icon: "fa-solid fa-triangle-exclamation",
+                    roles: [1, 2, 3, 4] // Administrativos y Docentes
                 },
             ]
         }
     ];
 
+    // Filtrar menús según el rol del usuario
+    const menus = computed(() => {
+        if (!user.value || !user.value.role_id) {
+            console.log('Usuario no tiene rol_id:', user.value);
+            return [];
+        }
+
+        const userRoleId = user.value.role_id;
+        console.log('Rol del usuario:', userRoleId);
+
+        const filteredMenus = baseMenus.map(menu => {
+            // Para menús sin items (como Dashboard), verificar si tiene acceso directo
+            if (!menu.items) {
+                const hasAccess = !menu.roles || menu.roles.length === 0 || menu.roles.includes(userRoleId);
+                console.log('Menú sin items:', menu.key, 'Acceso:', hasAccess);
+                return hasAccess ? menu : null;
+            }
+
+            // Para menús con items, filtrar los items visibles
+            const filteredItems = menu.items.filter(item => {
+                // Si el item no tiene roles definidos, es visible para todos
+                if (!item.roles || item.roles.length === 0) {
+                    return true;
+                }
+                // Verificar si el rol del usuario está en los roles permitidos
+                const hasAccess = item.roles.includes(userRoleId);
+                console.log('Item:', item.label, 'Acceso:', hasAccess);
+                return hasAccess;
+            });
+
+            console.log('Menú:', menu.key, 'Items filtrados:', filteredItems.length);
+
+            return filteredItems.length > 0 ? { ...menu, items: filteredItems } : null;
+        }).filter(menu => menu !== null); // Ocultar menús sin items visibles
+
+        console.log('Menús finales filtrados:', filteredMenus.length);
+        return filteredMenus;
+    });
+
+    // Función helper para verificar si el usuario tiene acceso a una ruta
+    const hasAccessToRoute = (href, allowedRoles = []) => {
+        if (!user.value || !user.value.role_id) return false;
+
+        // Si no se especifican roles permitidos, verificar en la estructura del menú
+        if (allowedRoles.length === 0) {
+            // Buscar en todos los menús y submenús
+            for (const menu of baseMenus) {
+                if (menu.items) {
+                    for (const item of menu.items) {
+                        if (item.href === href) {
+                            if (!item.roles || item.roles.length === 0) return true;
+                            return item.roles.includes(user.value.role_id);
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Verificar roles específicos permitidos
+        return allowedRoles.includes(user.value.role_id);
+    };
+
     // Estado para los submenús
     const openMenus = reactive({});
 
-    // Inicializar estado de menús
+    // Inicializar estado de menús - CORREGIDO
     const initializeMenuStates = () => {
-        menus.forEach((menu) => {
-            // Abrir automáticamente el menú si tiene una subopción activa
-            openMenus[menu.key] = isMenuActive(menu.items);
+        if (!user.value || !user.value.role_id) {
+            console.log('No se pueden inicializar menús - usuario sin rol');
+            return;
+        }
+
+        const userRoleId = user.value.role_id;
+        console.log('🔧 Inicializando estados de menús para rol:', userRoleId);
+
+        // Iterar sobre baseMenus (NO sobre la computed property)
+        baseMenus.forEach(menu => {
+            // Para menús sin items (enlaces directos)
+            if (!menu.items) {
+                const hasAccess = !menu.roles || menu.roles.length === 0 || menu.roles.includes(userRoleId);
+                if (hasAccess && menu.href) {
+                    // Verificar si este enlace simple está activo
+                    openMenus[menu.key] = isActive(menu.href);
+                }
+            } else {
+                // Para menús con submenús, filtrar items según rol
+                const filteredItems = menu.items.filter(item => {
+                    return !item.roles || item.roles.length === 0 || item.roles.includes(userRoleId);
+                });
+
+                // Abrir automáticamente si tiene una subopción activa
+                openMenus[menu.key] = filteredItems.length > 0 && isMenuActive(filteredItems);
+
+                console.log(`📋 Menú "${menu.key}": ${filteredItems.length} items, activo: ${openMenus[menu.key]}`);
+            }
         });
+
+        console.log('✅ Estados de menús inicializados:', openMenus);
     };
 
     function toggleMenu(key) {
