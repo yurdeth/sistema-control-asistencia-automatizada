@@ -707,10 +707,7 @@ class ReportesProblemasAulasController extends Controller
         ], 200);
     }
 
-    /**
-     * Obtener estadísticas generales de reportes
-     * Accesible por: Administradores y Gestores
-     */
+
     public function getEstadisticas(): JsonResponse
     {
         if (!Auth::check()) {
@@ -736,7 +733,6 @@ class ReportesProblemasAulasController extends Controller
         }
 
         try {
-            // Conteo por estado
             $porEstado = ReporteProblemaAula::selectRaw('estado, COUNT(*) as total')
                 ->groupBy('estado')
                 ->get()
@@ -744,7 +740,6 @@ class ReportesProblemasAulasController extends Controller
                     return [$item->estado => $item->total];
                 });
 
-            // Conteo por categoría
             $porCategoria = ReporteProblemaAula::selectRaw('categoria, COUNT(*) as total')
                 ->groupBy('categoria')
                 ->get()
@@ -752,23 +747,16 @@ class ReportesProblemasAulasController extends Controller
                     return [$item->categoria => $item->total];
                 });
 
-            // Total de reportes
             $totalReportes = ReporteProblemaAula::count();
 
-            // Reportes del mes actual
             $reportesMesActual = ReporteProblemaAula::whereMonth('created_at', Carbon::now()->month)
                 ->whereYear('created_at', Carbon::now()->year)
                 ->count();
-
-            // Reportes pendientes (no resueltos ni cerrados)
             $reportesPendientes = ReporteProblemaAula::whereNotIn('estado', ['resuelto', 'cerrado', 'rechazado'])
                 ->count();
 
-            // Reportes resueltos
             $reportesResueltos = ReporteProblemaAula::where('estado', 'resuelto')
                 ->count();
-
-            // Top 5 aulas con más reportes
             $topAulas = ReporteProblemaAula::with('aula')
                 ->selectRaw('aula_id, COUNT(*) as total')
                 ->groupBy('aula_id')
@@ -867,9 +855,6 @@ class ReportesProblemasAulasController extends Controller
         }
     }
 
-    /**
-     * Obtener el nombre del rol del usuario autenticado
-     */
     private function getUserRoleName(): string|null
     {
         return DB::table('usuario_roles')
@@ -878,4 +863,57 @@ class ReportesProblemasAulasController extends Controller
             ->where('users.id', Auth::id())
             ->value('roles.nombre');
     }
+
+    public function destroy($id): JsonResponse
+{
+    if (!Auth::check()) {
+        return response()->json([
+            'message' => 'Acceso no autorizado',
+            'success' => false
+        ], 401);
+    }
+
+    $user_rolName = $this->getUserRoleName();
+    $rolesPermitidos = [
+        RolesEnum::ROOT->value,
+        RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+        RolesEnum::JEFE_DEPARTAMENTO->value,
+        RolesEnum::COORDINADOR_CARRERAS->value,
+    ];
+
+    if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+        return response()->json([
+            'message' => 'Acceso no autorizado',
+            'success' => false
+        ], 403);
+    }
+
+    try {
+        $reporte = ReporteProblemaAula::find($id);
+
+        if (!$reporte) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Reporte no encontrado'
+            ], 404);
+        }
+        if ($reporte->foto_evidencia) {
+            Storage::disk('public')->delete($reporte->foto_evidencia);
+        }
+
+        $reporte->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reporte eliminado exitosamente'
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al eliminar el reporte',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 }
