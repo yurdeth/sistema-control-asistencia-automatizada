@@ -836,8 +836,6 @@ const cargarAulas = async () => {
 
         if (response.data.success) {
             aulas.value = response.data.data;
-            // generateQrCode(aulas.value);
-            console.log(aulas.value[0]);
 
             if (aulas.value.length === 0) {
                 mostrarMensaje('success', 'No hay aulas registradas. Ejecuta el seeder para agregar aulas de prueba.');
@@ -910,7 +908,7 @@ const cargarAulasPaginadas = async () => {
                 ultima_pagina: response.data.pagination.ultima_pagina
             };
 
-            console.log('Aulas paginadas:', aulasBackend.value);
+            //console.log('Aulas paginadas:', aulasBackend.value);
 
             if (aulasBackend.value.length === 0 && paginacionBackend.value.pagina_actual === 1) {
                 mostrarMensaje('info', 'No hay aulas que coincidan con los filtros seleccionados');
@@ -1182,7 +1180,7 @@ const handleImageUpload = async (event) => {
 
     if (files.length === 0) return;
 
-    console.log("Procesando", files.length, "archivos seleccionados");
+    //console.log("Procesando", files.length, "archivos seleccionados");
 
     // Usar la misma función processImages para mostrar el indicador de procesamiento
     await processImages(files);
@@ -1458,7 +1456,7 @@ watch(
                     }
                 }
 
-                console.log('QR generado correctamente');
+                //console.log('QR generado correctamente');
             } catch (err) {
                 console.error('Error generando QR:', err);
                 form.value.qrCodeDataUrl = '';

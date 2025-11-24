@@ -11,11 +11,13 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache as FacadesCache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpKernel\Attribute\Cache;
 
 class AulasController extends Controller {
     // Temporalmente comentado para resolver el error
@@ -213,7 +215,7 @@ class AulasController extends Controller {
             'codigo' => 'required|string|max:50|unique:aulas,codigo,' . $id,
             'nombre' => 'required|string|max:100',
             'capacidad_pupitres' => 'required|integer|min:1',
-            'ubicacion' => 'required|string|max:255',
+            'ubicacion' => 'required|string',
             'indicaciones' => 'nullable|string',
             'latitud' => 'nullable|numeric|between:-90,90',
             'longitud' => 'nullable|numeric|between:-180,180',
@@ -236,7 +238,6 @@ class AulasController extends Controller {
             'capacidad_pupitres.min' => 'El campo capacidad de pupitres debe ser al menos 1.',
             'ubicacion.required' => 'El campo ubicación es obligatorio.',
             'ubicacion.string' => 'El campo ubicación debe ser una cadena de texto.',
-            'ubicacion.max' => 'El campo ubicación no debe exceder los 255 caracteres.',
             'indicaciones.string' => 'El campo indicaciones debe ser una cadena de texto.',
             'latitud.numeric' => 'El campo latitud debe ser un número.',
             'latitud.between' => 'El campo latitud debe estar entre -90 y 90.',
@@ -296,6 +297,7 @@ class AulasController extends Controller {
 
             // Cargar relaciones para la respuesta
             $aula->load('fotos', 'videos');
+            FacadesCache::clear();
 
             return response()->json([
                 'message' => 'Aula actualizada exitosamente',
@@ -454,6 +456,7 @@ class AulasController extends Controller {
 
             // Cargar relaciones para la respuesta
             $aula->load('fotos', 'videos');
+            FacadesCache::clear();
 
             return response()->json([
                 'message' => 'Aula creada exitosamente con código QR único',
