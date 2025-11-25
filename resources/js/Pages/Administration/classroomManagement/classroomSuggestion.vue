@@ -101,8 +101,11 @@
                         @click="handleSearch"
                         :disabled="!groupSize || groupSize <= 0 || cargandoAulas || aulas.length === 0"
                         class="w-full py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-                        :class="groupSize && groupSize > 0
-                            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+
+                        :style="groupSize > 0 ? { background: '#eb9733' } : {}"
+
+                        :class="groupSize > 0
+                            ? 'text-white'
                             : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
                     >
                         {{ cargandoAulas ? 'Cargando aulas...' : 'Buscar Aulas Disponibles' }}
