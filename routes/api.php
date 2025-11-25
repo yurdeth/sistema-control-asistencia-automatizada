@@ -101,6 +101,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
 
     //************************************ MANAGE SUBJECTS ************************************//
     Route::get('/subjects/get/all', [MateriasController::class, 'index'])->name('materias.index');
+    Route::get('/subjects/for-select', [MateriasController::class, 'getForSelect'])->name('materias.forSelect');
     Route::get('/subjects/get/{id}', [MateriasController::class, 'show'])->name('materias.show');
     Route::post('/subjects/new', [MateriasController::class, 'store'])->name('materias.store');
     Route::patch('/subjects/edit/{id}', [MateriasController::class, 'edit'])->name('materias.edit');
