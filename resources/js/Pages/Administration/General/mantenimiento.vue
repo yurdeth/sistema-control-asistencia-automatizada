@@ -16,50 +16,60 @@
             </div>
 
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <input
-                        v-model="terminoBusqueda"
-                        type="text"
-                        placeholder="Buscar por motivo o nombre de aula"
-                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+        <div class="flex flex-col sm:flex-row gap-4 flex-wrap">
+            <!-- Campo de búsqueda -->
+            <input
+                v-model="terminoBusqueda"
+                type="text"
+                placeholder="Buscar por motivo o nombre de aula"
+                class="w-full sm:flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
 
-                    <select
-                        v-model="filtroEstado"
-                        @change="cargarMantenimientos"
-                        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Ver todos los estados</option>
-                        <option value="programado">Programado</option>
-                        <option value="en_proceso">En Proceso</option>
-                        <option value="finalizado">Finalizado</option>
-                        <option value="cancelado">Cancelado</option>
-                    </select>
+            <!-- Filtro por estado -->
+            <select
+                v-model="filtroEstado"
+                @change="cargarMantenimientos"
+                class="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+                <option value="">Ver todos los estados</option>
+                <option value="programado">Programado</option>
+                <option value="en_proceso">En Proceso</option>
+                <option value="finalizado">Finalizado</option>
+                <option value="cancelado">Cancelado</option>
+            </select>
 
-                    <select
-                        v-model="filtroAulaId"
-                        @change="cargarMantenimientos"
-                        class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Ver todas las aulas</option>
-                        <option v-for="aula in listaAulas" :key="aula.id" :value="aula.id">
-                            {{ aula.nombre }}
-                        </option>
-                    </select>
+            <!-- Filtro por aula -->
+            <select
+                v-model="filtroAulaId"
+                @change="cargarMantenimientos"
+                class="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+                <option value="">Ver todas las aulas</option>
+                <option v-for="aula in listaAulas" :key="aula.id" :value="aula.id">
+                    {{ aula.nombre }}
+                </option>
+            </select>
 
-                    <button
-                        @click="limpiarFiltros"
-                        class="px-4 py-3 border rounded-lg hover:bg-gray-100 transition-colors">
-                        Limpiar filtros
-                    </button>
+            <!-- Botón limpiar -->
+            <button
+                @click="limpiarFiltros"
+                :disabled="!terminoBusqueda && !filtroEstado && !filtroAulaId"
+                class="w-full sm:w-auto py-3 px-6 rounded-lg font-semibold transition-colors text-white"
+                :style="(!terminoBusqueda && !filtroEstado && !filtroAulaId) ? { background: '#9CA3AF', cursor: 'not-allowed' } : { background: '#6B7280' }"
+            >
+                Limpiar filtros
+            </button>
 
-                    <button
-                        @click="abrirModalCreacion"
-                        class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#ff9966'}"
-                    >
-                        <span class="text-xl">+</span>
-                        Programar Mantenimiento
-                    </button>
-                </div>
+            <!-- Botón Programar Mantenimiento -->
+            <button
+                @click="abrirModalCreacion"
+                class="w-full sm:w-auto text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                :style="{ background: '#ff9966' }"
+            >
+                <span class="text-xl">+</span>
+                Programar Mantenimiento
+            </button>
+        </div>
                 <br>
 
                 <div v-if="cargando" class="bg-white rounded-lg shadow-lg p-8 text-center">
@@ -660,7 +670,7 @@
     //             : Object.values(res.data?.data || {});
 
     //         todosMantenimientos.value = datos;
-            
+
     //     } catch (err) {
     //         // 👉 Si el backend devuelve 404 = no hay datos
     //         if (err.response?.status === 404) {
@@ -668,7 +678,7 @@
     //             error.value = null;               // No mostrar error rojo
     //         } else {
     //             error.value = "Error al cargar mantenimientos";
-    //         }        
+    //         }
     //     } finally {
     //         cargando.value = false;
     //     }
@@ -737,7 +747,7 @@
                 erroresFormulario.value.usuario_registro_id = [
                     'No se pudo identificar al usuario. Por favor, cierre sesión e inicie sesión nuevamente.'
                 ];
-                return; 
+                return;
             }
 
             const cargaUtil = {
@@ -885,5 +895,5 @@
             await cargarMantenimientos();
         }
     });
-    
+
 </script>

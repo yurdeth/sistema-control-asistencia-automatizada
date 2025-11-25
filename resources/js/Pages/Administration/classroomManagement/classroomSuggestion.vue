@@ -96,20 +96,35 @@
                     </div>
                 </div>
 
+                <div class="flex gap-2">
                     <!-- Botón de búsqueda -->
                     <button
                         @click="handleSearch"
                         :disabled="!groupSize || groupSize <= 0 || cargandoAulas || aulas.length === 0"
-                        class="w-full py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-                        :class="groupSize && groupSize > 0
-                            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        class="flex-1 py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                        :style="groupSize > 0 ? { background: '#eb9733' } : {}"
+                        :class="groupSize > 0
+                            ? 'text-white'
                             : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
                     >
                         {{ cargandoAulas ? 'Cargando aulas...' : 'Buscar Aulas Disponibles' }}
                     </button>
-                    <p v-if="aulas.length === 0 && !cargandoAulas" class="text-sm text-amber-600 text-center mt-2">
-                        No hay aulas disponibles para buscar
-                    </p>
+
+                    <!-- Botón limpiar -->
+                    <button
+                        @click="limpiarBusqueda"
+                        :disabled="!showResults"
+                        class="flex-1 py-3 px-6 rounded-lg font-semibold transition-colors text-white"
+                        :style="showResults ? { background: colorButtons.eliminar } : { background: '#9CA3AF' }"
+                    >
+                        Limpiar
+                    </button>
+                </div>
+
+                <p v-if="aulas.length === 0 && !cargandoAulas" class="text-sm text-amber-600 text-center mt-2">
+                    No hay aulas disponibles para buscar
+                </p>
+
             </div>
         </div>
 
@@ -176,7 +191,7 @@
                         <!-- Botónes -->
                         <div class="grid grid-cols-2 gap-2">
                             <button
-                                @click="abrirModal({ aula, modo: 'ver' })"
+                                @click="abrirModal({ aula })"
                                 class="text-white hover:bg-blue-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
                                 :style="{ background: colorButtons.ver }"
                             >
@@ -302,6 +317,74 @@
         </div>
     </MainLayoutDashboard>
 
+    <Modal :show="showModal" @close="cerrarModal">
+        <div v-if="aula && Object.keys(aula).length" class="p-6 space-y-4">
+            <!-- Header -->
+            <div class="flex items-start justify-between">
+                <div>
+                    <h1 class="text-4xl font-extralight text-gray-900 tracking-tight mb-3">{{ aula.nombre }}</h1>
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-2 h-2 rounded-full transition-all"
+                            :class="aula.estado === 'Activo' ? 'bg-gray-900 shadow-[0_0_8px_rgba(17,23,39,0.4)]' : 'bg-gray-400'"
+                        />
+                        <span class="text-sm text-gray-600 font-light">{{ aula.estado }}</span>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <div class="text-4xl font-extralight text-gray-900">{{ aula.capacidad_pupitres }}</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-2 font-light">Estudiantes</div>
+                </div>
+            </div>
+
+            <!-- Línea divisoria -->
+            <div class="border-t border-gray-100" />
+
+            <!-- DATOS DEL AULA EN TARJETAS -->
+            <div class="grid gap-4">
+                <div class="p-3 bg-gray-50 rounded-lg shadow-sm">
+                    <p class="text-gray-600 text-sm">Ubicación</p>
+                    <p class="font-semibold text-gray-800">{{ aula.ubicacion }}</p>
+                </div>
+
+                <div class="p-3 bg-gray-50 rounded-lg shadow-sm">
+                    <p class="text-gray-600 text-sm">Recursos</p>
+                    <p class="font-semibold text-gray-800 text-gray-500 italic">
+                        {{ aula.recurso || 'No hay recursos asignados' }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- GALERÍA -->
+            <div class="pt-2 border-t">
+                <h3 class="text-lg font-semibold mb-2">Imágenes del aula</h3>
+
+                <div class="overflow-x-auto scrollbar-hide">
+                    <div class="flex gap-2">
+                        <img
+                            v-for="(foto, index) in aula.fotos"
+                            :key="foto.id"
+                            :src="foto.url"
+                            alt="Aula"
+                            class="w-20 h-20 object-cover cursor-pointer transition-all duration-300 border-2 border-transparent hover:border-gray-900 flex-shrink-0"
+                            @click="abrirLightbox(index)"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Modal>
+
+    <!-- Lightbox/Carrusel -->
+    <Modal :show="mostrarLightbox" @close="cerrarLightbox">
+        <LightboxModal
+            :imagenes="aula.fotos"
+            :indiceInicial="imagenActual"
+            @close="cerrarLightbox"
+        />
+    </Modal>
+
 </template>
 
 <script setup>
@@ -312,6 +395,8 @@
     import Loader from '@/Components/AdministrationComponent/Loader.vue';
     import browserImageCompression from 'browser-image-compression';
     import axios from "axios";
+    import Modal from "@/Components/Modal.vue";
+    import LightboxModal from "@/Components/AdministrationComponent/LightboxModal.vue";
 
     //Colores para buttons
     const colorButtons = {
@@ -453,7 +538,6 @@
         }
     };
 
-
     // Función para mostrar mensajes
     const mostrarMensaje = (tipo, texto) => {
         mensaje.value = { tipo, texto };
@@ -552,5 +636,45 @@
 
     const removeResource = (recurso) => {
         selectedResources.value = selectedResources.value.filter(r => r !== recurso);
+    };
+
+    const limpiarBusqueda = () => {
+        groupSize.value = null;
+        selectedResources.value = [];
+        showResults.value = false;
+        mensaje.value = { tipo: '', texto: '' };
+    };
+
+
+    // ============   MODAL DE VER DETALLES ==========
+    // Estado del modal
+    const showModal = ref(false);
+    const aula = ref({});
+
+    // Abrir modal
+    const abrirModal = ({ aula: data }) => {
+        aula.value = data;
+        showModal.value = true;
+    };
+
+    // Cerrar modal
+    const cerrarModal = () => {
+        showModal.value = false;
+        aula.value = {};
+    };
+
+    // Estado para Lightbox
+    const mostrarLightbox = ref(false);
+    const imagenActual = ref(0);
+
+    // Función para abrir Lightbox
+    const abrirLightbox = (index) => {
+        imagenActual.value = index;
+        mostrarLightbox.value = true;
+    };
+
+    // Función para cerrar Lightbox
+    const cerrarLightbox = () => {
+        mostrarLightbox.value = false;
     };
 </script>
