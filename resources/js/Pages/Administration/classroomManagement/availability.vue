@@ -606,19 +606,13 @@
 
             <form class="space-y-4">
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1" for="subject">Materia</label>
-                    <select
-                        id="subject"
+                    <SearchableSelectMejorado
                         v-model="selectedSubject"
-                        class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        name="subject"
+                        :api-url="`${API_URL}/subjects/for-select`"
+                        label="Materia"
+                        placeholder="Buscar materia por nombre o código..."
                         @change="fetchGroups(selectedSubject)"
-                    >
-                        <option disabled selected value="">Seleccione la materia</option>
-                        <option v-for="subject in subjects" :key="subject.id" :value="subject.id">
-                            {{ subject.nombre }}
-                        </option>
-                    </select>
+                    />
                 </div>
 
                 <div class="mb-4">
@@ -710,11 +704,15 @@ import {authService} from "@/Services/authService.js";
 import AulaModalContent from "@/Components/AdministrationComponent/AulaModalContent.vue";
 import Modal from "@/Components/Modal.vue";
 import LightboxModal from "@/Components/AdministrationComponent/LightboxModal.vue";
+import SearchableSelectMejorado from "@/Components/SearchableSelectMejorado.vue";
 
 const isLoading = ref(true);
 // Constantes reactivas para los colores de la interfaz
 const colorText = ref('#2C2D2F');
 const colorButton = ref('#FE6244');
+
+// API URL
+const API_URL = 'https://sistema-control-asistencia-automatizada.test/api';
 
 // Constantes reactivas para el control de la paginación
 const paginaActual = ref(1);
@@ -982,27 +980,6 @@ const fetchAula = async (id) => {
     }
 };
 
-const fetchSubjects = async () => {
-    try {
-        const response = await axios.get("/api/subjects/get/all", {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            }
-        });
-
-        const data = response.data;
-
-        if (!data.success) {
-            alert("No se encontraron materias");
-            return;
-        }
-
-        subjects.value = data.data;
-    } catch (error) {
-        console.error('Error fetching subjects:', error);
-        subjects.value = [];
-    }
-};
 
 const fetchGroups = async (id) => {
     try {
@@ -1139,7 +1116,6 @@ const abrirLightbox = (index) => {
 const cerrarLightbox = () => (mostrarLightbox.value = false);
 
 const openAssignClassroomModal = (aulaData) => {
-    fetchSubjects();
     aula = aulaData;
     assignClassrooms.value = true;
 };
