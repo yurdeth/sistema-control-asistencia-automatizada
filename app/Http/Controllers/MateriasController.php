@@ -569,6 +569,108 @@ class MateriasController extends Controller {
         }
     }
 
+    /**
+     * Get subjects optimized for dropdown selects with pagination and search.
+     * Optimized specifically for 486+ subjects with progressive loading.
+     */
+    public function getForSelect(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            // Validar parámetros de entrada
+            $rules = [
+                'search' => 'nullable|string|max:50',
+                'page' => 'nullable|integer|min:1',
+                'per_page' => 'nullable|integer|min:1|max:100'
+            ];
+
+            $messages = [
+                'search.string' => 'La búsqueda debe ser una cadena de texto.',
+                'search.max' => 'La búsqueda no debe exceder los 50 caracteres.',
+                'page.integer' => 'La página debe ser un número entero.',
+                'page.min' => 'La página debe ser como mínimo 1.',
+                'per_page.integer' => 'Los resultados por página debe ser un número entero.',
+                'per_page.min' => 'Los resultados por página debe ser como mínimo 1.',
+                'per_page.max' => 'Los resultados por página no debe exceder los 100.',
+            ];
+
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules, $messages);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Obtener y sanitizar parámetros
+            $page = max(1, (int)$request->get('page', 1));
+            $perPage = min($request->get('per_page', 50), 100); // Default 50, max 100
+            $search = $this->sanitizeInput($request->get('search', ''));
+
+            // Crear clave de cache única para esta combinación de parámetros
+            $cacheKey = "subjects_select_page_{$page}_per_{$perPage}_search_" . md5($search);
+
+            $result = Cache::remember($cacheKey, 300, function () use ($search, $perPage, $page) {
+                $query = materias::select('id', 'nombre', 'codigo', 'carrera_id')
+                    ->where('estado', 'activa')
+                    ->with('carrera:id,nombre')
+                    ->orderBy('nombre', 'asc');
+
+                // Aplicar búsqueda por nombre o código
+                if (!empty($search)) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('nombre', 'LIKE', "%{$search}%")
+                          ->orWhere('codigo', 'LIKE', "%{$search}%");
+                    });
+                }
+
+                return $query->paginate($perPage, ['*'], 'page', $page);
+            });
+
+            // Formatear datos para selects frontend
+            $formattedData = collect($result->items())->map(function ($materia) {
+                return [
+                    'id' => $materia->id,
+                    'nombre' => $materia->nombre,
+                    'codigo' => $materia->codigo,
+                    'carrera_id' => $materia->carrera_id,
+                    'carrera_nombre' => $materia->carrera->nombre ?? 'Sin carrera',
+                    'label' => $materia->nombre, // Para compatibilidad con componentes existentes
+                    'value' => $materia->id,     // Para compatibilidad con componentes existentes
+                    'sublabel' => $materia->codigo . ' - ' . ($materia->carrera->nombre ?? 'Sin carrera') // Información adicional
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Materias para select obtenidas exitosamente',
+                'data' => $formattedData,
+                'pagination' => [
+                    'current_page' => $result->currentPage(),
+                    'last_page' => $result->lastPage(),
+                    'per_page' => $result->perPage(),
+                    'total' => $result->total(),
+                    'from' => $result->firstItem(),
+                    'to' => $result->lastItem(),
+                    'has_more' => $result->hasMorePages()
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las materias para select',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
