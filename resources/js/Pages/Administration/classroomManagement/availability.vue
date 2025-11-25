@@ -18,257 +18,504 @@
                 <h1 :style="{color:colorText}" class="text-xl sm:text-2xl font-bold text-gray-900 mb-1"> Disponibilidad
                     de Aulas </h1>
                 <p class="text-gray-600 text-xs sm:text-sm">
-                    Visualice y gestione las aulas ocupadas o disponibles dentro de la facultad
+                    Visualice y gestione las aulas, solicitudes de reserva y disponibilidad
                 </p>
             </div>
 
-            <!--Parte del buscador, filtros y opción de agregar-->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6 mb-4 sm:mb-6">
-                <div class="flex flex-col gap-3 sm:gap-4">
-                    <!-- Buscador -->
-                    <div class="w-full">
-                        <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
-                            <input
-                                v-model="busquedaAula"
-                                class="w-full pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
-                                placeholder="Buscar aula por nombre, código o sector..."
-                                type="text"
-                            >
+            <!-- Sistema de Pestañas -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4 sm:mb-6">
+                <div class="flex border-b border-gray-200 overflow-x-auto">
+                    <button
+                        @click="tabActiva = 'disponibilidad'"
+                        :class="[
+                            'px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium whitespace-nowrap transition-colors',
+                            tabActiva === 'disponibilidad'
+                                ? 'border-b-2 text-blue-600'
+                                : 'text-gray-500 hover:text-gray-700'
+                        ]"
+                        :style="tabActiva === 'disponibilidad' ? {borderBottomColor: colorButton} : {}"
+                    >
+                        <i class="fa-solid fa-door-open mr-2"></i>
+                        Disponibilidad
+                    </button>
+                    <button
+                        @click="tabActiva = 'solicitudes'"
+                        :class="[
+                            'px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-medium whitespace-nowrap transition-colors relative',
+                            tabActiva === 'solicitudes'
+                                ? 'border-b-2 text-blue-600'
+                                : 'text-gray-500 hover:text-gray-700'
+                        ]"
+                        :style="tabActiva === 'solicitudes' ? {borderBottomColor: colorButton} : {}"
+                    >
+                        <i class="fa-solid fa-clipboard-list mr-2"></i>
+                        Solicitudes
+                        <span v-if="solicitudesPendientesCount > 0"
+                            :style="{background: colorButton}"
+                            class="ml-2 px-2 py-0.5 text-xs rounded-full text-white">
+                            {{ solicitudesPendientesCount }}
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTENIDO DE DISPONIBILIDAD -->
+            <div v-show="tabActiva === 'disponibilidad'">
+                <!--Parte del buscador, filtros y opción de agregar-->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6 mb-4 sm:mb-6">
+                    <div class="flex flex-col gap-3 sm:gap-4">
+                        <!-- Buscador -->
+                        <div class="w-full">
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <input
+                                    v-model="busquedaAula"
+                                    class="w-full pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                                    placeholder="Buscar aula por nombre, código o sector..."
+                                    type="text"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                <!--Para filtrar por cantidad de asientos-->
+                                <select
+                                    v-model="capacidadSeleccionada"
+                                    class="w-full sm:w-64 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
+                                >
+                                    <option value="all">Todas las capacidades</option>
+                                    <option value="pequena">Pequeña (1-30 asientos)</option>
+                                    <option value="mediana">Mediana (31-70 asientos)</option>
+                                    <option value="grande">Grande (71-100 asientos)</option>
+                                    <option value="muy-grande">Muy grande (100+ asientos)</option>
+                                </select>
+
+                                <!--Para filtrar según el estado-->
+                                <select
+                                    v-model="estadoFiltro"
+                                    class="w-full sm:w-48 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
+                                >
+                                    <option value="disponibles">Aulas Disponibles</option>
+                                    <option value="ocupadas">Aulas Ocupadas</option>
+                                    <option value="todas">Todas las Aulas</option>
+                                </select>
+
+                                <button
+                                    :style="{background:colorButton}"
+                                    class="px-6 py-2 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap hover:opacity-90"
+                                    @click="abrirModalReserva"
+                                >
+                                    Nueva Reserva de Aula +
+                                </button>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                            <!--Para filtrar por cantidad de asientos-->
-                            <select
-                                v-model="capacidadSeleccionada"
-                                class="w-full sm:w-64 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
-                            >
-                                <option value="all">Todas las capacidades</option>
-                                <option value="pequena">Pequeña (1-30 asientos)</option>
-                                <option value="mediana">Mediana (31-70 asientos)</option>
-                                <option value="grande">Grande (71-100 asientos)</option>
-                                <option value="muy-grande">Muy grande (100+ asientos)</option>
-                            </select>
+                <!-- Estadísticas -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                        <div class="text-sm text-gray-600 mb-1">Total Aulas</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ aulas.length }}</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                        <div class="text-sm text-gray-600 mb-1">Total Reservas</div>
+                        <div class="text-2xl font-bold text-blue-600">{{ totalReservas }}</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                        <div class="text-sm text-gray-600 mb-1">Aulas Disponibles</div>
+                        <div class="text-2xl font-bold text-green-600">{{ aulasDisponiblesCount }}</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                        <div class="text-sm text-gray-600 mb-1">Aulas Ocupadas</div>
+                        <div class="text-2xl font-bold text-red-600">{{ aulasOcupadasCount }}</div>
+                    </div>
+                </div>
 
-                            <!--Para filtrar según el estado-->
-                            <select
-                                v-model="estadoFiltro"
-                                class="w-full sm:w-48 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
+                <!-- Loading -->
+                <div v-if="cargando" class="text-center py-12 bg-white rounded-lg border border-gray-200">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+
+                <!--Parte donde se trabaja el encabezado y la tabla que mostrara las aulas-->
+                <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                        <h2 class="text-base sm:text-lg font-semibold text-gray-900">
+                            {{
+                                estadoFiltro === 'disponibles' ? 'Aulas Disponibles para Asignar' :
+                                    estadoFiltro === 'ocupadas' ? 'Aulas Ocupadas' : 'Todas las Aulas'
+                            }}
+                        </h2>
+                        <p class="text-xs sm:text-sm text-gray-600 mt-1">{{ aulasFiltradas.length }} aulas encontradas</p>
+                    </div>
+
+                    <!--Tabla con scroll horizontal en móviles-->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                                    scope="col">
+                                    Aula
+                                </th>
+                                <!--                                <th scope="col" class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                                                    Ubicación
+                                                                </th>-->
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                                    scope="col">
+                                    Capacidad
+                                </th>
+                                <!--                                <th scope="col" class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">
+                                                                    Tipo
+                                                                </th>-->
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                                    scope="col">
+                                    Estado
+                                </th>
+                                <!--                                <th scope="col" class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">
+                                                                    Recursos
+                                                                </th>-->
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                                    scope="col">
+                                    Acciones
+                                </th>
+                            </tr>
+                            </thead>
+
+                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tr v-for="aula in aulasPaginadas" :key="aula.id" class="hover:bg-gray-50 transition-colors">
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-2 sm:gap-3">
+                                        <div
+                                            :class="aula.disponible ? 'bg-blue-100' : 'bg-red-100'"
+                                            class="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center text-xs sm:text-base">
+                                            <i class="fa-solid fa-hotel"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                                {{ aula.nombre }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">{{ aula.codigo }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-1">
+                                        <i class="fa-solid fa-people-group text-xs sm:text-sm"></i>
+                                        <span class="text-xs sm:text-sm text-gray-900">{{ aula.capacidad_pupitres }}</span>
+                                    </div>
+                                </td>
+
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                        <span v-if="aula.disponible"
+                                              class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Disponible
+                                        </span>
+                                    <span v-else
+                                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Ocupada
+                                        </span>
+                                </td>
+
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
+                                    <button
+                                        :style="{background:'#D93F3F'}"
+                                        class="mr-2 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:opacity-90 transition-opacity text-xs sm:text-sm"
+                                        @click="abrirModal({ aula, modo: 'ver' })"
+                                    >
+                                        Ver detalles
+                                    </button>
+                                    <button
+                                        v-if="aula.disponible"
+                                        :style="{background:colorButton}"
+                                        class="text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:opacity-90 transition-opacity text-xs sm:text-sm"
+                                        @click="openAssignClassroomModal(aula)"
+                                    >
+                                        Asignar
+                                    </button>
+                                    <button
+                                        v-else
+                                        class="bg-green-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm"
+                                        @click="liberarAula(aula)"
+                                    >
+                                        Liberar
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Estado vacío -->
+                            <tr v-if="aulasFiltradas.length === 0">
+                                <td class="px-4 sm:px-6 py-8 sm:py-12 text-center" colspan="7">
+                                    <i :style="{color: colorButton}" class="fa-solid fa-face-meh text-3xl sm:text-4xl"></i>
+                                    <p class="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">No se encontraron aulas</p>
+                                    <p class="text-xs text-gray-400 mt-1">Intente ajustar los filtros de búsqueda</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div v-if="aulasFiltradas.length > 0"
+                        class="bg-white px-3 sm:px-4 md:px-6 py-3 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 gap-3">
+                        <!-- Info de registros (oculta en móvil) -->
+                        <div class="hidden sm:block">
+                            <p class="text-xs sm:text-sm text-gray-700">
+                                Mostrando
+                                <span class="font-medium">{{ indiceInicio + 1 }}</span>
+                                a
+                                <span class="font-medium">{{ Math.min(indiceFin, aulasFiltradas.length) }}</span>
+                                de
+                                <span class="font-medium">{{ aulasFiltradas.length }}</span>
+                                resultados
+                            </p>
+                        </div>
+
+                        <!-- Controles de paginación -->
+                        <nav aria-label="Pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                            <button
+                                :disabled="paginaActual === 1"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-xs sm:text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                @click="paginaAnterior"
                             >
-                                <option value="disponibles">Aulas Disponibles</option>
-                                <option value="ocupadas">Aulas Ocupadas</option>
-                                <option value="todas">Todas las Aulas</option>
-                            </select>
+                                <span class="sr-only">Anterior</span>
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
 
                             <button
-                                :style="{background:colorButton}"
-                                class="px-6 py-2 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap hover:opacity-90"
-                                @click="abrirModalReserva"
+                                v-for="pagina in paginasVisibles"
+                                :key="pagina"
+                                :class="[
+                                    pagina === paginaActual
+                                        ? 'z-10 border-blue-500 text-blue-600 bg-blue-50'
+                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                                    'relative inline-flex items-center px-3 sm:px-4 py-2 border text-xs sm:text-sm font-medium'
+                                ]"
+                                @click="irAPagina(pagina)"
                             >
-                                Nueva Reserva de Aula +
+                                {{ pagina }}
                             </button>
+
+                            <button
+                                :disabled="paginaActual === totalPaginas"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-xs sm:text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                @click="paginaSiguiente"
+                            >
+                                <span class="sr-only">Siguiente</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- CONTENIDO DE SOLICITUDES -->
+            <div v-show="tabActiva === 'solicitudes'">
+                <!-- Buscador y Filtros -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6 mb-4 sm:mb-6">
+                    <div class="flex flex-col gap-3 sm:gap-4">
+                        <!-- Buscador -->
+                        <div class="w-full">
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                                <input
+                                    v-model="busquedaSolicitud"
+                                    class="w-full pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                                    placeholder="Buscar por solicitante, aula o actividad..."
+                                    type="text"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Filtros -->
+                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                            <select
+                                v-model="estadoSolicitudFiltro"
+                                class="w-full sm:w-48 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
+                            >
+                                <option value="todas">Todas las Solicitudes</option>
+                                <option value="pendiente">Pendientes</option>
+                                <option value="aprobada">Aprobadas</option>
+                                <option value="rechazada">Rechazadas</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Estadísticas -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <div class="text-sm text-gray-600 mb-1">Total Aulas</div>
-                    <div class="text-2xl font-bold text-gray-900">{{ aulas.length }}</div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <div class="text-sm text-gray-600 mb-1">Total Reservas</div>
-                    <div class="text-2xl font-bold text-blue-600">{{ totalReservas }}</div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <div class="text-sm text-gray-600 mb-1">Aulas Disponibles</div>
-                    <div class="text-2xl font-bold text-green-600">{{ aulasDisponiblesCount }}</div>
-                </div>
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <div class="text-sm text-gray-600 mb-1">Aulas Ocupadas</div>
-                    <div class="text-2xl font-bold text-red-600">{{ aulasOcupadasCount }}</div>
-                </div>
-            </div>
-
-            <!-- Loading -->
-            <div v-if="cargando" class="text-center py-12 bg-white rounded-lg border border-gray-200">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-
-            <!--Parte donde se trabaja el encabezado y la tabla que mostrara las aulas-->
-            <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
-                    <h2 class="text-base sm:text-lg font-semibold text-gray-900">
-                        {{
-                            estadoFiltro === 'disponibles' ? 'Aulas Disponibles para Asignar' :
-                                estadoFiltro === 'ocupadas' ? 'Aulas Ocupadas' : 'Todas las Aulas'
-                        }}
-                    </h2>
-                    <p class="text-xs sm:text-sm text-gray-600 mt-1">{{ aulasFiltradas.length }} aulas encontradas</p>
+                <!-- Loading -->
+                <div v-if="cargandoSolicitudes" class="text-center py-12 bg-white rounded-lg border border-gray-200">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 </div>
 
-                <!--Tabla con scroll horizontal en móviles-->
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                                scope="col">
-                                Aula
-                            </th>
-                            <!--                                <th scope="col" class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                                                                Ubicación
-                                                            </th>-->
-                            <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                                scope="col">
-                                Capacidad
-                            </th>
-                            <!--                                <th scope="col" class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap hidden md:table-cell">
-                                                                Tipo
-                                                            </th>-->
-                            <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                                scope="col">
-                                Estado
-                            </th>
-                            <!--                                <th scope="col" class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap hidden lg:table-cell">
-                                                                Recursos
-                                                            </th>-->
-                            <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                                scope="col">
-                                Acciones
-                            </th>
-                        </tr>
-                        </thead>
-
-                        <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="aula in aulasPaginadas" :key="aula.id" class="hover:bg-gray-50 transition-colors">
-                            <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                <div class="flex items-center gap-2 sm:gap-3">
-                                    <div
-                                        :class="aula.disponible ? 'bg-blue-100' : 'bg-red-100'"
-                                        class="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center text-xs sm:text-base">
-                                        <i class="fa-solid fa-hotel"></i>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <div class="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                                            {{ aula.nombre }}
-                                        </div>
-                                        <div class="text-xs text-gray-500">{{ aula.codigo }}</div>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                <div class="flex items-center gap-1">
-                                    <i class="fa-solid fa-people-group text-xs sm:text-sm"></i>
-                                    <span class="text-xs sm:text-sm text-gray-900">{{ aula.capacidad_pupitres }}</span>
-                                </div>
-                            </td>
-
-                            <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                    <span v-if="aula.disponible"
-                                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Disponible
-                                    </span>
-                                <span v-else
-                                      class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Ocupada
-                                    </span>
-                            </td>
-
-                            <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
-                                <button
-                                    :style="{background:'#D93F3F'}"
-                                    class="mr-2 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:opacity-90 transition-opacity text-xs sm:text-sm"
-                                    @click="abrirModal({ aula, modo: 'ver' })"
-                                >
-                                    Ver detalles
-                                </button>
-                                <button
-                                    v-if="aula.disponible"
-                                    :style="{background:colorButton}"
-                                    class="text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:opacity-90 transition-opacity text-xs sm:text-sm"
-                                    @click="openAssignClassroomModal(aula)"
-                                >
-                                    Asignar
-                                </button>
-                                <button
-                                    v-else
-                                    class="bg-green-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm"
-                                    @click="liberarAula(aula)"
-                                >
-                                    Liberar
-                                </button>
-                            </td>
-                        </tr>
-
-                        <!-- Estado vacío -->
-                        <tr v-if="aulasFiltradas.length === 0">
-                            <td class="px-4 sm:px-6 py-8 sm:py-12 text-center" colspan="7">
-                                <i :style="{color: colorButton}" class="fa-solid fa-face-meh text-3xl sm:text-4xl"></i>
-                                <p class="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">No se encontraron aulas</p>
-                                <p class="text-xs text-gray-400 mt-1">Intente ajustar los filtros de búsqueda</p>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div v-if="aulasFiltradas.length > 0"
-                    class="bg-white px-3 sm:px-4 md:px-6 py-3 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 gap-3">
-                    <!-- Info de registros (oculta en móvil) -->
-                    <div class="hidden sm:block">
-                        <p class="text-xs sm:text-sm text-gray-700">
-                            Mostrando
-                            <span class="font-medium">{{ indiceInicio + 1 }}</span>
-                            a
-                            <span class="font-medium">{{ Math.min(indiceFin, aulasFiltradas.length) }}</span>
-                            de
-                            <span class="font-medium">{{ aulasFiltradas.length }}</span>
-                            resultados
-                        </p>
+                <!-- Tabla de Solicitudes -->
+                <div v-else class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                        <h2 class="text-base sm:text-lg font-semibold text-gray-900">
+                            Solicitudes de Reserva
+                        </h2>
+                        <p class="text-xs sm:text-sm text-gray-600 mt-1">{{ solicitudesFiltradas.length }} solicitudes encontradas</p>
                     </div>
 
-                    <!-- Controles de paginación -->
-                    <nav aria-label="Pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                        <button
-                            :disabled="paginaActual === 1"
-                            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-xs sm:text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                            @click="paginaAnterior"
-                        >
-                            <span class="sr-only">Anterior</span>
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" scope="col">
+                                    Solicitante
+                                </th>
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" scope="col">
+                                    Aula
+                                </th>
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" scope="col">
+                                    Fecha y Hora
+                                </th>
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" scope="col">
+                                    Actividad
+                                </th>
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" scope="col">
+                                    Estado
+                                </th>
+                                <th class="px-3 sm:px-4 md:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap" scope="col">
+                                    Acciones
+                                </th>
+                            </tr>
+                            </thead>
 
-                        <button
-                            v-for="pagina in paginasVisibles"
-                            :key="pagina"
-                            :class="[
-                                pagina === paginaActual
-                                    ? 'z-10 border-blue-500 text-blue-600 bg-blue-50'
-                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
-                                'relative inline-flex items-center px-3 sm:px-4 py-2 border text-xs sm:text-sm font-medium'
-                            ]"
-                            @click="irAPagina(pagina)"
-                        >
-                            {{ pagina }}
-                        </button>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tr v-for="solicitud in solicitudesPaginadas" :key="solicitud.id" class="hover:bg-gray-50 transition-colors">
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-2 sm:gap-3">
+                                        <div class="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                            <i class="fa-solid fa-user text-gray-600 text-xs sm:text-sm"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                                {{ solicitud.solicitante_nombre }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">{{ solicitud.departamento }}</div>
+                                        </div>
+                                    </div>
+                                </td>
 
-                        <button
-                            :disabled="paginaActual === totalPaginas"
-                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-xs sm:text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                            @click="paginaSiguiente"
-                        >
-                            <span class="sr-only">Siguiente</span>
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
-                    </nav>
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                    <div class="text-xs sm:text-sm font-medium text-gray-900">{{ solicitud.aula_nombre }}</div>
+                                    <div class="text-xs text-gray-500">{{ solicitud.aula_codigo }}</div>
+                                </td>
+
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                    <div class="text-xs sm:text-sm text-gray-900">{{ formatearFecha(solicitud.fecha) }}</div>
+                                    <div class="text-xs text-gray-500">{{ solicitud.hora_inicio }} - {{ solicitud.hora_fin }}</div>
+                                </td>
+
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4">
+                                    <div class="text-xs sm:text-sm text-gray-900 max-w-xs truncate">{{ solicitud.actividad }}</div>
+                                </td>
+
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                    <span v-if="solicitud.estado === 'pendiente'"
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        Pendiente
+                                    </span>
+                                    <span v-else-if="solicitud.estado === 'aprobada'"
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Aprobada
+                                    </span>
+                                    <span v-else
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Rechazada
+                                    </span>
+                                </td>
+
+                                <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
+                                    <button
+                                        class="mr-2 text-gray-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-gray-100 transition-colors text-xs sm:text-sm border border-gray-300"
+                                        @click="verDetallesSolicitud(solicitud)"
+                                    >
+                                        Ver detalles
+                                    </button>
+                                    <template v-if="solicitud.estado === 'pendiente'">
+                                        <button
+                                            class="mr-2 bg-green-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm"
+                                            @click="aprobarSolicitud(solicitud)"
+                                        >
+                                            Aprobar
+                                        </button>
+                                        <button
+                                            class="bg-red-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-700 transition-colors text-xs sm:text-sm"
+                                            @click="rechazarSolicitud(solicitud)"
+                                        >
+                                            Rechazar
+                                        </button>
+                                    </template>
+                                </td>
+                            </tr>
+
+                            <!-- Estado vacío -->
+                            <tr v-if="solicitudesFiltradas.length === 0">
+                                <td class="px-4 sm:px-6 py-8 sm:py-12 text-center" colspan="6">
+                                    <i :style="{color: colorButton}" class="fa-solid fa-inbox text-3xl sm:text-4xl"></i>
+                                    <p class="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">No se encontraron solicitudes</p>
+                                    <p class="text-xs text-gray-400 mt-1">Intente ajustar los filtros de búsqueda</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div v-if="solicitudesFiltradas.length > 0"
+                        class="bg-white px-3 sm:px-4 md:px-6 py-3 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 gap-3">
+                        <div class="hidden sm:block">
+                            <p class="text-xs sm:text-sm text-gray-700">
+                                Mostrando
+                                <span class="font-medium">{{ indiceInicioSolicitudes + 1 }}</span>
+                                a
+                                <span class="font-medium">{{ Math.min(indiceFinSolicitudes, solicitudesFiltradas.length) }}</span>
+                                de
+                                <span class="font-medium">{{ solicitudesFiltradas.length }}</span>
+                                resultados
+                            </p>
+                        </div>
+
+                        <nav aria-label="Pagination" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                            <button
+                                :disabled="paginaActualSolicitudes === 1"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-xs sm:text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                @click="paginaAnteriorSolicitudes"
+                            >
+                                <span class="sr-only">Anterior</span>
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+
+                            <button
+                                v-for="pagina in paginasVisiblesSolicitudes"
+                                :key="pagina"
+                                :class="[
+                                    pagina === paginaActualSolicitudes
+                                        ? 'z-10 border-blue-500 text-blue-600 bg-blue-50'
+                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                                    'relative inline-flex items-center px-3 sm:px-4 py-2 border text-xs sm:text-sm font-medium'
+                                ]"
+                                @click="irAPaginaSolicitudes(pagina)"
+                            >
+                                {{ pagina }}
+                            </button>
+
+                            <button
+                                :disabled="paginaActualSolicitudes === totalPaginasSolicitudes"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-xs sm:text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                @click="paginaSiguienteSolicitudes"
+                            >
+                                <span class="sr-only">Siguiente</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </nav>
+                    </div>
                 </div>
             </div>
+
         </div>
     </MainLayoutDashboard>
 
@@ -501,6 +748,17 @@ const selectedSchedule = ref([]);
 const selectedDate = ref('');
 const aula_id = ref('');
 
+// Variables de pestaña
+const tabActiva = ref('disponibilidad');
+
+// Variables de solicitudes (NUEVAS)
+const solicitudes = ref([]);
+const cargandoSolicitudes = ref(false);
+const busquedaSolicitud = ref('');
+const estadoSolicitudFiltro = ref('todas');
+const paginaActualSolicitudes = ref(1);
+const registrosPorPaginaSolicitudes = ref(10);
+
 //Parte donde se trabaja el filtrado de las aulas
 const aulasFiltradas = computed(() => {
     let resultado = aulas.value;
@@ -591,6 +849,59 @@ const paginasVisibles = computed(() => {
     return paginas;
 });
 
+// ==================== COMPUTED DE SOLICITUDES ====================
+const solicitudesPendientesCount = computed(() => {
+    return solicitudes.value.filter(s => s.estado === 'pendiente').length;
+});
+
+const solicitudesFiltradas = computed(() => {
+    let resultado = solicitudes.value;
+
+    // Filtrar por búsqueda
+    if (busquedaSolicitud.value) {
+        resultado = resultado.filter(s =>
+            s.solicitante_nombre.toLowerCase().includes(busquedaSolicitud.value.toLowerCase()) ||
+            s.aula_nombre.toLowerCase().includes(busquedaSolicitud.value.toLowerCase()) ||
+            s.actividad.toLowerCase().includes(busquedaSolicitud.value.toLowerCase())
+        );
+    }
+
+    // Filtrar por estado
+    if (estadoSolicitudFiltro.value !== 'todas') {
+        resultado = resultado.filter(s => s.estado === estadoSolicitudFiltro.value);
+    }
+
+    return resultado;
+});
+
+const solicitudesPaginadas = computed(() => {
+    return solicitudesFiltradas.value.slice(
+        indiceInicioSolicitudes.value,
+        indiceFinSolicitudes.value
+    );
+});
+
+const indiceInicioSolicitudes = computed(() => {
+    return (paginaActualSolicitudes.value - 1) * registrosPorPaginaSolicitudes.value;
+});
+
+const indiceFinSolicitudes = computed(() => {
+    return paginaActualSolicitudes.value * registrosPorPaginaSolicitudes.value;
+});
+
+const totalPaginasSolicitudes = computed(() => {
+    return Math.ceil(solicitudesFiltradas.value.length / registrosPorPaginaSolicitudes.value);
+});
+
+const paginasVisiblesSolicitudes = computed(() => {
+    const paginas = [];
+    for (let i = 1; i <= totalPaginasSolicitudes.value; i++) {
+        paginas.push(i);
+    }
+    return paginas;
+});
+
+// ==================== MÉTODOS DE PAGINACIÓN AULAS ====================
 const irAPagina = (pagina) => {
     paginaActual.value = pagina;
 };
@@ -607,6 +918,7 @@ const paginaSiguiente = () => {
     }
 };
 
+// ==================== MÉTODOS DE AULAS ====================
 const abrirModalReserva = () => {
     console.log('Abrir modal de reserva');
 };
@@ -685,7 +997,7 @@ const fetchSubjects = async () => {
             return;
         }
 
-        subjects.value = data.data; // Make sure subjects is a ref and use .value
+        subjects.value = data.data;
     } catch (error) {
         console.error('Error fetching subjects:', error);
         subjects.value = [];
@@ -798,10 +1110,9 @@ const sendReservation = async () => {
     }
 };
 
-// Update the abrirModal function to handle the aula parameter
 const abrirModal = ({aula: aulaData}) => {
     fetchAula(aulaData.id);
-    showModal.value = true; // Use .value to modify ref
+    showModal.value = true;
 };
 
 const cerrarModal = () => {
@@ -849,6 +1160,136 @@ const imagenAnterior = () => {
     }
 };
 
+// ==================== MÉTODOS DE SOLICITUDES ====================
+const cargarSolicitudes = async () => {
+    cargandoSolicitudes.value = true;
+    try {
+        // para llamar a la API y obtener las solicitudes
+
+        solicitudes.value = [
+            {
+                id: 1,
+                solicitante_nombre: 'Juan Pérez',
+                departamento: 'Ingeniería',
+                aula_nombre: 'Aula 101',
+                aula_codigo: 'A-101',
+                fecha: '2024-01-15',
+                hora_inicio: '08:00',
+                hora_fin: '10:00',
+                actividad: 'Clase de Programación',
+                estado: 'pendiente'
+            },
+            {
+                id: 2,
+                solicitante_nombre: 'María González',
+                departamento: 'Ciencias',
+                aula_nombre: 'Laboratorio 203',
+                aula_codigo: 'L-203',
+                fecha: '2024-01-16',
+                hora_inicio: '10:00',
+                hora_fin: '12:00',
+                actividad: 'Práctica de Laboratorio',
+                estado: 'pendiente'
+            },
+            {
+                id: 3,
+                solicitante_nombre: 'Carlos Ramírez',
+                departamento: 'Matemáticas',
+                aula_nombre: 'Aula 305',
+                aula_codigo: 'A-305',
+                fecha: '2024-01-14',
+                hora_inicio: '14:00',
+                hora_fin: '16:00',
+                actividad: 'Seminario de Álgebra',
+                estado: 'aprobada'
+            }
+        ];
+    } catch (error) {
+        console.error('Error al cargar solicitudes:', error);
+        solicitudes.value = [];
+    } finally {
+        cargandoSolicitudes.value = false;
+    }
+};
+
+const aprobarSolicitud = async (solicitud) => {
+    try {
+        // Acá iria lo de la lógica para aprobar en el backend
+
+        const index = solicitudes.value.findIndex(s => s.id === solicitud.id);
+        if (index !== -1) {
+            solicitudes.value[index].estado = 'aprobada';
+        }
+
+        // Recargar aulas para actualizar disponibilidad
+        const response = await fetchAllAvailableClassrooms();
+        aulas.value = response.map(classroom => ({
+            id: classroom.id,
+            nombre: classroom.nombre,
+            codigo: classroom.codigo,
+            sector: classroom.sector ?? '',
+            capacidad_pupitres: classroom.capacidad_pupitres,
+            ubicacion: classroom.ubicacion,
+            disponible: true
+        }));
+
+        alert('Solicitud aprobada exitosamente');
+    } catch (error) {
+        console.error('Error al aprobar solicitud:', error);
+        alert('Error al aprobar la solicitud');
+    }
+};
+
+const rechazarSolicitud = async (solicitud) => {
+    const motivo = prompt('Ingrese el motivo del rechazo (opcional):');
+
+    try {
+        // Acá iria lo de para rechazar en el backend
+        // si es que hay
+
+        // Actualizar localmente
+        const index = solicitudes.value.findIndex(s => s.id === solicitud.id);
+        if (index !== -1) {
+            solicitudes.value[index].estado = 'rechazada';
+        }
+
+        alert('Solicitud rechazada');
+    } catch (error) {
+        console.error('Error al rechazar solicitud:', error);
+        alert('Error al rechazar la solicitud');
+    }
+};
+
+const verDetallesSolicitud = (solicitud) => {
+    // Aquí puedes abrir un modal con más detalles
+    console.log('Ver detalles de solicitud:', solicitud);
+    // Ejemplo: abrirModalDetallesSolicitud(solicitud);
+};
+
+const formatearFecha = (fecha) => {
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+};
+
+const paginaAnteriorSolicitudes = () => {
+    if (paginaActualSolicitudes.value > 1) paginaActualSolicitudes.value--;
+};
+
+const paginaSiguienteSolicitudes = () => {
+    if (paginaActualSolicitudes.value < totalPaginasSolicitudes.value) {
+        paginaActualSolicitudes.value++;
+    }
+};
+
+const irAPaginaSolicitudes = (pagina) => {
+    paginaActualSolicitudes.value = pagina;
+};
+
+// ==================== LIFECYCLE ====================
 onMounted(async () => {
     try {
         const response = await fetchAllAvailableClassrooms();
@@ -860,11 +1301,15 @@ onMounted(async () => {
             sector: classroom.sector ?? '',
             capacidad_pupitres: classroom.capacidad_pupitres,
             ubicacion: classroom.ubicacion,
-            disponible: true // Add disponible property since it's used in the template
+            disponible: true
         }));
+
+        // Cargar solicitudes
+        await cargarSolicitudes();
+
     } catch (error) {
         console.error('Error fetching classrooms:', error);
-        aulas.value = []; // Set empty array on error
+        aulas.value = [];
     } finally {
         isLoading.value = false;
     }
