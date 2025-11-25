@@ -94,7 +94,8 @@
 										<div class="flex justify-center gap-1 flex-wrap">
 											<button
 												@click="openEditModal(h)"
-												class="bg-green-500 hover:bg-green-800 text-white px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm transition-colors min-w-[60px] flex items-center justify-center"
+                                                :style="{background: '#FE6244'}"
+												class=" text-white px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm transition-colors min-w-[60px] flex items-center justify-center"
 												:disabled="loading"
 											>
 												<i class="fa-solid fa-edit sm:mr-1"></i>
@@ -193,7 +194,7 @@
 									</div>
 									<div class="ml-3 flex-1">
 										<h3 class="text-sm font-medium text-blue-900 mb-3">Seleccione la materia</h3>
-										
+
 										<SearchableSelect
 											v-model="selectedMateriaId"
 											:options="materiasOptions"
@@ -231,7 +232,7 @@
 									</div>
 									<div class="ml-3 flex-1">
 										<h3 class="text-sm font-medium text-green-900 mb-3">Seleccione el grupo</h3>
-										
+
 										<SearchableSelect
 											v-model="form.grupo_id"
 											:options="subjectGroupsOptions"
@@ -280,7 +281,7 @@
 										</div>
 										<div class="ml-3 flex-1">
 											<h3 class="text-sm font-medium text-purple-900 mb-3">Seleccione el aula</h3>
-											
+
 											<SearchableSelect
 												v-model="form.aula_id"
 												:options="classroomsOptions"
@@ -319,7 +320,7 @@
 										</div>
 										<div class="ml-3 flex-1">
 											<h3 class="text-sm font-medium text-yellow-900 mb-3">Seleccione el día</h3>
-											
+
 											<select
 												v-model="form.dia_semana"
 												@change="validateField('dia_semana')"
@@ -355,7 +356,7 @@
 									</div>
 									<div class="ml-3 flex-1">
 										<h3 class="text-sm font-medium text-indigo-900 mb-3">Configure el horario</h3>
-										
+
 										<TimeBlockSelector
 											v-model:model-value-inicio="form.hora_inicio"
 											v-model:model-value-fin="form.hora_fin"
@@ -491,7 +492,7 @@ const fetchAll = async () => {
 		// 🔥 OPTIMIZACIÓN: Pedir datos con relaciones incluidas desde el backend
 		const res = await axios.get(`${API_URL}/schedules/get/all?with_relations=true`, getAuthHeaders());
 		const rawData = res.data.data || [];
-		
+
 		// Transformar datos a formato esperado (sin hacer más peticiones)
 		list.value = rawData.map(h => ({
 			id: h.id,
@@ -515,17 +516,17 @@ const fetchAll = async () => {
 
 	} catch (e) {
 		console.error('Error fetching horarios:', e);
-		
+
 		if (e.response?.status === 500) {
 			const errorMsg = e.response?.data?.error || e.response?.data?.message;
-			
+
 			if (errorMsg?.includes('MySQL') || errorMsg?.includes('2006')) {
 				alert('⚠️ Error de conexión con la base de datos.\n\nPor favor:\n1. Verifica que MySQL esté corriendo\n2. Recarga la página\n3. Contacta al administrador si persiste');
 			} else {
 				alert('Error del servidor al cargar horarios. Intenta recargar la página.');
 			}
 		}
-		
+
 		list.value = [];
 	} finally {
 		loading.value = false;
@@ -543,7 +544,7 @@ const fetchSelectOptions = async () => {
 			axios.get(`${API_URL}/classrooms/get/all`, getAuthHeaders()),
 			axios.get(`${API_URL}/subjects/get/all`, getAuthHeaders())
 		]);
-		
+
 		// Procesar grupos con sus relaciones
 		groups.value = (groupsRes.data.data || []).map(g => ({
 			...g,
@@ -552,10 +553,10 @@ const fetchSelectOptions = async () => {
 			docente_nombre: g.docente?.nombre_completo || g.user?.nombre_completo || g.docente_nombre,
 			materia_nombre: g.materia?.nombre || g.subject?.nombre || g.materia_nombre
 		}));
-		
+
 		classrooms.value = classroomsRes.data.data || [];
 		materias.value = materiasRes.data.data || [];
-		
+
 	} catch (e) {
 		console.error('fetchSelectOptions error', e);
 		groups.value = [];
@@ -568,22 +569,22 @@ const fetchSelectOptions = async () => {
 const fetchGroupsForSubject = async (subjectId) => {
 	subjectGroups.value = [];
 	if (!subjectId) return;
-	
+
 	// 🔥 Primero buscar en caché
-	const cached = groups.value.filter(g => 
+	const cached = groups.value.filter(g =>
 		g.materia_id === subjectId || g.subject_id === subjectId
 	);
-	
+
 	if (cached.length > 0) {
 		subjectGroups.value = cached;
 		return;
 	}
-	
+
 	// Si no está en caché, hacer petición
 	loading.value = true;
 	try {
 		const res = await axios.get(
-			`${API_URL}/groups/get/subject/${subjectId}?with_relations=true`, 
+			`${API_URL}/groups/get/subject/${subjectId}?with_relations=true`,
 			getAuthHeaders()
 		);
 		const payload = res.data?.data ?? res.data ?? [];
@@ -867,13 +868,13 @@ const handleExcelUpload = (e) => {
 /* Montaje inicial - OPTIMIZADO */
 onMounted(async () => {
 	await authService.verifyToken(localStorage.getItem('token'));
-	
+
 	// 🔥 Cargar todo en paralelo
 	await Promise.all([
 		fetchSelectOptions(),
 		fetchAll()
 	]);
-	
+
 	isLoading.value = false;
 });
 
@@ -944,7 +945,7 @@ watch(() => form.value.aula_id, async (newVal) => {
 // Verificar disponibilidad del aula
 const checkAulaDisponibilidad = async (aulaId) => {
 	// if (!aulaId || !form.value.dia_semana) return;
-	
+
 	// try {
 	// 	const res = await axios.get(
 	// 		`${API_URL}/classrooms/get/${aulaId}/availability?dia=${form.value.dia_semana}`,
@@ -967,7 +968,7 @@ watch(() => form.value.dia_semana, async () => {
 // Validación mejorada en tiempo real
 const validateField = (field) => {
 	const errs = { ...errors.value };
-	
+
 	switch(field) {
 		case 'materia_id':
 			if (!selectedMateriaId.value) {
@@ -1003,13 +1004,13 @@ const validateField = (field) => {
 			} else {
 				delete errs.hora_inicio;
 			}
-			
+
 			if (!form.value.hora_fin) {
 				errs.hora_fin = [friendlyField.hora_fin];
 			} else {
 				delete errs.hora_fin;
 			}
-			
+
 			// Validar que fin sea después de inicio
 			if (form.value.hora_inicio && form.value.hora_fin) {
 				if (form.value.hora_fin <= form.value.hora_inicio) {
@@ -1018,7 +1019,7 @@ const validateField = (field) => {
 			}
 			break;
 	}
-	
+
 	errors.value = errs;
 };
 </script>

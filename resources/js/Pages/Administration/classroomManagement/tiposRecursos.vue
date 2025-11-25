@@ -73,7 +73,8 @@
                                     <div class="flex justify-center gap-2">
                                         <button
                                             @click="openEditModal(tipo)"
-                                            class="bg-green-500 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
+                                            class=" text-white px-4 py-2 rounded-lg transition-colors"
+                                            :style="{background: '#FE6244'}"
                                             :disabled="loading"
                                         >
                                             Editar

@@ -24,7 +24,7 @@
                     Mis Sesiones de Hoy
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div v-for="sesion in misSesionesHoy" :key="sesion.id" 
+                    <div v-for="sesion in misSesionesHoy" :key="sesion.id"
                          class="bg-white bg-opacity-20 backdrop-blur rounded-lg p-4 hover:bg-opacity-30 transition-all">
                         <div class="flex justify-between items-start mb-2">
                             <span class="font-semibold">{{ sesion.grupo_nombre }}</span>
@@ -63,13 +63,13 @@
                         placeholder="Buscar..."
                         class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent lg:col-span-2"
                     />
-                    
+
                     <input
                         v-model="filterFecha"
                         type="date"
                         class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
-                    
+
                     <select
                         v-model="filterEstado"
                         class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -101,7 +101,7 @@
                             {{ profesor.nombre_completo }}
                         </option>
                     </select>
-                    
+
                     <button
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
@@ -163,7 +163,8 @@
                                     <div class="flex justify-center gap-2 flex-wrap">
                                         <button
                                             @click="verDetalles(sesion.id)"
-                                            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition-colors text-xs"
+                                            class="text-white px-3 py-2 rounded-lg transition-colors text-xs"
+                                            :style="{ background: '#D93F3F' }"
                                             :disabled="loading"
                                         >
                                             Ver
@@ -171,7 +172,8 @@
                                         <button
                                             v-if="sesion.estado === 'programada'"
                                             @click="iniciarSesion(sesion)"
-                                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg transition-colors text-xs"
+                                            class="text-white px-3 py-2 rounded-lg transition-colors text-xs"
+                                            :style="{ background: '#FF6C0C' }"
                                             :disabled="loading"
                                         >
                                             Iniciar
@@ -186,7 +188,8 @@
                                         </button>
                                         <button
                                             @click="openEditModal(sesion)"
-                                            class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg transition-colors text-xs"
+                                            class=" text-white px-3 py-2 rounded-lg transition-colors text-xs"
+                                            :style="{background: '#FE6244'}"
                                             :disabled="loading"
                                         >
                                             Editar
@@ -386,7 +389,7 @@
                     <!-- Información General -->
                     <div class="space-y-4">
                         <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Información General</h3>
-                        
+
                         <div>
                             <label class="text-sm font-medium text-gray-600">Fecha de Clase</label>
                             <p class="text-gray-900">{{ formatDate(sesionDetalle.fecha_clase) }}</p>
@@ -404,7 +407,7 @@
 
                         <div>
                             <label class="text-sm font-medium text-gray-600">Estado</label>
-                            <span 
+                            <span
                                 class="inline-block px-3 py-1 rounded-full text-sm font-semibold mt-1"
                                 :class="getEstadoBadgeClass(sesionDetalle.estado)"
                             >
@@ -416,7 +419,7 @@
                     <!-- Horarios -->
                     <div class="space-y-4">
                         <h3 class="text-lg font-semibold text-gray-900 border-b pb-2">Horarios</h3>
-                        
+
                         <div>
                             <label class="text-sm font-medium text-gray-600">Hora Inicio Real</label>
                             <p class="text-gray-900">{{ formatDateTime(sesionDetalle.hora_inicio_real) }}</p>
@@ -539,9 +542,9 @@ const formData = ref({
 
 // Computed para verificar si hay filtros activos
 const hayFiltrosActivos = computed(() => {
-    return searchTerm.value !== '' || 
-           filterEstado.value !== '' || 
-           filterFecha.value !== '' || 
+    return searchTerm.value !== '' ||
+           filterEstado.value !== '' ||
+           filterFecha.value !== '' ||
            filterGrupo.value !== '' ||
            filterProfesor.value !== '';
 });
@@ -719,19 +722,19 @@ const closeDetallesModal = () => {
 // Función helper para convertir a zona horaria de El Salvador
 const toElSalvadorTime = (dateString) => {
     if (!dateString) return null;
-    
+
     const date = new Date(dateString);
-    const svTime = new Date(date.toLocaleString('en-US', { 
-        timeZone: 'America/El_Salvador' 
+    const svTime = new Date(date.toLocaleString('en-US', {
+        timeZone: 'America/El_Salvador'
     }));
-    
+
     const year = svTime.getFullYear();
     const month = String(svTime.getMonth() + 1).padStart(2, '0');
     const day = String(svTime.getDate()).padStart(2, '0');
     const hours = String(svTime.getHours()).padStart(2, '0');
     const minutes = String(svTime.getMinutes()).padStart(2, '0');
     const seconds = String(svTime.getSeconds()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
@@ -874,8 +877,8 @@ const cambiarEstado = async (id, nuevoEstado) => {
         const payload = { estado: nuevoEstado };
 
         const response = await axios.patch(
-            `${API_URL}/class-sessions/change-status/${id}`, 
-            payload, 
+            `${API_URL}/class-sessions/change-status/${id}`,
+            payload,
             getAuthHeaders()
         );
 
@@ -1017,14 +1020,14 @@ async function loadMisSesionesHoy() {
         if (!userId) return;
 
         const response = await axios.get(
-            `${API_URL}/class-sessions/get/professor/${userId}/today`, 
+            `${API_URL}/class-sessions/get/professor/${userId}/today`,
             getAuthHeaders()
         );
 
         if (response.data.success) {
             const payload = response.data.data;
             const raw = Array.isArray(payload) ? payload : [];
-            
+
             misSesionesHoy.value = raw.map(sesion => ({
                 id: sesion.id,
                 horario_id: sesion.horario_id,
@@ -1051,14 +1054,14 @@ onMounted(async () => {
     filterFecha.value = '';
     filterGrupo.value = '';
     filterProfesor.value = '';
-    
+
     await Promise.all([
         fetchSesiones(),
         fetchGrupos(),
         fetchProfesores(),
         loadMisSesionesHoy()
     ]);
-    
+
     isLoading.value = false;
 });
 </script>
