@@ -115,8 +115,22 @@
                                     </td>
 
                                     <td class="px-6 py-3 text-sm text-gray-700">
-                                        {{ item.foto_evidencia ?? "Sin foto" }}
+                                        <div v-if="item.foto_evidencia">
+                                            <a :href="`/storage/${item.foto_evidencia}`" target="_blank">
+                                                <img 
+                                                    :src="`/storage/${item.foto_evidencia}`" 
+                                                    alt="Evidencia"
+                                                    class="h-16 w-16 object-cover rounded-md mx-auto border"
+                                                />
+                                            </a>
+                                        </div>
+
+                                        <span v-else class="text-gray-500">Sin foto</span>
                                     </td>
+
+                                    <!-- <td class="px-6 py-3 text-sm text-gray-700">
+                                        {{ item.foto_evidencia ?? "Sin foto" }}
+                                    </td> -->
 
                                     <td class="px-6 py-3 text-sm">
                                         <span :class="getStatusBadge(item.estado)">
