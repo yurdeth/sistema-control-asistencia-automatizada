@@ -792,7 +792,7 @@ class AulasController extends Controller {
             $rolesPermitidos = [
                 RolesEnum::ROOT->value,
                 RolesEnum::ADMINISTRADOR_ACADEMICO->value,
-                RolesEnum::ESTUDIANTE->value,
+                RolesEnum::DOCENTE->value,
             ];
 
             if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -1215,5 +1215,5 @@ class AulasController extends Controller {
         }
     }
 
-    
+
 }
