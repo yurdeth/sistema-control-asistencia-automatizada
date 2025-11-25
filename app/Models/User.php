@@ -102,14 +102,25 @@ class User extends Authenticatable {
     public function getUserBasedOnMyUserRole(int $my_role_id, int $user_id): Collection {
         $user = $this->getUser($user_id);
 
-        return match ($my_role_id) {
-            1 => $user,
-            2 => $user->where('rol_id', '!=', 1),
-            3 => $user->whereNotIn('rol_id', [1, 2]),
-            4 => $user->whereNotIn('rol_id', [1, 2, 3]),
-            5 => $user->whereNotIn('rol_id', [1, 2, 3, 4]),
-            default => collect(),
+        // Si no se encuentra el usuario, devolver colección vacía
+        if ($user->isEmpty()) {
+            return collect();
+        }
+
+        $user_role_id = $user->first()->rol_id;
+
+        // Verificar si el rol actual puede ver el rol del usuario solicitado
+        $puedeVer = match ($my_role_id) {
+            1 => true, // ROOT puede ver a todos
+            2 => $user_role_id != 1, // Admin puede ver todos excepto ROOT
+            3 => !in_array($user_role_id, [1, 2]), // Gestor Departamento puede ver todos excepto ROOT y Admin
+            4 => !in_array($user_role_id, [1, 2, 3]), // Gestor Carrera puede ver todos excepto ROOT, Admin y Gestor Departamento
+            5 => !in_array($user_role_id, [1, 2, 3, 4]), // Profesor puede ver todos excepto roles administrativos
+            6 => $user_id === $user_role_id ? true : ($user_role_id === 6), // Estudiantes pueden verse a sí mismos y otros estudiantes
+            default => false, // Otros roles no pueden ver
         };
+
+        return $puedeVer ? $user : collect();
     }
 
     public function getUsersByRole(int $role_id): Collection {
@@ -157,7 +168,7 @@ class User extends Authenticatable {
             ->get();
     }
 
-    public function getUsersBySubject(int $subject_id, int $rol_id): Collection {
+    public function getUsersBySubject(int $subject_id): Collection {
         return DB::table('users')
             ->join('usuario_roles', 'users.id', '=', 'usuario_roles.usuario_id')
             ->join('roles', 'usuario_roles.rol_id', '=', 'roles.id')

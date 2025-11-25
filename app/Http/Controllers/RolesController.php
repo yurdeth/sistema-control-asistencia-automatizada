@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -264,6 +265,17 @@ class RolesController extends Controller {
             ], 403);
         }
 
+        $userRolByName = DB::table('roles')
+            ->where('id', $rol_id)
+            ->value('nombre');
+
+        if ($rol_id == 1 || $userRolByName == RolesEnum::ROOT->value) {
+            return response()->json([
+                'message' => 'No se puede eliminar este rol',
+                'success' => false
+            ], 403);
+        }
+
         try {
             $rol = roles::find($rol_id);
 
@@ -287,6 +299,38 @@ class RolesController extends Controller {
                 'success' => false
             ], 500);
         }
+    }
+
+    public function getUsersWithRolId(int $rol_id): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        if ($user_rolName != RolesEnum::ROOT->value) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        $users = (new roles())->getUsersByRole($rol_id);
+
+        if ($users->isEmpty() || !$users) {
+            return response()->json([
+                'message' => 'No se encontraron usuarios con este rol',
+                'success' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Usuarios encontrados',
+            'success' => true,
+            'data' => $users
+        ]);
     }
 
     private function getUserRoleName(): string|null {

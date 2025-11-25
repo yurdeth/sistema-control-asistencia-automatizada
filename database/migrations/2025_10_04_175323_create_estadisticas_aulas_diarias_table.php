@@ -16,9 +16,16 @@ return new class extends Migration {
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->date('fecha');
+            $table->integer('total_sesiones')->nullable()->default(0);
             $table->integer('minutos_ocupada')->default(0);
+            $table->integer('minutos_mantenimiento')->nullable()->default(0);
             $table->decimal('porcentaje_ocupacion', 5, 2)->default(0.00);
+            $table->integer('total_estudiantes')->nullable()->default(0);
+            $table->integer('sesiones_con_retraso')->nullable()->default(0);
+            $table->timestamp('fecha_calculo')->nullable();
             $table->timestamps();
+
+            $table->unique(['aula_id', 'fecha'], 'uq_estadisticas_aula_fecha');
         });
     }
 

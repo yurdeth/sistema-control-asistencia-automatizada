@@ -1,6 +1,6 @@
 <template>
     <Head title="SICA" />
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-gray-50 flex flex-col">
 
         <!--Navbar-->
         <div :style="{ backgroundColor: colorNavbar , color: colorText}" class="shadow-md sticky top-0 z-50" >
@@ -16,11 +16,11 @@
                     <!--Opciones-->
                     <div class="hidden md:flex items-center space-x-4">
                         <Link
-                            href="/login"
+                            :href="buttonRoute"
                             class="px-6 py-2 text-white font-medium hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md"
                             :style="{backgroundColor:colorButton, borderRadius: '6px', border: '1px solid #F2F2F2'}"
                         >
-                            Iniciar Sesión
+                            {{ buttonText }}
                         </Link>
                     </div>
 
@@ -80,11 +80,11 @@
                 <div v-show="isMenuOpen" class="md:hidden">
                     <div class="px-4 pt-2 pb-4 space-y-2 bg-gray-50 border-t border-gray-200">
                         <Link
-                            href="/login"
+                            :href="buttonRoute"
                             class="block w-full text-center px-4 py-3 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 shadow-sm"
                             :style="{backgroundColor:colorButton}"
                             >
-                            Iniciar Sesión
+                            {{ buttonText }}
                         </Link>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
         </div>
 
         <!--Contenido principal-->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="text-center">
                 <p class="text-xl text-gray-600 mb-8">
                     Gestione y controle las aulas de manera más eficiente con la plataforma SICA
@@ -112,11 +112,11 @@
                             </p>
                             <div class="flex justify-center md:justify-start w-full">
                                 <Link
-                                    href="/login"
+                                    :href="buttonRoute"
                                     class="inline-block px-8 py-3 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
                                     :style="{backgroundColor:colorButton}"
                                 >
-                                    Comenzar Ahora
+                                    {{ isAuthenticated ? 'Ir al Dashboard' : 'Comenzar Ahora' }}
                                 </Link>
                             </div>
                         </div>
@@ -135,7 +135,7 @@
 
 
         <!-- Footer -->
-        <footer class=" border-t border-gray-200 mt-20 text-white"
+        <footer class="border-t border-gray-200 mt-20 text-white"
             :style="{backgroundColor:colorButton}"
         >
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -150,7 +150,7 @@
 </template>
 
 <script setup>
-    import { ref } from 'vue'
+    import { ref, computed, onMounted } from 'vue'
     import { Head, Link } from '@inertiajs/vue3';
 
     // =====| parte donde se trabaja la personalización |=====
@@ -166,4 +166,27 @@
     const toggleMenu = () => {
         isMenuOpen.value = !isMenuOpen.value
     }
+
+    // =====| Verificar si el usuario está autenticado |=====
+    const isAuthenticated = ref(false)
+
+    onMounted(() => {
+        // Verificar si hay un token válido en localStorage
+        const token = localStorage.getItem('token')
+        const user = localStorage.getItem('user')
+
+        if (token && user) {
+            isAuthenticated.value = true
+        }
+    })
+
+    // Texto dinámico del botón según autenticación
+    const buttonText = computed(() => {
+        return isAuthenticated.value ? 'Ir al Dashboard' : 'Iniciar Sesión'
+    })
+
+    // Ruta dinámica del botón según autenticación
+    const buttonRoute = computed(() => {
+        return isAuthenticated.value ? '/dashboard' : '/login'
+    })
 </script>

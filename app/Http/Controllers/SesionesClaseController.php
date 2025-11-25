@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class SesionesClaseController extends Controller {
@@ -118,6 +119,8 @@ class SesionesClaseController extends Controller {
             ], 403);
         }
 
+        Log::info($request);
+
         $request->merge([
             'horario_id' => $this->sanitizeInput($request->input('horario_id')),
             'fecha_clase' => $this->sanitizeInput($request->input('fecha_clase')),
@@ -151,6 +154,8 @@ class SesionesClaseController extends Controller {
                 'fecha_clase' => $request->fecha_clase,
                 'estado' => 'programada'
             ]);
+
+            // Cambiar estado de aula a 'ocupada' si es necesario
 
             Cache::forget('sesiones_clase_all');
 
@@ -752,6 +757,110 @@ class SesionesClaseController extends Controller {
                 'message' => 'Error al cambiar el estado de la sesión',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Iniciar sesión de clase V2 (usando IniciarSesionClaseAction)
+     *
+     * Endpoint mejorado que delega toda la lógica al Action:
+     * - Valida que el usuario sea el docente asignado
+     * - Verifica disponibilidad del aula
+     * - Maneja sesiones existentes correctamente
+     * - Actualiza estado del aula
+     * - Registro en transacción
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function startSessionV2(Request $request): JsonResponse
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Validación básica de parámetros
+        $rules = [
+            'horario_id' => 'required|integer|exists:horarios,id',
+        ];
+
+        $messages = [
+            'horario_id.required' => 'El campo horario_id es obligatorio.',
+            'horario_id.integer' => 'El horario_id debe ser un número entero.',
+            'horario_id.exists' => 'El horario especificado no existe.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Errores de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Ejecutar Action - toda la lógica de negocio está ahí
+            $resultado = app(\App\Actions\IniciarSesionClaseAction::class)->execute(
+                horarioId: $request->horario_id,
+                usuarioId: Auth::id()
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => $resultado['mensaje'],
+                'data' => $resultado
+            ], 201);
+
+        } catch (\App\Exceptions\BusinessException $e) {
+            // BusinessException ya tiene método render() que formatea la respuesta
+            throw $e;
+        }
+    }
+
+    /**
+     * Finalizar sesión de clase V2 (usando FinalizarSesionClaseAction)
+     *
+     * Endpoint mejorado que delega toda la lógica al Action:
+     * - Valida que el usuario sea el docente asignado
+     * - Verifica que la sesión esté activa
+     * - Calcula duración y retraso (vía Observer)
+     * - Libera el aula si no hay otras sesiones activas
+     * - Retorna estadísticas de asistencia
+     *
+     * @param Request $request
+     * @param int $id ID de la sesión
+     * @return JsonResponse
+     */
+    public function finishSessionV2(Request $request, int $id): JsonResponse
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            // Ejecutar Action - toda la lógica de negocio está ahí
+            $resultado = app(\App\Actions\FinalizarSesionClaseAction::class)->execute(
+                sesionId: $id,
+                usuarioId: Auth::id()
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => $resultado['mensaje'],
+                'data' => $resultado
+            ], 200);
+
+        } catch (\App\Exceptions\BusinessException $e) {
+            // BusinessException ya tiene método render() que formatea la respuesta
+            throw $e;
         }
     }
 

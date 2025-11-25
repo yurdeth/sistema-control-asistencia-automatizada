@@ -19,9 +19,9 @@
                 <span class="text-sm">Capacidad: {{ aula.capacidad_pupitres }} personas</span>
             </div>
 
-<div class="text-sm text-gray-600 mb-3">
-  <span class="font-semibold">Ubicación:</span> {{ ubicacionTruncada }}
-</div>
+            <div class="text-sm text-gray-600 mb-3">
+                <span class="font-semibold">Ubicación:</span> {{ ubicacionTruncada }}
+            </div>
 
 
             <hr>
@@ -53,13 +53,18 @@
                 <div v-else class="text-xs text-gray-400 italic">
                     Sin recursos asignados
                 </div>
+
+                <div>
+                    <img v-if="aula.imagen_url" :src="aula.imagen_url" alt="Imagen del aula" class="mt-2 w-full h-32 object-cover rounded">
+                </div>
             </div>
 
             <!-- Botones para las acciones a realizar -->
             <div class="grid grid-cols-3 gap-2">
                 <button
                     @click="abrirModal({ aula, modo: 'ver' })"
-                    class="bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
+                    class="text-white hover:bg-blue-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
+                    :style="{ background: colorButtons.ver }"
                 >
                     <i class="fa-solid fa-eye"></i>
                     Ver
@@ -67,7 +72,8 @@
 
                 <button
                     @click="abrirModal({ aula, modo: 'editar' })"
-                    class="bg-yellow-500 text-white hover:bg-yellow-600 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
+                    class="text-white hover:bg-yellow-600 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
+                    :style="{ background: colorButtons.editar }"
                 >
                     <i class="fa-solid fa-pen-to-square"></i>
                     Editar
@@ -75,7 +81,8 @@
 
                 <button
                     @click="abrirModal({ aula, modo: 'reservar' })"
-                    class="bg-green-600 text-white hover:bg-green-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
+                    class="text-white hover:bg-green-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
+                    :style="{ background: colorButtons.reservar }"
                 >
                     <i class="fa-solid fa-calendar-days"></i>
                     Reservar
@@ -86,7 +93,7 @@
     </div>
 
     <!-- Modal que se abre para realizar acciones sobre el aula -->
-    <Modal :show="showModal" @close="cerrarModal">
+    <Modal :show="showModal" @close="cerrarModal" >
         <!-- Componente que muestra el contenido dinámico del aula según el modo (ver, editar, reservar) -->
         <AulaModalContent
             :aula="selectedAula"
@@ -98,9 +105,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import {computed, ref} from 'vue'
 import Modal from '../Modal.vue';
 import AulaModalContent from './AulaModalContent.vue';
+
+//Colores para buttons
+const colorButtons = {
+    ver: '#D93F3F',        // Ver detalles
+    editar: '#FE6244',     // Naranja - Editar
+    reservar: '#FF6C0C',   // Verde - Reservar/Aprobar
+    eliminar: '#DC2626',   // Rojo - Eliminar
+    cancelar: '#6B7280',   // Gris - Cancelar
+};
 
 // const reactivas para controlar la visibilidad del modal y el aula seleccionada
 const showModal = ref(false);
@@ -108,7 +124,7 @@ const selectedAula = ref(null);
 const modoActual = ref('ver'); // 'ver', 'editar', 'reservar'
 
 // Función para abrir el modal con el aula seleccionada y el modo correspondiente
-const abrirModal = ({ aula, modo }) => {
+const abrirModal = ({aula, modo}) => {
     selectedAula.value = aula;
     modoActual.value = modo;
     showModal.value = true;

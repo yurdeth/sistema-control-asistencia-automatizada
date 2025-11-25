@@ -11,10 +11,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
-class HorariosController extends Controller {
-
-    public function index(): JsonResponse {
+class HorariosController extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -22,34 +24,100 @@ class HorariosController extends Controller {
             ], 401);
         }
 
-        $user_rolName = $this->getUserRoleName();
-
         try {
-            if ($user_rolName == RolesEnum::DOCENTE->value) {
-                $horarios = Cache::remember('horarios_index', 60, function () {
-                    return (new horarios())->getHorariosByProfessor();
-                });
+
+            $withRelations = $request->query('with_relations', 'false') === 'true';
+            
+            $query = horarios::query();
+            
+            if ($withRelations) {
+                $query->with([
+                    'grupo:id,numero_grupo,materia_id,docente_id',
+                    'grupo.materia:id,nombre,codigo',
+                    'grupo.docente:id,nombre_completo',
+                    'aula:id,nombre,codigo,ubicacion,capacidad_pupitres'
+                ]);
             } else {
-                $horarios = Cache::remember('horarios_index_all', 60, function () {
-                    return (new horarios())->getHorarios();
-                });
+  
+                $query->with(['grupo:id,numero_grupo', 'aula:id,nombre']);
+            }
+            
+            $horarios = $query
+                ->select('id', 'grupo_id', 'aula_id', 'dia_semana', 'hora_inicio', 'hora_fin')
+                ->orderBy('dia_semana')
+                ->orderBy('hora_inicio')
+                ->get();
+
+            if ($horarios->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay horarios disponibles',
+                    'success' => true,
+                    'data' => []
+                ], 200);
             }
 
-            if (!$horarios || $horarios->isEmpty()) {
-                return response()->json([
-                    'message' => 'No se encontraron horarios',
-                    'data' => []
-                ], 404);
-            }
+            $horariosData = $horarios->map(function ($horario) use ($withRelations) {
+                $data = [
+                    'id' => $horario->id,
+                    'grupo_id' => $horario->grupo_id,
+                    'aula_id' => $horario->aula_id,
+                    'dia_semana' => $horario->dia_semana,
+                    'hora_inicio' => substr($horario->hora_inicio ?? '', 0, 5),
+                    'hora_fin' => substr($horario->hora_fin ?? '', 0, 5),
+                ];
+
+                if ($withRelations && $horario->grupo) {
+                    $data['grupo'] = [
+                        'id' => $horario->grupo->id,
+                        'numero_grupo' => $horario->grupo->numero_grupo,
+                        'materia_id' => $horario->grupo->materia_id,
+                        'docente_id' => $horario->grupo->docente_id,
+                        'materia' => $horario->grupo->materia ? [
+                            'id' => $horario->grupo->materia->id,
+                            'nombre' => $horario->grupo->materia->nombre,
+                            'codigo' => $horario->grupo->materia->codigo ?? null,
+                        ] : null,
+                        'docente' => $horario->grupo->docente ? [
+                            'id' => $horario->grupo->docente->id,
+                            'nombre_completo' => $horario->grupo->docente->nombre_completo,
+                        ] : null,
+                    ];
+                } else {
+                    $data['numero_grupo'] = $horario->grupo->numero_grupo ?? null;
+                }
+
+                if ($withRelations && $horario->aula) {
+                    $data['aula'] = [
+                        'id' => $horario->aula->id,
+                        'nombre' => $horario->aula->nombre,
+                        'codigo' => $horario->aula->codigo ?? null,
+                        'ubicacion' => $horario->aula->ubicacion ?? null,
+                        'capacidad_pupitres' => $horario->aula->capacidad_pupitres ?? 0,
+                    ];
+                } else {
+                    $data['aula_nombre'] = $horario->aula->nombre ?? null;
+                }
+
+                return $data;
+            });
 
             return response()->json([
                 'message' => 'Horarios obtenidos exitosamente',
-                'data' => $horarios
+                'success' => true,
+                'data' => $horariosData
             ], 200);
+
         } catch (Exception $e) {
+            Log::error('Error en HorariosController@index', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
             return response()->json([
                 'message' => 'Error al obtener los horarios',
-                'error' => $e->getMessage()
+                'error' => config('app.debug') ? $e->getMessage() : 'Error interno del servidor',
+                'success' => false
             ], 500);
         }
     }
@@ -63,7 +131,8 @@ class HorariosController extends Controller {
         }
 
         try {
-            $horario = (new horarios())->getHorariosById($id)->first();
+            $horario = horarios::with(['grupo.materia', 'grupo.docente', 'grupo.ciclo', 'aula'])
+                ->find($id);
 
             if (!$horario) {
                 return response()->json([
@@ -71,11 +140,33 @@ class HorariosController extends Controller {
                     'success' => false
                 ], 404);
             }
+            $horarioData = [
+                'id' => $horario->id,
+                'grupo_id' => $horario->grupo_id,
+                'aula_id' => $horario->aula_id,
+                'dia_semana' => $horario->dia_semana,
+                'hora_inicio' => $horario->hora_inicio,
+                'hora_fin' => $horario->hora_fin,
+                'aula' => $horario->aula ? [
+                    'id' => $horario->aula->id,
+                    'nombre' => $horario->aula->nombre ?? $horario->aula->codigo,
+                    'codigo' => $horario->aula->codigo,
+                    'capacidad' => $horario->aula->capacidad_pupitres,
+                    'ubicacion' => $horario->aula->ubicacion,
+                ] : null,
+                'grupo' => $horario->grupo ? [
+                    'id' => $horario->grupo->id,
+                    'numero_grupo' => $horario->grupo->numero_grupo,
+                    'materia_nombre' => $horario->grupo->materia->nombre ?? null,
+                    'docente_nombre' => $horario->grupo->docente->nombre_completo ?? null,
+                    'ciclo_nombre' => $horario->grupo->ciclo->nombre ?? null,
+                ] : null,
+            ];
 
             return response()->json([
                 'message' => 'Horario obtenido exitosamente',
                 'success' => true,
-                'data' => $horario
+                'data' => $horarioData
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -96,7 +187,10 @@ class HorariosController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -139,21 +233,79 @@ class HorariosController extends Controller {
         try {
             $validation = $request->validate($rules, $messages);
 
-            $conflicto = horarios::where('aula_id', $request->aula_id)
+            $grupo = grupos::find($request->grupo_id);
+            
+            if (!$grupo) {
+                return response()->json([
+                    'message' => 'Grupo no encontrado',
+                    'success' => false
+                ], 404);
+            }
+
+            // Validación: Límite de 2 días por semana por docente-materia
+            $dias_asignados_query = horarios::join('grupos', 'horarios.grupo_id', '=', 'grupos.id')
+                ->where('grupos.docente_id', $grupo->docente_id)
+                ->where('grupos.materia_id', $grupo->materia_id)
+                ->distinct()
+                ->pluck('horarios.dia_semana');
+
+            $dias_asignados = $dias_asignados_query->count();
+            $dia_ya_asignado = $dias_asignados_query->contains($request->dia_semana);
+
+            if (!$dia_ya_asignado && $dias_asignados >= 2) {
+                return response()->json([
+                    'message' => 'Límite de días alcanzado: El docente ya tiene asignados 2 días para esta materia (máximo permitido: 2 días por semana)',
+                    'success' => false,
+                    'dias_actuales' => $dias_asignados,
+                    'dias_ocupados' => $dias_asignados_query->toArray()
+                ], 409);
+            }
+
+            // Validar conflicto de aula
+            $conflictoAula = horarios::where('aula_id', $request->aula_id)
                 ->where('dia_semana', $request->dia_semana)
                 ->where(function ($query) use ($request) {
-                    $query->whereBetween('hora_inicio', [$request->hora_inicio, $request->hora_fin])
-                        ->orWhereBetween('hora_fin', [$request->hora_inicio, $request->hora_fin])
-                        ->orWhere(function ($q) use ($request) {
-                            $q->where('hora_inicio', '<=', $request->hora_inicio)
-                                ->where('hora_fin', '>=', $request->hora_fin);
-                        });
+                    $query->where('hora_inicio', '<', $request->hora_fin)
+                          ->where('hora_fin', '>', $request->hora_inicio);
                 })
                 ->exists();
 
-            if ($conflicto) {
+            if ($conflictoAula) {
                 return response()->json([
-                    'message' => 'Conflicto de horario detectado',
+                    'message' => 'Conflicto de horario: El aula ya está ocupada en este horario',
+                    'success' => false
+                ], 409);
+            }
+
+            // Validar conflicto de grupo
+            $conflictoGrupo = horarios::where('grupo_id', $request->grupo_id)
+                ->where('dia_semana', $request->dia_semana)
+                ->where(function ($query) use ($request) {
+                    $query->where('hora_inicio', '<', $request->hora_fin)
+                          ->where('hora_fin', '>', $request->hora_inicio);
+                })
+                ->exists();
+
+            if ($conflictoGrupo) {
+                return response()->json([
+                    'message' => 'Conflicto de horario: El grupo ya tiene clase en este horario',
+                    'success' => false
+                ], 409);
+            }
+
+            // Validaciones extras
+            $conflictoDocente = horarios::join('grupos', 'horarios.grupo_id', '=', 'grupos.id')
+                ->where('grupos.docente_id', $grupo->docente_id)
+                ->where('horarios.dia_semana', $request->dia_semana)
+                ->where(function ($query) use ($request) {
+                    $query->where('horarios.hora_inicio', '<', $request->hora_fin)
+                          ->where('horarios.hora_fin', '>', $request->hora_inicio);
+                })
+                ->exists();
+
+            if ($conflictoDocente) {
+                return response()->json([
+                    'message' => 'Conflicto de horario: El docente ya tiene otra clase asignada en este horario',
                     'success' => false
                 ], 409);
             }
@@ -163,16 +315,41 @@ class HorariosController extends Controller {
             $horario = horarios::create($validation);
 
             DB::commit();
+            
             Cache::forget('horarios_index_all');
             Cache::forget('horarios_index');
-            Cache::forget('horarios_grupo_');
+            Cache::forget('horarios_grupo_' . $request->grupo_id);
+
+            $horario->load(['grupo.materia', 'grupo.docente', 'grupo.ciclo', 'aula']);
+            
+            $horarioData = [
+                'id' => $horario->id,
+                'grupo_id' => $horario->grupo_id,
+                'aula_id' => $horario->aula_id,
+                'dia_semana' => $horario->dia_semana,
+                'hora_inicio' => $horario->hora_inicio,
+                'hora_fin' => $horario->hora_fin,
+                'aula' => $horario->aula ? [
+                    'id' => $horario->aula->id,
+                    'nombre' => $horario->aula->nombre ?? $horario->aula->codigo,
+                    'codigo' => $horario->aula->codigo,
+                    'capacidad' => $horario->aula->capacidad_pupitres,
+                    'ubicacion' => $horario->aula->ubicacion,
+                ] : null,
+            ];
 
             return response()->json([
                 'message' => 'Horario creado exitosamente',
                 'success' => true,
-                'data' => $horario
+                'data' => $horarioData
             ], 201);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -197,7 +374,10 @@ class HorariosController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
         ];
 
         if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
@@ -208,11 +388,11 @@ class HorariosController extends Controller {
         }
 
         $request->merge([
-            'grupo_id' => $this->sanitizeInput($request->grupo_id),
-            'aula_id' => $this->sanitizeInput($request->aula_id),
-            'dia_semana' => $this->sanitizeInput($request->dia_semana),
-            'hora_inicio' => $this->sanitizeInput($request->hora_inicio),
-            'hora_fin' => $this->sanitizeInput($request->hora_fin)
+            'grupo_id' => $this->sanitizeInput($request->grupo_id ?? ''),
+            'aula_id' => $this->sanitizeInput($request->aula_id ?? ''),
+            'dia_semana' => $this->sanitizeInput($request->dia_semana ?? ''),
+            'hora_inicio' => $this->sanitizeInput($request->hora_inicio ?? ''),
+            'hora_fin' => $this->sanitizeInput($request->hora_fin ?? '')
         ]);
 
         $rules = [
@@ -244,52 +424,138 @@ class HorariosController extends Controller {
                 ], 404);
             }
 
-            if (isset($validation['aula_id']) || isset($validation['dia_semana']) || isset($validation['hora_inicio']) || isset($validation['hora_fin'])) {
-                $aula_id = $validation['aula_id'] ?? $horario->aula_id;
-                $dia_semana = $validation['dia_semana'] ?? $horario->dia_semana;
-                $hora_inicio = $validation['hora_inicio'] ?? $horario->hora_inicio;
-                $hora_fin = $validation['hora_fin'] ?? $horario->hora_fin;
+            $aula_id = $validation['aula_id'] ?? $horario->aula_id;
+            $grupo_id = $validation['grupo_id'] ?? $horario->grupo_id;
+            $dia_semana = $validation['dia_semana'] ?? $horario->dia_semana;
+            $hora_inicio = $validation['hora_inicio'] ?? $horario->hora_inicio;
+            $hora_fin = $validation['hora_fin'] ?? $horario->hora_fin;
 
-                $conflicto = horarios::where('aula_id', $aula_id)
-                    ->where('dia_semana', $dia_semana)
-                    ->where('id', '!=', $id)
-                    ->where(function ($query) use ($hora_inicio, $hora_fin) {
-                        $query->whereBetween('hora_inicio', [$hora_inicio, $hora_fin])
-                            ->orWhereBetween('hora_fin', [$hora_inicio, $hora_fin])
-                            ->orWhere(function ($q) use ($hora_inicio, $hora_fin) {
-                                $q->where('hora_inicio', '<=', $hora_inicio)
-                                    ->where('hora_fin', '>=', $hora_fin);
-                            });
-                    })
-                    ->exists();
+            $grupo = grupos::find($grupo_id);
+            
+            if (!$grupo) {
+                return response()->json([
+                    'message' => 'Grupo no encontrado',
+                    'success' => false
+                ], 404);
+            }
+//aca valido que para asignar aulas sea dos dias nada mas por materia
+            if (isset($validation['dia_semana']) && $validation['dia_semana'] !== $horario->dia_semana) {
+                
+                $dias_asignados_query = horarios::join('grupos', 'horarios.grupo_id', '=', 'grupos.id')
+                    ->where('grupos.docente_id', $grupo->docente_id)
+                    ->where('grupos.materia_id', $grupo->materia_id)
+                    ->where('horarios.id', '!=', $id)
+                    ->distinct()
+                    ->pluck('horarios.dia_semana');
 
-                if ($conflicto) {
+                $dias_asignados = $dias_asignados_query->count();
+                $dia_ya_asignado = $dias_asignados_query->contains($validation['dia_semana']);
+
+                if (!$dia_ya_asignado && $dias_asignados >= 2) {
                     return response()->json([
-                        'message' => 'Conflicto de horario detectado',
-                        'success' => false
+                        'message' => 'Límite de días alcanzado: El docente ya tiene asignados 2 días para esta materia (máximo permitido: 2 días por semana)',
+                        'success' => false,
+                        'dias_actuales' => $dias_asignados,
+                        'dias_ocupados' => $dias_asignados_query->toArray()
                     ], 409);
                 }
+            }
+
+
+            $conflictoAula = horarios::where('aula_id', $aula_id)
+                ->where('dia_semana', $dia_semana)
+                ->where('id', '!=', $id)
+                ->where(function ($query) use ($hora_inicio, $hora_fin) {
+                    $query->where('hora_inicio', '<', $hora_fin)
+                          ->where('hora_fin', '>', $hora_inicio);
+                })
+                ->exists();
+
+            if ($conflictoAula) {
+                return response()->json([
+                    'message' => 'Conflicto de horario: El aula ya está ocupada en este horario',
+                    'success' => false
+                ], 409);
+            }
+
+            $conflictoGrupo = horarios::where('grupo_id', $grupo_id)
+                ->where('dia_semana', $dia_semana)
+                ->where('id', '!=', $id)
+                ->where(function ($query) use ($hora_inicio, $hora_fin) {
+                    $query->where('hora_inicio', '<', $hora_fin)
+                          ->where('hora_fin', '>', $hora_inicio);
+                })
+                ->exists();
+
+            if ($conflictoGrupo) {
+                return response()->json([
+                    'message' => 'Conflicto de horario: El grupo ya tiene clase en este horario',
+                    'success' => false
+                ], 409);
+            }
+
+            $conflictoDocente = horarios::join('grupos', 'horarios.grupo_id', '=', 'grupos.id')
+                ->where('grupos.docente_id', $grupo->docente_id)
+                ->where('horarios.dia_semana', $dia_semana)
+                ->where('horarios.id', '!=', $id)
+                ->where(function ($query) use ($hora_inicio, $hora_fin) {
+                    $query->where('horarios.hora_inicio', '<', $hora_fin)
+                          ->where('horarios.hora_fin', '>', $hora_inicio);
+                })
+                ->exists();
+
+            if ($conflictoDocente) {
+                return response()->json([
+                    'message' => 'Conflicto de horario: El docente ya tiene otra clase asignada en este horario',
+                    'success' => false
+                ], 409);
             }
 
             DB::beginTransaction();
             $horario->update($validation);
             DB::commit();
+            
             Cache::forget('horarios_index_all');
             Cache::forget('horarios_index');
-            Cache::forget('horarios_grupo_');
+            Cache::forget('horarios_grupo_' . $grupo_id);
+
+            $horario->load(['grupo.materia', 'grupo.docente', 'grupo.ciclo', 'aula']);
+            
+            $horarioData = [
+                'id' => $horario->id,
+                'grupo_id' => $horario->grupo_id,
+                'aula_id' => $horario->aula_id,
+                'dia_semana' => $horario->dia_semana,
+                'hora_inicio' => $horario->hora_inicio,
+                'hora_fin' => $horario->hora_fin,
+                'aula' => $horario->aula ? [
+                    'id' => $horario->aula->id,
+                    'nombre' => $horario->aula->nombre ?? $horario->aula->codigo,
+                    'codigo' => $horario->aula->codigo,
+                    'capacidad' => $horario->aula->capacidad_pupitres,
+                    'ubicacion' => $horario->aula->ubicacion,
+                ] : null,
+            ];
 
             return response()->json([
                 'message' => 'Horario actualizado exitosamente',
                 'success' => true,
-                'data' => $horario
+                'data' => $horarioData
             ], 200);
 
-        } catch (Exception $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Error de validación',
                 'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al actualizar el horario',
+                'success' => false,
                 'error' => $e->getMessage()
-            ], 400);
+            ], 500);
         }
     }
 
@@ -303,6 +569,7 @@ class HorariosController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
         ];
 
@@ -323,12 +590,17 @@ class HorariosController extends Controller {
                 ], 404);
             }
 
+            $grupo_id = $horario->grupo_id;
+            $aula_id = $horario->aula_id;
+
             DB::beginTransaction();
             $horario->delete();
             DB::commit();
+            
             Cache::forget('horarios_index_all');
             Cache::forget('horarios_index');
-            Cache::forget('horarios_grupo_');
+            Cache::forget('horarios_grupo_' . $grupo_id);
+            Cache::forget('horarios_aula_' . $aula_id);
 
             return response()->json([
                 'message' => 'Horario eliminado exitosamente',
@@ -371,19 +643,41 @@ class HorariosController extends Controller {
 
         try {
             $horarios = Cache::remember('horarios_grupo_' . $grupo_id, 60, function () use ($grupo_id) {
-                return (new horarios())->getHorariosByGroup($grupo_id);
+                return horarios::with(['aula', 'grupo.materia', 'grupo.docente', 'grupo.ciclo'])
+                    ->where('grupo_id', $grupo_id)
+                    ->get();
             });
 
             if ($horarios->isEmpty()) {
                 return response()->json([
                     'message' => 'No se encontraron horarios para el grupo especificado',
                     'success' => false
-                ], 404);
+                ], 200);
             }
+
+            $horarios = $horarios->map(function ($horario) {
+                return [
+                    'id' => $horario->id,
+                    'grupo_id' => $horario->grupo_id,
+                    'aula_id' => $horario->aula_id,
+                    'dia_semana' => $horario->dia_semana,
+                    'hora_inicio' => $horario->hora_inicio,
+                    'hora_fin' => $horario->hora_fin,
+                    'aula' => $horario->aula ? [
+                        'id' => $horario->aula->id,
+                        'nombre' => $horario->aula->nombre ?? $horario->aula->codigo,
+                        'codigo' => $horario->aula->codigo,
+                        'capacidad' => $horario->aula->capacidad_pupitres,
+                        'ubicacion' => $horario->aula->ubicacion,
+                        'tipo' => $horario->aula->tipo ?? 'Estándar',
+                    ] : null,
+                ];
+            });
 
             return response()->json([
                 'message' => 'Horarios obtenidos exitosamente',
-                'data' => $horarios
+                'data' => $horarios,
+                'success' => true
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -420,7 +714,9 @@ class HorariosController extends Controller {
 
         try {
             $horarios = Cache::remember('horarios_aula_' . $aula_id, 60, function () use ($aula_id) {
-                return (new horarios())->getHorariosByClassroom($aula_id);
+                return horarios::with(['aula', 'grupo.materia', 'grupo.docente', 'grupo.ciclo'])
+                    ->where('aula_id', $aula_id)
+                    ->get();
             });
 
             if ($horarios->isEmpty()) {
@@ -429,6 +725,22 @@ class HorariosController extends Controller {
                     'success' => false
                 ], 404);
             }
+
+            $horarios = $horarios->map(function ($horario) {
+                return [
+                    'id' => $horario->id,
+                    'grupo_id' => $horario->grupo_id,
+                    'aula_id' => $horario->aula_id,
+                    'dia_semana' => $horario->dia_semana,
+                    'hora_inicio' => $horario->hora_inicio,
+                    'hora_fin' => $horario->hora_fin,
+                    'grupo' => $horario->grupo ? [
+                        'id' => $horario->grupo->id,
+                        'numero_grupo' => $horario->grupo->numero_grupo,
+                        'materia_nombre' => $horario->grupo->materia->nombre ?? null,
+                    ] : null,
+                ];
+            });
 
             return response()->json([
                 'message' => 'Horarios obtenidos exitosamente',
@@ -469,10 +781,12 @@ class HorariosController extends Controller {
         }
 
         try {
-
             $dia_semana = $this->sanitizeInput($dia_semana);
+            
             $horarios = Cache::remember('horarios_dia_' . $dia_semana, 60, function () use ($dia_semana) {
-                return (new horarios())->getHorariosByDay($dia_semana);
+                return horarios::with(['aula', 'grupo.materia', 'grupo.docente', 'grupo.ciclo'])
+                    ->where('dia_semana', $dia_semana)
+                    ->get();
             });
 
             if ($horarios->isEmpty()) {
@@ -481,6 +795,24 @@ class HorariosController extends Controller {
                     'success' => false
                 ], 404);
             }
+
+            $horarios = $horarios->map(function ($horario) {
+                return [
+                    'id' => $horario->id,
+                    'grupo_id' => $horario->grupo_id,
+                    'aula_id' => $horario->aula_id,
+                    'dia_semana' => $horario->dia_semana,
+                    'hora_inicio' => $horario->hora_inicio,
+                    'hora_fin' => $horario->hora_fin,
+                    'aula' => $horario->aula ? [
+                        'nombre' => $horario->aula->nombre ?? $horario->aula->codigo,
+                    ] : null,
+                    'grupo' => $horario->grupo ? [
+                        'numero_grupo' => $horario->grupo->numero_grupo,
+                        'materia_nombre' => $horario->grupo->materia->nombre ?? null,
+                    ] : null,
+                ];
+            });
 
             return response()->json([
                 'message' => 'Horarios obtenidos exitosamente',
@@ -598,7 +930,10 @@ class HorariosController extends Controller {
             ]);
 
             $horarios = Cache::remember('horarios_rango_' . $request->hora_inicio . '_' . $request->hora_fin, 60, function () use ($request) {
-                return (new horarios())->getHorariosByRango($request->hora_inicio, $request->hora_fin);
+                return horarios::with(['aula', 'grupo.materia', 'grupo.docente'])
+                    ->where('hora_inicio', '>=', $request->hora_inicio)
+                    ->where('hora_fin', '<=', $request->hora_fin)
+                    ->get();
             });
 
             if (!$horarios || $horarios->isEmpty()) {

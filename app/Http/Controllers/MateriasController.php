@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 class MateriasController extends Controller {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource with pagination and filtering.
      */
-    public function index(): JsonResponse {
+    public function index(Request $request): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -24,21 +24,110 @@ class MateriasController extends Controller {
         }
 
         try {
-            $materias = Cache::remember('materias_all', 60, function () {
-                return materias::limit(50)->get();
+            // Obtener parámetros de paginación y filtros
+            $page = max(1, (int)$request->get('page', 1));
+            $perPageOptions = [10, 15, 25, 50, 100];
+            $perPage = in_array($request->get('per_page', 15), $perPageOptions)
+                ? $request->get('per_page', 15)
+                : 15;
+
+            $search = $this->sanitizeInput($request->get('search', ''));
+            $carreraId = $request->get('carrera_id', '');
+            $estado = $this->sanitizeInput($request->get('estado', ''));
+
+            // Crear clave de cache única para esta combinación de parámetros
+            $cacheKey = "materias_page_{$page}_per_{$perPage}_search_{$search}_career_{$carreraId}_status_{$estado}";
+
+            $materias = Cache::remember($cacheKey, 5, function () use ($page, $perPage, $search, $carreraId, $estado) {
+                $query = materias::with(['carrera' => function($query) {
+                    $query->select('id', 'nombre');
+                }]);
+
+                // Aplicar filtros
+                if (!empty($search)) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('codigo', 'LIKE', "%{$search}%")
+                          ->orWhere('nombre', 'LIKE', "%{$search}%");
+                    });
+                }
+
+                if (!empty($carreraId)) {
+                    $query->where('carrera_id', $carreraId);
+                }
+
+                if (!empty($estado)) {
+                    $query->where('estado', $estado);
+                }
+
+                // Ordenar por nombre para consistencia
+                $query->orderBy('nombre', 'asc');
+
+                // Aplicar paginación
+                return $query->paginate($perPage, ['*'], 'page', $page);
             });
+
+            // Verificar si la página solicitada existe
+            if ($page > $materias->lastPage() && $materias->lastPage() > 0) {
+                // Si la página solicitada no existe, devolver la primera página
+                $page = 1;
+                $cacheKey = "materias_page_{$page}_per_{$perPage}_search_{$search}_career_{$carreraId}_status_{$estado}";
+
+                $materias = Cache::remember($cacheKey, 5, function () use ($page, $perPage, $search, $carreraId, $estado) {
+                    $query = materias::with(['carrera' => function($query) {
+                        $query->select('id', 'nombre');
+                    }]);
+
+                    // Aplicar filtros
+                    if (!empty($search)) {
+                        $query->where(function($q) use ($search) {
+                            $q->where('codigo', 'LIKE', "%{$search}%")
+                              ->orWhere('nombre', 'LIKE', "%{$search}%");
+                        });
+                    }
+
+                    if (!empty($carreraId)) {
+                        $query->where('carrera_id', $carreraId);
+                    }
+
+                    if (!empty($estado)) {
+                        $query->where('estado', $estado);
+                    }
+
+                    // Ordenar por nombre para consistencia
+                    $query->orderBy('nombre', 'asc');
+
+                    // Aplicar paginación
+                    return $query->paginate($perPage, ['*'], 'page', $page);
+                });
+            }
 
             if ($materias->isEmpty()) {
                 return response()->json([
-                    'message' => 'No se encontraron materias',
-                    'success' => false
+                    'message' => 'No se encontraron materias con los criterios especificados',
+                    'success' => false,
+                    'pagination' => [
+                        'current_page' => 1,
+                        'last_page' => 1,
+                        'per_page' => $perPage,
+                        'total' => 0,
+                        'from' => null,
+                        'to' => null
+                    ]
                 ], 404);
             }
 
             return response()->json([
-                'message' => 'Materias encontradas',
+                'message' => 'Materias obtenidas exitosamente',
                 'success' => true,
-                'data' => $materias
+                'data' => $materias->items(),
+                'pagination' => [
+                    'current_page' => $materias->currentPage(),
+                    'last_page' => $materias->lastPage(),
+                    'per_page' => $materias->perPage(),
+                    'total' => $materias->total(),
+                    'from' => $materias->firstItem(),
+                    'to' => $materias->lastItem()
+                ]
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -61,8 +150,14 @@ class MateriasController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
 
-        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -183,8 +278,14 @@ class MateriasController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+        ];
 
-        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -285,6 +386,7 @@ class MateriasController extends Controller {
 
         $user_rolName = $this->getUserRoleName();
         $rolesPermitidos = [
+            RolesEnum::ROOT->value,
             RolesEnum::ADMINISTRADOR_ACADEMICO->value,
         ];
 
@@ -462,6 +564,108 @@ class MateriasController extends Controller {
             return response()->json([
                 'message' => 'Error al obtener las materias',
                 'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get subjects optimized for dropdown selects with pagination and search.
+     * Optimized specifically for 486+ subjects with progressive loading.
+     */
+    public function getForSelect(Request $request): JsonResponse {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        try {
+            // Validar parámetros de entrada
+            $rules = [
+                'search' => 'nullable|string|max:50',
+                'page' => 'nullable|integer|min:1',
+                'per_page' => 'nullable|integer|min:1|max:100'
+            ];
+
+            $messages = [
+                'search.string' => 'La búsqueda debe ser una cadena de texto.',
+                'search.max' => 'La búsqueda no debe exceder los 50 caracteres.',
+                'page.integer' => 'La página debe ser un número entero.',
+                'page.min' => 'La página debe ser como mínimo 1.',
+                'per_page.integer' => 'Los resultados por página debe ser un número entero.',
+                'per_page.min' => 'Los resultados por página debe ser como mínimo 1.',
+                'per_page.max' => 'Los resultados por página no debe exceder los 100.',
+            ];
+
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules, $messages);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Obtener y sanitizar parámetros
+            $page = max(1, (int)$request->get('page', 1));
+            $perPage = min($request->get('per_page', 50), 100); // Default 50, max 100
+            $search = $this->sanitizeInput($request->get('search', ''));
+
+            // Crear clave de cache única para esta combinación de parámetros
+            $cacheKey = "subjects_select_page_{$page}_per_{$perPage}_search_" . md5($search);
+
+            $result = Cache::remember($cacheKey, 300, function () use ($search, $perPage, $page) {
+                $query = materias::select('id', 'nombre', 'codigo', 'carrera_id')
+                    ->where('estado', 'activa')
+                    ->with('carrera:id,nombre')
+                    ->orderBy('nombre', 'asc');
+
+                // Aplicar búsqueda por nombre o código
+                if (!empty($search)) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('nombre', 'LIKE', "%{$search}%")
+                          ->orWhere('codigo', 'LIKE', "%{$search}%");
+                    });
+                }
+
+                return $query->paginate($perPage, ['*'], 'page', $page);
+            });
+
+            // Formatear datos para selects frontend
+            $formattedData = collect($result->items())->map(function ($materia) {
+                return [
+                    'id' => $materia->id,
+                    'nombre' => $materia->nombre,
+                    'codigo' => $materia->codigo,
+                    'carrera_id' => $materia->carrera_id,
+                    'carrera_nombre' => $materia->carrera->nombre ?? 'Sin carrera',
+                    'label' => $materia->nombre, // Para compatibilidad con componentes existentes
+                    'value' => $materia->id,     // Para compatibilidad con componentes existentes
+                    'sublabel' => $materia->codigo . ' - ' . ($materia->carrera->nombre ?? 'Sin carrera') // Información adicional
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Materias para select obtenidas exitosamente',
+                'data' => $formattedData,
+                'pagination' => [
+                    'current_page' => $result->currentPage(),
+                    'last_page' => $result->lastPage(),
+                    'per_page' => $result->perPage(),
+                    'total' => $result->total(),
+                    'from' => $result->firstItem(),
+                    'to' => $result->lastItem(),
+                    'has_more' => $result->hasMorePages()
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las materias para select',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\carreras;
 
 class materias extends Model {
     /** @use HasFactory<\Database\Factories\MateriasFactory> */
@@ -25,6 +26,14 @@ class materias extends Model {
         'carrera_id',
         'estado'
     ];
+
+    /**
+     * Get the carrera that owns the materia.
+     */
+    public function carrera()
+    {
+        return $this->belongsTo(carreras::class, 'carrera_id');
+    }
 
     public function getSubjectsByStatus(string $estado): Collection {
         return DB::table('materias')

@@ -39,13 +39,6 @@ class NotificacionesController extends Controller {
         try {
             $notificaciones = notificaciones::with(['tipoNotificacion', 'usuarioDestino'])->get();
 
-            if ($notificaciones->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No se encontraron notificaciones'
-                ], 404);
-            }
-
             return response()->json([
                 'success' => true,
                 'data' => $notificaciones
@@ -236,13 +229,6 @@ class NotificacionesController extends Controller {
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            if ($notificaciones->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No tienes notificaciones'
-                ], 404);
-            }
-
             return response()->json([
                 'success' => true,
                 'data' => $notificaciones
@@ -270,13 +256,6 @@ class NotificacionesController extends Controller {
                 ->whereIn('estado', ['pendiente', 'enviada'])
                 ->orderBy('created_at', 'desc')
                 ->get();
-
-            if ($notificaciones->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No tienes notificaciones sin leer'
-                ], 404);
-            }
 
             return response()->json([
                 'success' => true,
@@ -318,13 +297,6 @@ class NotificacionesController extends Controller {
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            if ($notificaciones->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No se encontraron notificaciones para este usuario'
-                ], 404);
-            }
-
             return response()->json([
                 'success' => true,
                 'data' => $notificaciones
@@ -347,8 +319,12 @@ class NotificacionesController extends Controller {
         }
 
         $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+        ];
 
-        if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
                 'success' => false
@@ -360,13 +336,6 @@ class NotificacionesController extends Controller {
                 ->where('estado', $estado)
                 ->orderBy('created_at', 'desc')
                 ->get();
-
-            if ($notificaciones->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "No se encontraron notificaciones con estado: {$estado}"
-                ], 404);
-            }
 
             return response()->json([
                 'success' => true,
@@ -404,13 +373,6 @@ class NotificacionesController extends Controller {
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            if ($notificaciones->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No se encontraron notificaciones de este tipo'
-                ], 404);
-            }
-
             return response()->json([
                 'success' => true,
                 'data' => $notificaciones
@@ -446,13 +408,6 @@ class NotificacionesController extends Controller {
                 ->where('estado', 'pendiente')
                 ->orderBy('created_at', 'asc')
                 ->get();
-
-            if ($notificaciones->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No hay notificaciones pendientes'
-                ], 404);
-            }
 
             return response()->json([
                 'success' => true,

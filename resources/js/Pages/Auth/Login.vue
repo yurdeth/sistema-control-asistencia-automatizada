@@ -29,13 +29,42 @@
     const errors = ref({})
     const errorMessage = ref(null)
     const showPassword = ref(false)
+    const checking = ref(true) // Estado para el loader inicial
 
     //recupera el token del localStorage y lo configura en authService si existe
-    onMounted(() => {
+    onMounted(async () => {
         const token = localStorage.getItem('token')
+        const user = localStorage.getItem('user')
+
+        // Si ya está autenticado, redirigir INMEDIATAMENTE
+        if (token && user) {
+            try {
+                // Verificar que el token sea válido
+                await authService.verifyToken(token)
+
+                // Verificar si hay un parámetro 'redirect' en la URL
+                const urlParams = new URLSearchParams(window.location.search)
+                const redirectTo = urlParams.get('redirect')
+
+                // Si hay un redirect, ir a esa ruta; si no, ir al dashboard
+                if (redirectTo) {
+                    router.visit(redirectTo)
+                } else {
+                    router.visit('/dashboard')
+                }
+                return // No mostrar el formulario
+            } catch (error) {
+                localStorage.removeItem('token')
+                localStorage.removeItem('user')
+            }
+        }
+
         if (token) {
             authService.setAxiosToken(token)
         }
+
+        // Después de verificar, mostrar el formulario
+        checking.value = false
     });
 
     // Función para alternar visibilidad de contraseña
@@ -56,14 +85,15 @@
             const tokenGuardado = authService.getToken()
 
             if (tokenGuardado) {
-                //Almacenamos el rol del usuario
-                const roleId = user.role_id
+                // Verificar si hay un parámetro 'redirect' en la URL
+                const urlParams = new URLSearchParams(window.location.search)
+                const redirectTo = urlParams.get('redirect')
 
-                //Verificando el rol del usuario para la redirección
-                if (roleId === 1) {
-                    router.visit('/dashboard');
-                } else if (roleId === 2){
-                    router.visit('#');
+                // Si hay un redirect, ir a esa ruta; si no, ir al dashboard
+                if (redirectTo) {
+                    router.visit(redirectTo)
+                } else {
+                    router.visit('/dashboard')
                 }
             } else {
                 console.error('ERROR: El token NO se guardó')
@@ -91,8 +121,16 @@
 
         <Head title="Log in" />
 
-        <!--Contenedor principal-->
-        <div class="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
+        <!-- Loader mientras verifica autenticación -->
+        <div v-if="checking" class="flex items-center justify-center min-h-screen bg-gray-100">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto" style="border-bottom-color: #5B0B0B;"></div>
+                <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+            </div>
+        </div>
+
+        <!--Contenedor principal - solo se muestra después de verificar-->
+        <div v-else class="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
             <div class="log-container">
                 <div class="left_panel">
                     <h1 class="title">SICA</h1>

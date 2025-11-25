@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->date('fecha_inicio');
             $table->date('fecha_fin_programada');
             $table->date('fecha_fin_real')->nullable();
+            $table->string('realizado_por', 255)->nullable();
             $table->enum('estado', ['programado', 'en_proceso', 'finalizado', 'cancelado'])->default('programado');
             $table->timestamps();
         });

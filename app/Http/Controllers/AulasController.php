@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Concerns\ValidatesRoles;
 use App\Models\AulaFoto;
 use App\Models\aulas;
 use App\Models\AulaVideo;
@@ -10,10 +11,17 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache as FacadesCache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpKernel\Attribute\Cache;
 
 class AulasController extends Controller {
+    // Temporalmente comentado para resolver el error
+    // use ValidatesRoles;
     public function index(): JsonResponse {
         if (!Auth::check()) {
             return response()->json([
@@ -56,7 +64,7 @@ class AulasController extends Controller {
         $aulas = array_values($aulas_array);
 
         // Agregar fotos y videos con URLs completas
-        $storage_url = env('APP_URL') . '/storage';
+        $storage_url = config('storage.url.img');
         foreach ($aulas as &$aula) {
             $aula_model = aulas::find($aula['id']);
 
@@ -207,7 +215,7 @@ class AulasController extends Controller {
             'codigo' => 'required|string|max:50|unique:aulas,codigo,' . $id,
             'nombre' => 'required|string|max:100',
             'capacidad_pupitres' => 'required|integer|min:1',
-            'ubicacion' => 'required|string|max:255',
+            'ubicacion' => 'required|string',
             'indicaciones' => 'nullable|string',
             'latitud' => 'nullable|numeric|between:-90,90',
             'longitud' => 'nullable|numeric|between:-180,180',
@@ -230,7 +238,6 @@ class AulasController extends Controller {
             'capacidad_pupitres.min' => 'El campo capacidad de pupitres debe ser al menos 1.',
             'ubicacion.required' => 'El campo ubicación es obligatorio.',
             'ubicacion.string' => 'El campo ubicación debe ser una cadena de texto.',
-            'ubicacion.max' => 'El campo ubicación no debe exceder los 255 caracteres.',
             'indicaciones.string' => 'El campo indicaciones debe ser una cadena de texto.',
             'latitud.numeric' => 'El campo latitud debe ser un número.',
             'latitud.between' => 'El campo latitud debe estar entre -90 y 90.',
@@ -290,6 +297,7 @@ class AulasController extends Controller {
 
             // Cargar relaciones para la respuesta
             $aula->load('fotos', 'videos');
+            FacadesCache::clear();
 
             return response()->json([
                 'message' => 'Aula actualizada exitosamente',
@@ -322,6 +330,7 @@ class AulasController extends Controller {
     }
 
     public function store(Request $request): JsonResponse {
+        Log::info($request);
         if (!Auth::check()) {
             return response()->json([
                 'message' => 'Acceso no autorizado',
@@ -399,13 +408,20 @@ class AulasController extends Controller {
             DB::beginTransaction();
 
             //genera el uuid
-            $validation['qr_code'] = \Illuminate\Support\Str::uuid()->toString();
+            $validation['qr_code'] = Str::uuid()->toString();
 
             $aula = aulas::create($validation);
 
             // Guardar fotos si existen
             if ($request->hasFile('fotos')) {
-                foreach ($request->file('fotos') as $foto) {
+                $fotos = $request->file('fotos');
+
+                // Si es un solo archivo, convertirlo en array
+                if (!is_array($fotos)) {
+                    $fotos = [$fotos];
+                }
+
+                foreach ($fotos as $foto) {
                     $ruta = $foto->store('aulas', 'public');
                     AulaFoto::create([
                         'aula_id' => $aula->id,
@@ -415,14 +431,24 @@ class AulasController extends Controller {
             }
 
             // Guardar videos si existen
-            if ($request->has('videos')) {
-                foreach ($request->videos as $video_url) {
-                    if (!empty($video_url)) {
-                        AulaVideo::create([
-                            'aula_id' => $aula->id,
-                            'url' => $video_url
-                        ]);
-                    }
+            if ($request->has('videos') && !empty($request->videos)) {
+                $videos = $request->videos;
+
+                // Si es un string (una sola URL), convertirlo en array
+                if (is_string($videos)) {
+                    $videos = array_filter([$videos]); // Filtra vacíos
+                }
+
+                // Si ya es array, filtrar vacíos
+                if (is_array($videos)) {
+                    $videos = array_filter($videos);
+                }
+
+                foreach ($videos as $video_url) {
+                    AulaVideo::create([
+                        'aula_id' => $aula->id,
+                        'url' => $video_url
+                    ]);
                 }
             }
 
@@ -430,6 +456,7 @@ class AulasController extends Controller {
 
             // Cargar relaciones para la respuesta
             $aula->load('fotos', 'videos');
+            FacadesCache::clear();
 
             return response()->json([
                 'message' => 'Aula creada exitosamente con código QR único',
@@ -762,7 +789,13 @@ class AulasController extends Controller {
             }
 
             $user_rolName = $this->getUserRoleName();
-            if ($user_rolName != RolesEnum::ADMINISTRADOR_ACADEMICO->value) {
+            $rolesPermitidos = [
+                RolesEnum::ROOT->value,
+                RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+                RolesEnum::DOCENTE->value,
+            ];
+
+            if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
                 return response()->json([
                     'message' => 'Acceso no autorizado',
                     'success' => false
@@ -957,4 +990,230 @@ class AulasController extends Controller {
             ], 500);
         }
     }
+
+    public function getPaginatedClassrooms(Request $request): JsonResponse
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        // Sanitizar parámetros
+        $request->merge([
+            'page' => (int)$request->get('page', 1),
+            'per_page' => (int)$request->get('per_page', 9),
+            'search' => $this->sanitizeInput($request->get('search', '')),
+            'estado' => $this->sanitizeInput($request->get('estado', '')),
+            'capacidad' => $this->sanitizeInput($request->get('capacidad', '')),
+            'sort_by' => $this->sanitizeInput($request->get('sort_by', 'nombre')),
+            'sort_dir' => $this->sanitizeInput($request->get('sort_dir', 'asc'))
+        ]);
+
+        $rules = [
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|in:10,15,25,50,100',
+            'search' => 'nullable|string|max:255',
+            'estado' => 'nullable|in:disponible,ocupada,mantenimiento,inactiva',
+            'capacidad' => 'nullable|in:small,medium,large',
+            'sort_by' => 'nullable|in:nombre,codigo,capacidad_pupitres,ubicacion,estado',
+            'sort_dir' => 'nullable|in:asc,desc'
+        ];
+
+        $messages = [
+            'page.integer' => 'El número de página debe ser un entero.',
+            'page.min' => 'El número de página debe ser al menos 1.',
+            'per_page.integer' => 'Los registros por página debe ser un entero.',
+            'per_page.in' => 'Los registros por página debe ser uno de: 10, 15, 25, 50, 100.',
+            'search.max' => 'La búsqueda no debe exceder 255 caracteres.',
+            'estado.in' => 'El estado debe ser uno de: disponible, ocupada, mantenimiento, inactiva.',
+            'capacidad.in' => 'La capacidad debe ser uno de: small, medium, large.',
+            'sort_by.in' => 'El ordenamiento debe ser por: nombre, codigo, capacidad_pupitres, ubicacion, estado.',
+            'sort_dir.in' => 'La dirección debe ser: asc o desc.'
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $params = $validator->validated();
+
+            // Cache key dinámica
+            $cacheKey = 'aulas_paginated_' . md5(json_encode([
+                'search' => $params['search'],
+                'estado' => $params['estado'],
+                'capacidad' => $params['capacidad'],
+                'sort_by' => $params['sort_by'],
+                'sort_dir' => $params['sort_dir'],
+                'page' => $params['page'],
+                'per_page' => $params['per_page']
+            ]));
+
+            return cache()->remember($cacheKey, 300, function () use ($params) {
+                // Query base replicando la lógica del método getAll() del modelo
+                $query = DB::table('aulas')
+                    ->leftJoin('aula_recursos', 'aulas.id', '=', 'aula_recursos.aula_id')
+                    ->leftJoin('recursos_tipos', 'aula_recursos.recurso_tipo_id', '=', 'recursos_tipos.id')
+                    ->select(
+                        'aulas.id as aula_id',
+                        'aulas.codigo as codigo_aula',
+                        'aulas.nombre as nombre_aula',
+                        'aulas.capacidad_pupitres',
+                        'aulas.ubicacion as ubicacion_aula',
+                        'aulas.qr_code as qr_code',
+                        'aulas.estado as estado_aula',
+                        'aulas.created_at',
+                        'aulas.updated_at',
+                        'recursos_tipos.nombre as recurso_tipo_nombre',
+                        'aula_recursos.cantidad as recurso_cantidad',
+                        'aula_recursos.estado as estado_recurso',
+                        'aula_recursos.observaciones as observaciones_recurso'
+                    );
+
+                // Aplicar filtros
+                if (!empty($params['search'])) {
+                    $searchTerm = '%' . $params['search'] . '%';
+                    $query->where(function ($q) use ($searchTerm) {
+                        $q->where('aulas.nombre', 'LIKE', $searchTerm)
+                          ->orWhere('aulas.codigo', 'LIKE', $searchTerm)
+                          ->orWhere('aulas.ubicacion', 'LIKE', $searchTerm);
+                    });
+                }
+
+                if (!empty($params['estado'])) {
+                    $query->where('aulas.estado', $params['estado']);
+                }
+
+                if (!empty($params['capacidad'])) {
+                    switch ($params['capacidad']) {
+                        case 'small':
+                            $query->where('aulas.capacidad_pupitres', '<=', 30);
+                            break;
+                        case 'medium':
+                            $query->where('aulas.capacidad_pupitres', '>', 30)
+                                  ->where('aulas.capacidad_pupitres', '<=', 100);
+                            break;
+                        case 'large':
+                            $query->where('aulas.capacidad_pupitres', '>', 100);
+                            break;
+                    }
+                }
+
+                // Contar total antes de paginar
+                $countQuery = clone $query;
+                $total = $countQuery->distinct('aulas.id')->count('aulas.id');
+
+                // Ordenamiento
+                $sortMapping = [
+                    'nombre' => 'aulas.nombre',
+                    'codigo' => 'aulas.codigo',
+                    'capacidad_pupitres' => 'aulas.capacidad_pupitres',
+                    'ubicacion' => 'aulas.ubicacion',
+                    'estado' => 'aulas.estado'
+                ];
+
+                $sortField = $sortMapping[$params['sort_by']] ?? 'aulas.nombre';
+                $query->orderBy($sortField, $params['sort_dir']);
+
+                // Calcular offset y limit
+                $offset = ($params['page'] - 1) * $params['per_page'];
+                $query->offset($offset)->limit($params['per_page']);
+
+                // Ejecutar query
+                $aulas_raw = $query->get();
+
+                // Procesar resultados (similar al método index())
+                $aulas_array = [];
+                foreach ($aulas_raw as $aula) {
+                    $aula_id = $aula->aula_id;
+                    if (!isset($aulas_array[$aula_id])) {
+                        $aulas_array[$aula_id] = [
+                            'id' => $aula->aula_id,
+                            'codigo' => $aula->codigo_aula,
+                            'nombre' => $aula->nombre_aula,
+                            'capacidad_pupitres' => $aula->capacidad_pupitres,
+                            'ubicacion' => $aula->ubicacion_aula,
+                            'qr_code' => $aula->qr_code,
+                            'estado' => $aula->estado_aula,
+                            'created_at' => $aula->created_at,
+                            'updated_at' => $aula->updated_at,
+                            'recursos' => []
+                        ];
+                    }
+                    if ($aula->recurso_tipo_nombre) {
+                        $aulas_array[$aula_id]['recursos'][] = [
+                            'nombre' => $aula->recurso_tipo_nombre,
+                            'cantidad' => $aula->recurso_cantidad,
+                            'estado' => $aula->estado_recurso,
+                            'observaciones_recurso' => $aula->observaciones_recurso,
+                            'aula_recurso_id' => $aula->aula_id
+                        ];
+                    }
+                }
+
+                $aulas = array_values($aulas_array);
+
+                // Agregar fotos y videos con URLs completas
+                $storage_url = env('APP_URL') . '/storage';
+                foreach ($aulas as &$aula) {
+                    $aula_model = aulas::find($aula['id']);
+
+                    // Agregar indicaciones y coordenadas
+                    $aula['indicaciones'] = $aula_model->indicaciones;
+                    $aula['latitud'] = $aula_model->latitud;
+                    $aula['longitud'] = $aula_model->longitud;
+
+                    // Agregar fotos
+                    $aula['fotos'] = $aula_model->fotos->map(function ($foto) use ($storage_url) {
+                        return [
+                            'id' => $foto->id,
+                            'url' => $storage_url . '/' . $foto->ruta
+                        ];
+                    })->toArray();
+
+                    // Agregar videos
+                    $aula['videos'] = $aula_model->videos->map(function ($video) {
+                        return [
+                            'id' => $video->id,
+                            'url' => $video->url
+                        ];
+                    })->toArray();
+                }
+
+                // Calcular metadata de paginación
+                $ultimaPagina = ceil($total / $params['per_page']);
+
+                return response()->json([
+                    'message' => 'Aulas obtenidas exitosamente',
+                    'success' => true,
+                    'data' => $aulas,
+                    'pagination' => [
+                        'pagina_actual' => $params['page'],
+                        'por_pagina' => $params['per_page'],
+                        'total' => $total,
+                        'ultima_pagina' => $ultimaPagina,
+                        'desde' => $total > 0 ? $offset + 1 : null,
+                        'hasta' => $total > 0 ? min($offset + $params['per_page'], $total) : null
+                    ]
+                ], 200);
+            });
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las aulas paginadas',
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 }

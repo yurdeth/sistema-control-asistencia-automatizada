@@ -18,8 +18,14 @@ return new class extends Migration {
                 ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
+            $table->ipAddress()->nullable();
+            $table->text('detalles')->nullable();
             $table->json('contexto')->nullable();
             $table->timestamps();
+
+            $table->index(['nivel', 'created_at'], 'idx_system_logs_nivel_fecha');
+            $table->index(['modulo', 'created_at'], 'idx_system_logs_modulo_fecha');
+            $table->index(['usuario_id'], 'idx_system_logs_usuario_id');
         });
     }
 

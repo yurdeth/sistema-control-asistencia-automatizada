@@ -18,6 +18,14 @@ class grupos extends Model {
 
     protected $table = 'grupos';
 
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\GruposFactory::new();
+    }
+
     protected $fillable = [
         'materia_id',
         'ciclo_id',
@@ -136,6 +144,19 @@ class grupos extends Model {
             )
             ->where('grupos.estado', '=', 'activo')
             ->get();
+    }
+
+    public function getGroupProfessorBySubject($grupoId, $materiaId): ?object {
+        return DB::table("grupos")
+            ->join('users', 'grupos.docente_id', '=', 'users.id')
+            ->join('materias', 'grupos.materia_id', '=', 'materias.id')
+            ->select(
+                'users.id as id',
+                'users.nombre_completo as nombre_docente',
+            )
+            ->where('grupos.id', $grupoId)
+            ->where('grupos.materia_id', $materiaId)
+            ->first();
     }
 
     public function materia()

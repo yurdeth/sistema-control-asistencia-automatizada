@@ -1,0 +1,98 @@
+Sistema de Gestión de Aulas Universitarias
+1. Actores del sistema
+•
+•
+•
+•
+Administrador Académico
+oColocar aulas en estado de mantenimiento.
+oGenerar reportes de uso.
+oConfigurar aulas (capacidad, recursos, ubicación).
+Jefes de Departamento/coordinador
+oAsignar docentes a materias en aulas específicas.
+oConsultar disponibilidad de aulas.
+Docentes
+oConsultar aulas disponibles según día y hora.
+oMarcar entrada y salida escaneando código QR.
+oVisualizar historial de uso de las aulas asignadas.
+Estudiantes
+o
+•
+Consultar aulas disponibles en tiempo real.
+Sistema
+oSugerir aula según tamaño del grupo y recursos requeridos.
+oActualizar estado de aulas automáticamente
+(ocupada/libre/mantenimiento).
+2. Requerimientos Funcionales
+Gestión de Aulas
+1. El sistema debe permitir registrar aulas con su capacidad y recursos
+disponibles (proyector, aire acondicionado, ventiladores, pantalla interactiva,
+etc.).
+2. El sistema debe sugerir el aula más adecuada en función del tamaño del grupo
+de estudiantes y recursos solicitados.3. El sistema debe mostrar el estado de cada aula en tiempo real: disponible,
+ocupada o en mantenimiento.
+4. El sistema debe permitir que el administrador académico cambie
+manualmente el estado de un aula a mantenimiento.
+Asignación Académica
+5. El sistema debe permitir a los jefes de departamento asignar docentes a
+materias y vincularlas con aulas.
+6. El sistema debe validar que no se asignen dos grupos diferentes a la misma
+aula y horario.
+Control de Uso (QR)
+7. Cada aula debe tener un código QR único para identificarla.
+8. El sistema debe registrar el ingreso de un docente cuando se escanee el QR al
+iniciar la clase.
+9. El sistema debe registrar la salida del aula cuando el docente vuelva a
+escanear el QR al finalizar la clase.
+10. El sistema debe marcar automáticamente el aula como ocupada al inicio y
+disponible al final de la clase.
+Consultas y Reportes
+11. Panel visual (dashboard): con ocupación en vivo y mapa de aulas para rápida
+consulta.
+12. El sistema debe permitir a los docentes consultar las aulas disponibles
+filtrando por día, hora y capacidad.
+13. El sistema debe permitir a los estudiantes consultar aulas disponibles sin
+permisos de edición.
+14. El sistema debe generar reportes de uso de aulas de forma diaria, semanal,
+quincenal y mensual.
+15. Los reportes deben incluir: porcentaje de ocupación, tiempos de uso por aula,
+recursos más utilizados y estadísticas por facultad/departamento.
+16. Histórico de uso: registro de quién utilizó el aula, a qué hora y para qué clase,
+con fines de auditoría.3. Requerimientos No Funcionales
+1. Disponibilidad: El sistema debe estar accesible en todo momento durante el
+horario académico.
+2. Escalabilidad: Debe permitir agregar más aulas y recursos sin perder
+rendimiento.
+3. Seguridad:
+oAutenticación diferenciada por rol (administrador, jefe de
+departamento, docente, estudiante).
+oEscaneo QR debe validar usuario autenticado.
+4. Rendimiento: Consultas de disponibilidad no deben superar los 2 segundos
+de respuesta.
+5. Compatibilidad: Debe funcionar en navegadores web y dispositivos móviles
+(Android/iOS).
+6. Mantenibilidad: La base de datos debe registrar logs de uso y errores.
+7. Integridad: No deben existir asignaciones duplicadas en el mismo
+horario/aula.
+4. Entradas y Salidas del Sistema
+•
+•
+Entradas:
+oRegistro de aulas (capacidad, recursos).
+oAsignación de docentes y materias.
+oEscaneo de QR (entrada/salida).
+oCambio manual de estado a mantenimiento.
+Salidas:
+oEstado actualizado de aulas en tiempo real.
+oReportes (PDF/Excel) de uso de aulas.
+oSugerencias de aula adecuada.
+oAlertas en caso de conflictos de asignación.o
+5. Aspectos Adicionales
+•Gestión de conflictos: si un aula está en mantenimiento o se prolonga una
+clase, el sistema debe sugerir un plan B (otra aula disponible).
+•Notificaciones:
+oAl docente, cuando una clase está por iniciar.
+oA administración, cuando un aula no es liberada a tiempo.
+oCuando solo se ha marcado entrada y después de un tiempo prudente
+(2 horas) no se haya marcado salida, notificar las entidades superiores
+(coordinador y jefe)

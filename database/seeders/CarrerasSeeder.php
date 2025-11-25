@@ -5,11 +5,12 @@ namespace Database\Seeders;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class CarrerasSeeder extends Seeder {
     public function run(): void {
         // Verificar si ya existe la carrera para no duplicar
-        $existe = DB::table('carreras')->where('nombre', 'Ingeniería de Sistemas Informáticos')->exists();
+        /*$existe = DB::table('carreras')->where('nombre', 'Ingeniería de Sistemas Informáticos')->exists();
 
         if (!$existe) {
             DB::table('carreras')->insert([
@@ -43,6 +44,86 @@ class CarrerasSeeder extends Seeder {
                     ['nombre' => 'Licenciatura en Química y Farmacia', 'departamento_id' => 8, 'created_at' => now(), 'updated_at' => now()],
                 ]
             );
+        }*/
+
+        // Leer el archivo JSON de carreras
+        $jsonPath = database_path('seeders/data/carreras.json');
+
+        if (!File::exists($jsonPath)) {
+            $this->command->error("❌ El archivo carreras.json no existe en: {$jsonPath}");
+            return;
         }
+
+        $carrerasData = json_decode(File::get($jsonPath), true);
+
+        if (!is_array($carrerasData)) {
+            $this->command->error("Error al decodificar el JSON de carreras");
+            return;
+        }
+
+        $insertadas = 0;
+        $omitidas = 0;
+        $departamentosNoEncontrados = [];
+
+        $this->command->info("Iniciando inserción de carreras...\n");
+
+        foreach ($carrerasData as $carreraData) {
+            $nombreDepartamento = $carreraData['departamento'];
+            $nombreCarrera = $carreraData['carrera'];
+
+            // Buscar el departamento por nombre (case-insensitive)
+            $departamento = DB::table('departamentos')
+                ->whereRaw('LOWER(nombre) = ?', [strtolower($nombreDepartamento)])
+                ->first();
+
+            if (!$departamento) {
+                // Registrar departamento no encontrado
+                if (!in_array($nombreDepartamento, $departamentosNoEncontrados)) {
+                    $departamentosNoEncontrados[] = $nombreDepartamento;
+                }
+                $omitidas++;
+                continue;
+            }
+
+            // Verificar si la carrera ya existe para evitar duplicados
+            $existe = DB::table('carreras')
+                ->where('nombre', $nombreCarrera)
+                ->where('departamento_id', $departamento->id)
+                ->exists();
+
+            if ($existe) {
+                $this->command->warn("La carrera '{$nombreCarrera}' ya existe en el departamento '{$nombreDepartamento}'");
+                $omitidas++;
+                continue;
+            }
+
+            // Insertar la carrera
+            DB::table('carreras')->insert([
+                'nombre' => $nombreCarrera,
+                'departamento_id' => $departamento->id,
+                'estado' => 'activa',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $insertadas++;
+            $this->command->info("✓ {$nombreCarrera} ({$nombreDepartamento})");
+        }
+
+        // Mostrar resumen
+        $this->command->info("\n" . str_repeat('=', 60));
+        $this->command->info("RESUMEN DE INSERCIÓN");
+        $this->command->info(str_repeat('=', 60));
+        $this->command->info("Carreras insertadas: {$insertadas}");
+        $this->command->info("Carreras omitidas: {$omitidas}");
+
+        if (!empty($departamentosNoEncontrados)) {
+            $this->command->warn("\nDepartamentos no encontrados:");
+            foreach ($departamentosNoEncontrados as $dept) {
+                $this->command->warn("   - {$dept}");
+            }
+        }
+
+        $this->command->info(str_repeat('=', 60) . "\n");
     }
 }

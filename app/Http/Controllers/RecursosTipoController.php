@@ -24,8 +24,12 @@ class RecursosTipoController extends Controller {
         }
 
         try {
-            $recursos_tipos = Cache::remember('recursos_tipos', 60, function () {
-                return recursos_tipo::limit(10)->get();
+//            $recursos_tipos = Cache::remember('recursos_tipos', 60, function () {
+//                return recursos_tipo::limit(10)->get();
+//            });
+
+            $recursos_tipos = Cache::remember('recursos_tipos', 5, function () {
+                return recursos_tipo::all();
             });
 
             return response()->json([
@@ -105,6 +109,9 @@ class RecursosTipoController extends Controller {
             ]);
 
             DB::commit();
+
+            // eliminar cache despues de la insercion
+            Cache::forget('recursos_tipos');
 
             return response()->json([
                 'message' => 'Recurso agregado exitosamente',
@@ -209,7 +216,7 @@ class RecursosTipoController extends Controller {
         ]);
 
         $rules = [
-            'nombre' => ['required', 'string', 'max:255', 'unique:recursos_tipos,nombre', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/u'],
+            'nombre' => ['required', 'string', 'max:255', 'unique:recursos_tipos,nombre,' . $recursos_tipo_id, 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/u'],
             'descripcion' => ['required', 'string', 'max:1000', 'regex:/^[a-zA-ZñÑáÁéÉíÍóÓúÚ\s]+$/u'],
             'icono' => 'nullable|string|max:255'
         ];

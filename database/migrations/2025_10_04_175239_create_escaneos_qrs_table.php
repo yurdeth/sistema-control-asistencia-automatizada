@@ -26,6 +26,7 @@ return new class extends Migration {
             $table->enum('tipo_escaneo', ['entrada_docente', 'salida_docente', 'asistencia_estudiante']);
             $table->enum('resultado', ['exito', 'fallo', 'no_autorizado']);
             $table->string('motivo_fallo')->nullable();
+            $table->string('dispositivo')->nullable();
             $table->ipAddress();
             $table->timestamps();
         });

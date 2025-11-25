@@ -21,10 +21,13 @@ return new class extends Migration {
                 ->onUpdate('cascade');
             $table->enum('tipo_solicitud', ['estudiante_solicita', 'docente_invita'])->default('estudiante_solicita');
             $table->enum('estado', ['pendiente', 'aceptada', 'rechazada', 'cancelada'])->default('pendiente');
+            $table->text("mensaje")->nullable();
             $table->foreignId('respondido_por')
                 ->constrained('users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
+            $table->text('motivo_rechazo')->nullable();
+            $table->timestamp('fecha_respuesta')->nullable();
             $table->timestamps();
         });
     }

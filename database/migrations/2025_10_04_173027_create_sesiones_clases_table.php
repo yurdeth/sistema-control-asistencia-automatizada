@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->integer('duracion_minutos')->nullable();
             $table->enum('estado', ['programada', 'en_curso', 'finalizada', 'cancelada', 'sin_marcar_salida'])->default('programada');
             $table->integer('retraso_minutos')->nullable();
+            $table->text('observaciones')->nullable();
             $table->timestamps();
         });
     }

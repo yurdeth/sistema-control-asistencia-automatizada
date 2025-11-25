@@ -3,68 +3,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue'
-import { authService } from '@/Services/authService'
-import axios from 'axios'
 
 //Estados reactivos
 const isLoading = ref(true)
 const isAuthenticated = ref(false)
 
 //Verificación de autenticación
-onMounted(async () => {
-    //Obteniendo el token guardado en localStorage
-    const token = authService.getToken()
-
-    // Si no hay token, redirigir inmediatamente al login
-    if (!token) {
-        setTimeout(() => {
-            window.location.href = '/login'
-        }, 2000)
-        return
-    }
-
-    // Si hay token, verificar que sea válido con el backend
-    try {
-        await authService.verifyToken(token);
-
-        // Obtener el usuario guardado en localStorage
-        const user = authService.getUser()
-        console.log('Usuario de localStorage:', user)
-
-        if (!user || !user.id) {
-            throw new Error('No hay datos de usuario')
-        }
-
-        // Verificando token con el backend usando el ID del usuario
-        const url = `/api/users/get/${user.id}`
-        console.log('   Haciendo petición GET...')
-
-        const response = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        console.log('   Status:', response.status)
-
-        isAuthenticated.value = true
-        console.log('Usuario autenticado correctamente')
-
-    } catch (error) {
-        console.error('Error al verificar token:')
-        console.error('Status:', error.response?.status)
-        console.error('Data:', error.response?.data)
-        console.error('Error completo:', error)
-
-        authService.logout()
-
-        setTimeout(() => {
-            window.location.href = '/login'
-        }, 2000)
-        return
-
-    } finally {
-        isLoading.value = false
-    }
+onMounted(() => {
+    // Si llegamos a este componente, el middleware del backend YA verificó el token
+    // Solo mostramos el contenido sin hacer verificaciones redundantes
+    isAuthenticated.value = true
+    isLoading.value = false
+    console.log('Dashboard cargado correctamente')
 });
 </script>
 

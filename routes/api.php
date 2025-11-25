@@ -18,12 +18,14 @@ use App\Http\Controllers\MantenimientosController;
 use App\Http\Controllers\MateriasController;
 use App\Http\Controllers\NotificacionesController;
 use App\Http\Controllers\RecursosTipoController;
+use App\Http\Controllers\ReportesProblemasAulasController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\SesionesClaseController;
 use App\Http\Controllers\SolicitudesInscripcionController;
 use App\Http\Controllers\SystemLogsController;
 use App\Http\Controllers\TiposNotificacionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DisponibilidadAulasController;
 use App\Http\Middleware\NoBrowserCacheMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -40,14 +42,19 @@ Route::post('/login', [AuthController::class, "login"])->name('login.post');
 //Route::post('/login-web', [AuthController::class, "loginWeb"])->name('login.post.web');
 Route::post('/login-as-guest', [AuthController::class, "loginAsGuest"])->name('login.guest');
 
-// Password Reset
+// Password Reset - Web (envía link en email)
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot.password');
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset.password');
 Route::post('/validate-reset-token', [AuthController::class, 'validateResetToken'])->name('validate.reset.token');
 
+// Password Reset - Mobile (envía código de 6 dígitos)
+Route::post('/forgot-password-mobile', [AuthController::class, 'forgotPasswordMobile'])->name('forgot.password.mobile');
+Route::post('/verify-reset-code', [AuthController::class, 'verifyResetCode'])->name('verify.reset.code');
+
 Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::class])->group(function () {
     Route::post('/logout', [AuthController::class, "logout"])->name('logout');
     Route::get('/verify-token', [AuthController::class, 'verifyToken']);
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password');
 
     //************************************ MANAGE ROLES ************************************//
     Route::get('/roles/get/all', [RolesController::class, 'index'])->name('roles.index');
@@ -55,6 +62,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/roles/new', [RolesController::class, 'store'])->name('roles.store');
     Route::delete('/roles/delete/{id}', [RolesController::class, 'destroy'])->name('roles.delete');
     Route::patch('/roles/edit/{id}', [RolesController::class, 'edit'])->name('roles.edit');
+    Route::get('/roles/get/users/{id}', [RolesController::class, 'getUsersWithRolId'])->name('roles.getUserRoleName');
 
     //************************************ MANAGE USERS ************************************//
     Route::get('/users/get/all', [UserController::class, 'index'])->name('users.index');
@@ -76,6 +84,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/users/get/career-managers/all', [UserController::class, 'getCareerManagersOnly'])->name('users.getCareerManagers');
     Route::get('/users/get/professors/all', [UserController::class, 'getProfessorsOnly'])->name('users.getProfessors');
     Route::get('/users/get/students/all', [UserController::class, 'getStudentsOnly'])->name('users.getStudents');
+    Route::get('/users/get/students/paginated', [UserController::class, 'getStudentsPaginated'])->name('users.getStudentsPaginated');
     Route::get('/users/get/profile/me', [UserController::class, 'getMyProfile'])->name('users.getMyProfile');
     Route::post('/users/get/name', [UserController::class, 'getByName'])->name('users.getByName');
 
@@ -92,6 +101,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
 
     //************************************ MANAGE SUBJECTS ************************************//
     Route::get('/subjects/get/all', [MateriasController::class, 'index'])->name('materias.index');
+    Route::get('/subjects/for-select', [MateriasController::class, 'getForSelect'])->name('materias.forSelect');
     Route::get('/subjects/get/{id}', [MateriasController::class, 'show'])->name('materias.show');
     Route::post('/subjects/new', [MateriasController::class, 'store'])->name('materias.store');
     Route::patch('/subjects/edit/{id}', [MateriasController::class, 'edit'])->name('materias.edit');
@@ -112,9 +122,13 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/groups/get/professor/{id}', [GruposController::class, 'getGroupsByProfessor'])->name('grupos.getByProfessor');
     Route::get('/groups/get/status/{estado}', [GruposController::class, 'getGroupsByStatus'])->name('grupos.getByStatus');
     Route::get('/groups/get/available/all', [GruposController::class, 'getAvailableGroups'])->name('grupos.getAvailable');
+    Route::post('/groups/get/professor/', [GruposController::class, 'getGroupProfessor'])->name('grupos.getGroupProfessor');
+    Route::post('/groups/assign-classroom/{id}', [GruposController::class, 'asignarAula'])->name('grupos.asignarAula');
+    Route::get('/groups/classrooms/availability', [GruposController::class, 'getDisponibilidadAulas'])->name('grupos.getDisponibilidadAulas');
 
     //************************************ MANAGE CLASSROOMS ************************************//
     Route::get('/classrooms/get/all', [AulasController::class, 'index'])->name('aulas.index');
+    Route::get('/classrooms/get/paginated', [AulasController::class, 'getPaginatedClassrooms'])->name('aulas.paginated');
     Route::get('/classrooms/get/{id}', [AulasController::class, 'show'])->name('aulas.show');
     Route::post('/classrooms/new', [AulasController::class, 'store'])->name('aulas.store');
     Route::patch('/classrooms/edit/{id}', [AulasController::class, 'edit'])->name('aulas.edit');
@@ -128,6 +142,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::patch('/classrooms/change-status/{id}', [AulasController::class, 'changeClassroomStatus'])->name('aulas.changeStatus');
     Route::get('/classrooms/get/statistics/{id}', [AulasController::class, 'getClassroomStatistics'])->name('aulas.getStatistics');
     Route::post('/classrooms/suggestions/all', [AulasController::class, 'getClassroomSuggestions'])->name('aulas.getSuggestions');
+
 
     //************************************ MANAGE SCHEDULES ************************************//
     Route::get('/schedules/get/all', [HorariosController::class, 'index'])->name('horarios.index');
@@ -210,6 +225,10 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/class-sessions/get/date/{fecha}', [SesionesClaseController::class, 'getByDate'])->name('classSessions.getByDate');
     Route::patch('/class-sessions/change-status/{id}', [SesionesClaseController::class, 'changeStatus'])->name('classSessions.changeStatus');
 
+    // V2 Endpoints - Using Actions (Improved)
+    Route::post('/class-sessions/v2/start', [SesionesClaseController::class, 'startSessionV2'])->name('classSessions.startV2');
+    Route::post('/class-sessions/v2/finish/{id}', [SesionesClaseController::class, 'finishSessionV2'])->name('classSessions.finishV2');
+
     //************************************ MANAGE STUDENT ATTENDANCE ************************************//
     Route::get('/student-attendance/get/all', [AsistenciasEstudiantesController::class, 'index'])->name('studentAttendance.index');
     Route::get('/student-attendance/get/{id}', [AsistenciasEstudiantesController::class, 'show'])->name('studentAttendance.show');
@@ -222,6 +241,9 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::post('/student-attendance/register', [AsistenciasEstudiantesController::class, 'registerAttendance'])->name('studentAttendance.register');
     Route::get('/student-attendance/get/student/{student_id}/group/{group_id}', [AsistenciasEstudiantesController::class, 'getAttendanceReport'])->name('studentAttendance.getReport');
     Route::get('/student-attendance/get/student/{student_id}/statistics', [AsistenciasEstudiantesController::class, 'getStudentStatistics'])->name('studentAttendance.getStatistics');
+
+    // V2 Endpoint - Using RegistrarAsistenciaAction (Improved for Mobile)
+    Route::post('/student-attendance/v2/register-qr', [AsistenciasEstudiantesController::class, 'registerAttendanceQR'])->name('studentAttendance.registerQR');
 
     //************************************ MANAGE MAINTENANCE ************************************//
     Route::get('/maintenance/get/all', [MantenimientosController::class, 'index'])->name('maintenance.index');
@@ -321,4 +343,29 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
     Route::get('/careers/get/status/{estado}', [CarrerasController::class, 'getCareersByStatus'])->name('carreras.by.status');
     Route::post('/careers/disable/{id}', [CarrerasController::class, 'disableCareer'])->name('carreras.disable');
     Route::post('/careers/enable/{id}', [CarrerasController::class, 'enableCareer'])->name('carreras.enable');
+
+    //************************************ MANAGE CLASSROOM PROBLEM REPORTS ************************************//
+    // Catálogos y estadísticas
+    Route::get('/classroom-reports/catalogs/categories', [ReportesProblemasAulasController::class, 'getCategorias'])->name('classroomReports.getCategorias');
+    Route::get('/classroom-reports/catalogs/statuses', [ReportesProblemasAulasController::class, 'getEstados'])->name('classroomReports.getEstados');
+    Route::get('/classroom-reports/statistics', [ReportesProblemasAulasController::class, 'getEstadisticas'])->name('classroomReports.getEstadisticas');
+
+    // CRUD y operaciones
+    Route::post('/classroom-reports/new', [ReportesProblemasAulasController::class, 'store'])->name('classroomReports.store');
+    Route::get('/classroom-reports/get/all', [ReportesProblemasAulasController::class, 'index'])->name('classroomReports.index');
+    Route::get('/classroom-reports/get/{id}', [ReportesProblemasAulasController::class, 'show'])->name('classroomReports.show');
+    Route::get('/classroom-reports/get/classroom/{aula_id}', [ReportesProblemasAulasController::class, 'getByAula'])->name('classroomReports.getByAula');
+    Route::get('/classroom-reports/get/status/{estado}', [ReportesProblemasAulasController::class, 'getByEstado'])->name('classroomReports.getByEstado');
+    Route::get('/classroom-reports/get/category/{categoria}', [ReportesProblemasAulasController::class, 'getByCategoria'])->name('classroomReports.getByCategoria');
+    Route::get('/classroom-reports/get/my/all', [ReportesProblemasAulasController::class, 'getMyReports'])->name('classroomReports.getMyReports');
+    Route::patch('/classroom-reports/change-status/{id}', [ReportesProblemasAulasController::class, 'cambiarEstado'])->name('classroomReports.cambiarEstado');
+    Route::patch('/classroom-reports/assign-user/{id}', [ReportesProblemasAulasController::class, 'asignarUsuario'])->name('classroomReports.asignarUsuario');
+    Route::post('/classroom-reports/mark-resolved/{id}', [ReportesProblemasAulasController::class, 'marcarResuelto'])->name('classroomReports.marcarResuelto');
+    Route::delete('/classroom-reports/delete/{id}', [ReportesProblemasAulasController::class, 'destroy'])->name('classroomReports.destroy');
+    Route::post('/classroom-reports/report/all', [ReportesProblemasAulasController::class, 'getFullReport'])->name('classroomReports.getFullReport');
+
+    //Disponibilidad e Historial de Aulas
+    Route::post('/disponibilidad/consultar', [DisponibilidadAulasController::class, 'consultarDisponibilidad'])->name('disponibilidad.consultar');
+    Route::get('/disponibilidad/mi-historial', [DisponibilidadAulasController::class, 'miHistorialAulas'])->name('disponibilidad.miHistorial');
+    Route::get('/disponibilidad/mi-historial/filtrado', [DisponibilidadAulasController::class, 'miHistorialConFiltros'])->name('disponibilidad.miHistorialFiltrado');
 });

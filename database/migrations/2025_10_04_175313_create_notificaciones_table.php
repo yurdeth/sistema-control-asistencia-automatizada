@@ -23,7 +23,14 @@ return new class extends Migration {
             $table->text('mensaje');
             $table->enum('canal', ['email', 'push']);
             $table->enum('estado', ['pendiente', 'enviada', 'fallida', 'leida'])->default('pendiente');
+            $table->timestamp('fecha_leida')->nullable();
+            $table->timestamp('fecha_envio')->nullable();
+            $table->text('error_envio')->nullable();
+            $table->json('datos_adicionales')->nullable();
             $table->timestamps();
+
+            $table->index(['tipo_notificacion_id'], 'idx_notificaciones_tipo_id');
+            $table->index(['usuario_destino_id', 'estado'], 'idx_notificaciones_usuario_estado');
         });
     }
 
