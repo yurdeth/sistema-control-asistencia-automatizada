@@ -712,7 +712,7 @@ const colorText = ref('#2C2D2F');
 const colorButton = ref('#FE6244');
 
 // API URL
-const API_URL = 'https://sistema-control-asistencia-automatizada.test/api';
+const API_URL = '/api';
 
 // Constantes reactivas para el control de la paginación
 const paginaActual = ref(1);
