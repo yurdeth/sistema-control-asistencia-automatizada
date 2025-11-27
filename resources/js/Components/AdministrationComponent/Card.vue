@@ -23,7 +23,6 @@
                 <span class="font-semibold">Ubicación:</span> {{ ubicacionTruncada }}
             </div>
 
-
             <hr>
 
             <!--Equipamiento / Recursos-->
@@ -60,7 +59,9 @@
             </div>
 
             <!-- Botones para las acciones a realizar -->
-            <div class="grid grid-cols-3 gap-2">
+            <!-- ====== GRID DINÁMICO: 3 columnas si puede editar, 2 si no ====== -->
+            <div :class="canEdit ? 'grid-cols-3' : 'grid-cols-2'" class="grid gap-2">
+                <!-- Botón VER  -->
                 <button
                     @click="abrirModal({ aula, modo: 'ver' })"
                     class="text-white hover:bg-blue-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
@@ -70,7 +71,9 @@
                     Ver
                 </button>
 
+                <!-- Botón EDITAR  -->
                 <button
+                    v-if="canEdit"
                     @click="abrirModal({ aula, modo: 'editar' })"
                     class="text-white hover:bg-yellow-600 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
                     :style="{ background: colorButtons.editar }"
@@ -79,6 +82,7 @@
                     Editar
                 </button>
 
+                <!-- Botón RESERVAR  -->
                 <button
                     @click="abrirModal({ aula, modo: 'reservar' })"
                     class="text-white hover:bg-green-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
@@ -98,6 +102,7 @@
         <AulaModalContent
             :aula="selectedAula"
             :modo="modoActual"
+            :can-edit="canEdit"
             @update="actualizarAula"
             @close="cerrarModal"
         />
@@ -139,11 +144,16 @@ const actualizarAula = (aulaActualizada) => {
     cerrarModal();
 };
 
-// Definimos las propiedades que el componente recibe desde su componente padre
+// ====== PROPS DEL COMPONENTE ======
 const props = defineProps({
     aula: {
         type: Object,
         required: true
+    },
+    // permisos de edicion creados
+    canEdit: {
+        type: Boolean,
+        default: true // Por defecto puede editar 
     }
 })
 
