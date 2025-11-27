@@ -2,6 +2,15 @@
     <Head title="Catalogo"/>
 
     <!-- Loader mientras verifica -->
+    <!-- <div v-if="!isAuthenticated">
+        <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
+                <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
+            </div>
+        </div>
+    </div> -->
+
     <Loader
         v-if="!isAuthenticated"
         @authenticated="handleAuthenticated"
@@ -20,7 +29,7 @@
                             la facultad</p>
                     </div>
 
-                    <!-- ====== BOTÓN AGREGAR -->
+                    <!-- ====== BOTÓN AGREGAR  -->
                     <button
                         v-if="canEdit"
                         class="hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm sm:text-base whitespace-nowrap w-full sm:w-auto"
@@ -120,7 +129,7 @@
 
             <!-- Lista de aulas -->
             <div v-else-if="(usarPaginacionBackend ? aulasBackend.length > 0 : aulas.length > 0)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <!-- se agrega cardEdit al componente card-->
+                <!--  agrego el canEdit al componente card  -->
                 <Card
                     v-for="aula in usarPaginacionBackend ? aulasBackend : aulasPaginadas"
                     :key="aula.id"
@@ -365,7 +374,7 @@
             <br>
         </div>
 
-        <!-- Modal de crear/editar aula -->
+
         <Modal :show="showModal" @close="closeModal">
             <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
                 <h2 class="text-lg font-semibold">
@@ -590,6 +599,7 @@
                 </div>
             </form>
         </Modal>
+
     </MainLayoutDashboard>
 
     <!-- Modal de vista previa de imágenes (fuera del layout) -->
@@ -615,6 +625,7 @@ import Card from '@/Components/AdministrationComponent/Card.vue';
 import {authService} from "@/Services/authService.js";
 import Modal from "@/Components/Modal.vue";
 import ImagePreviewModal from "@/Components/AdministrationComponent/ImagePreviewModal.vue";
+import QRCode from 'qrcode';
 
 const colorText = ref('#2C2D2F');
 const colorButton = ref('#d93f3f');
@@ -627,11 +638,10 @@ const currentImageIndex = ref(0);
 const isDragging = ref(false);
 const isProcessing = ref(false);
 const processingText = ref('');
-
 // Estado de autenticación
 const isAuthenticated = ref(false);
 
-//permiso de  estudiante
+// permisos del usuario con rol 6
 const canEdit = computed(() => authService.canEdit());
 
 // Maneja cuando la autenticación es exitosa
@@ -648,6 +658,7 @@ const form = ref({
     estado: 'activo',
     fotos: [],
     videos: '',
+    qrCodeDataUrl: ''
 });
 
 const formErrors = ref({});
@@ -704,17 +715,19 @@ watch(filtros, () => {
 
 onMounted(async () => {
     await authService.verifyToken(localStorage.getItem("token"));
-
+    
     if (usarPaginacionBackend.value) {
         await cargarAulasPaginadas();
     } else {
         await cargarAulas();
     }
+    // isLoading.value = false;
 });
 
 // ======| Para la paginación |======
 const paginaActual = ref(1)
 const porPagina = ref(9)
+
 
 const totalPaginas = computed(() => Math.ceil(aulasFiltradas.value.length / porPagina.value))
 
@@ -816,6 +829,7 @@ const displayedPagesBackend = computed(() => {
 });
 
 // ======| Métodos API |======
+
 const cargarAulas = async () => {
     cargando.value = true;
     error.value = null;
@@ -839,6 +853,7 @@ const cargarAulas = async () => {
             throw new Error(response.data.message || 'Error al cargar las aulas');
         }
     } catch (err) {
+
         if (err.response?.status === 404) {
             error.value = 'Ruta no encontrada. Verifica que las rutas estén en api.php';
         } else if (err.response?.status === 401) {
@@ -892,12 +907,15 @@ const cargarAulasPaginadas = async () => {
 
         if (response.data.success) {
             aulasBackend.value = response.data.data;
+            // generateQrCode(aulasBackend.value);
             paginacionBackend.value = {
                 pagina_actual: response.data.pagination.pagina_actual,
                 por_pagina: response.data.pagination.por_pagina,
                 total: response.data.pagination.total,
                 ultima_pagina: response.data.pagination.ultima_pagina
             };
+
+            //console.log('Aulas paginadas:', aulasBackend.value);
 
             if (aulasBackend.value.length === 0 && paginacionBackend.value.pagina_actual === 1) {
                 mostrarMensaje('info', 'No hay aulas que coincidan con los filtros seleccionados');
@@ -930,6 +948,93 @@ const cargarAulasPaginadas = async () => {
     }
 };
 
+//para ver el detalle de una aula especifica
+const verDetalle = async (aula) => {
+    try {
+        const response = await axios.get(`/api/classrooms/get/${aula.id}`);
+
+        if (response.data.success) {
+            const aulaDetalle = response.data.data;
+            let recursos = '';
+            if (aulaDetalle.recursos && aulaDetalle.recursos.length > 0) {
+                recursos = '\n\n Recursos:\n' + aulaDetalle.recursos.map(r =>
+                    `  • ${r.nombre} (x${r.cantidad}) - ${r.estado}`
+                ).join('\n');
+            }
+
+            alert(`
+                    ${aulaDetalle.nombre}
+                    Código: ${aulaDetalle.codigo}
+                    Capacidad: ${aulaDetalle.capacidad_pupitres} personas
+                    Ubicación: ${aulaDetalle.ubicacion}
+                    Estado: ${aulaDetalle.estado}${recursos}
+            `);
+        }
+    } catch (err) {
+        mostrarMensaje('error', 'Error al cargar los detalles del aula');
+    }
+};
+
+/**
+ * Editar aula
+ */
+const editarAula = (aula) => {
+    mostrarMensaje('success', `Editar "${aula.nombre}" - Función por implementar`);
+};
+
+/**
+ * Gestionar disponibilidad (cambiar estado)
+ */
+const gestionarDisponibilidad = async (aula) => {
+
+    const nuevoEstado = prompt(
+        `Estado actual: ${aula.estado}\n\n` +
+        'Ingrese el nuevo estado:\n' +
+        '1. disponible\n' +
+        '2. ocupada\n' +
+        '3. mantenimiento\n' +
+        '4. inactiva',
+        aula.estado
+    );
+
+    if (nuevoEstado && ['disponible', 'ocupada', 'mantenimiento', 'inactiva'].includes(nuevoEstado)) {
+        try {
+            const response = await axios.patch(`/api/classrooms/change-status/${aula.id}`, {
+                estado: nuevoEstado
+            });
+
+            if (response.data.success) {
+                mostrarMensaje('success', 'Estado actualizado exitosamente');
+                cargarAulas();
+            }
+        } catch (err) {
+            mostrarMensaje('error', 'Error al cambiar el estado del aula');
+        }
+    }
+};
+
+/**
+ * Ir a crear aula
+ */
+const irACrearAula = () => {
+    mostrarMensaje('success', 'Redirigiendo a formulario de creación - Por implementar');
+};
+
+/**
+ * Mostrar mensaje temporal
+ */
+const mostrarMensaje = (tipo, texto) => {
+    mensaje.value = {
+        mostrar: true,
+        tipo,
+        texto
+    };
+
+    setTimeout(() => {
+        cerrarMensaje();
+    }, 5000);
+};
+
 // Función para abrir modal de creación
 function openCreateModal() {
     isEditMode.value = false
@@ -942,6 +1047,7 @@ function openCreateModal() {
         estado: 'activo',
         fotos: [],
         videos: '',
+        qrCodeDataUrl: ''
     }
     // Liberar todas las URLs de objeto para evitar memory leaks
     imagePreviews.value.forEach(preview => {
@@ -998,6 +1104,7 @@ async function handleSubmit() {
             });
         }
 
+
         const response = await axios.post(`/api/classrooms/new`, formData, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -1028,6 +1135,7 @@ async function handleSubmit() {
             estado: 'activo',
             fotos: [],
             videos: '',
+            qrCodeDataUrl: ''
         };
         imagePreviews.value = [];
 
@@ -1079,6 +1187,9 @@ const handleImageUpload = async (event) => {
 
     if (files.length === 0) return;
 
+    //console.log("Procesando", files.length, "archivos seleccionados");
+
+    // Usar la misma función processImages para mostrar el indicador de procesamiento
     await processImages(files);
 
     // Limpiar el input para permitir seleccionar los mismos archivos si es necesario
@@ -1172,68 +1283,68 @@ const processImages = async (files) => {
 
             // Validar tipo de archivo
             if (!file.type.startsWith('image/')) {
+            continue;
+        }
+
+        // Validar tamaño (5MB = 5 * 1024 * 1024 bytes)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            formErrors.value.fotos = [`El archivo ${file.name} excede el límite de 5MB`];
+            return;
+        }
+
+        try {
+            // Generar hash del archivo actual (antes de compresión)
+            const currentHash = await getFileHash(file);
+
+            // Verificar si ya existe (duplicado) - comparar con hash original
+            if (existingHashes.has(currentHash)) {
+                skippedFiles.push(file.name);
                 continue;
             }
 
-            // Validar tamaño (5MB = 5 * 1024 * 1024 bytes)
-            const maxSize = 5 * 1024 * 1024;
-            if (file.size > maxSize) {
-                formErrors.value.fotos = [`El archivo ${file.name} excede el límite de 5MB`];
-                return;
-            }
+            // Comprimir la imagen
+            const options = {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 800,
+                useWebWorker: true
+            };
 
-            try {
-                // Generar hash del archivo actual (antes de compresión)
-                const currentHash = await getFileHash(file);
+            const compressedFile = await browserImageCompression(file, options);
 
-                // Verificar si ya existe (duplicado) - comparar con hash original
-                if (existingHashes.has(currentHash)) {
-                    skippedFiles.push(file.name);
-                    continue;
-                }
+            // Agregar el hash del archivo original a los existentes
+            existingHashes.add(currentHash);
 
-                // Comprimir la imagen
-                const options = {
-                    maxSizeMB: 1,
-                    maxWidthOrHeight: 800,
-                    useWebWorker: true
-                };
+            validFiles.push(compressedFile);
+            newPreviews.push({
+                url: URL.createObjectURL(compressedFile),
+                name: file.name,
+                size: compressedFile.size,
+                file: compressedFile,
+                hash: currentHash
+            });
 
-                const compressedFile = await browserImageCompression(file, options);
-
-                // Agregar el hash del archivo original a los existentes
-                existingHashes.add(currentHash);
-
-                validFiles.push(compressedFile);
-                newPreviews.push({
-                    url: URL.createObjectURL(compressedFile),
-                    name: file.name,
-                    size: compressedFile.size,
-                    file: compressedFile,
-                    hash: currentHash
-                });
-
-            } catch (error) {
-                console.error(`Error procesando archivo ${file.name}:`, error);
-                formErrors.value.fotos = [`Error procesando ${file.name}: ${error.message}`];
-            }
+        } catch (error) {
+            console.error(`Error procesando archivo ${file.name}:`, error);
+            formErrors.value.fotos = [`Error procesando ${file.name}: ${error.message}`];
         }
+    }
 
-        // Agregar todas las vistas previas nuevas
-        imagePreviews.value = [...imagePreviews.value, ...newPreviews];
+    // Agregar todas las vistas previas nuevas
+    imagePreviews.value = [...imagePreviews.value, ...newPreviews];
 
-        // Actualizar el formulario para incluir todos los archivos (original y nuevos)
-        form.value.fotos = [...form.value.fotos, ...validFiles];
+    // Actualizar el formulario para incluir todos los archivos (original y nuevos)
+    form.value.fotos = [...form.value.fotos, ...validFiles];
 
-        // Mostrar mensaje de archivos omitidos si existen
-        if (skippedFiles.length > 0) {
-            console.log(`${skippedFiles.length} imágenes duplicadas omitidas:`, skippedFiles);
-        }
+    // Mostrar mensaje de archivos omitidos si existen
+    if (skippedFiles.length > 0) {
+        console.log(`${skippedFiles.length} imágenes duplicadas omitidas:`, skippedFiles);
+    }
 
-        // Limpiar errores si existían
-        if (formErrors.value.fotos) {
-            delete formErrors.value.fotos;
-        }
+    // Limpiar errores si existían
+    if (formErrors.value.fotos) {
+        delete formErrors.value.fotos;
+    }
 
     } finally {
         // Desactivar indicador de procesamiento
@@ -1324,18 +1435,44 @@ function validateCapacity(event) {
     }
 }
 
-/**
- * Mostrar mensaje temporal
- */
-const mostrarMensaje = (tipo, texto) => {
-    mensaje.value = {
-        mostrar: true,
-        tipo,
-        texto
-    };
+watch(
+    () => form.value.codigo,
+    async (newCodigo) => {
+        if (newCodigo && newCodigo.trim() !== '') {
+            try {
+                const baseUrl = window.location.origin;
+                const qrText = `${baseUrl}/aula/${newCodigo.trim()}`;
 
-    setTimeout(() => {
-        cerrarMensaje();
-    }, 5000);
-};
+                // Usar QRCode.toDataURL (la función del objeto importado)
+                form.value.qrCodeDataUrl = await QRCode.toDataURL(qrText, {
+                    errorCorrectionLevel: 'H',
+                    width: 250,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                });
+
+                // Actualizar el QR en el aula correspondiente (si está en edición)
+                if (form.value.id) {
+                    const aulaArray = usarPaginacionBackend.value ? aulasBackend.value : aulas.value;
+                    const aulaEncontrada = aulaArray.find(a => a.id === form.value.id);
+                    if (aulaEncontrada) {
+                        aulaEncontrada.qrCodeDataUrl = form.value.qrCodeDataUrl;
+                    }
+                }
+
+                //console.log('QR generado correctamente');
+            } catch (err) {
+                console.error('Error generando QR:', err);
+                form.value.qrCodeDataUrl = '';
+            }
+        } else {
+            form.value.qrCodeDataUrl = '';
+        }
+    },
+    { immediate: false }
+);
+
 </script>
