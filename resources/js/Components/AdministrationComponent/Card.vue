@@ -65,7 +65,7 @@
                 <button
                     @click="abrirModal({ aula, modo: 'ver' })"
                     class="text-white hover:bg-blue-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
-                    :style="{ background: colorButtons.ver }"
+                    :style="{ background: colors.btn_ver_detalle }"
                 >
                     <i class="fa-solid fa-eye"></i>
                     Ver
@@ -76,7 +76,7 @@
                     v-if="canEdit"
                     @click="abrirModal({ aula, modo: 'editar' })"
                     class="text-white hover:bg-yellow-600 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
-                    :style="{ background: colorButtons.editar }"
+                    :style="{ background: colors.btn_editar }"
                 >
                     <i class="fa-solid fa-pen-to-square"></i>
                     Editar
@@ -86,7 +86,7 @@
                 <button
                     @click="abrirModal({ aula, modo: 'reservar' })"
                     class="text-white hover:bg-green-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
-                    :style="{ background: colorButtons.reservar }"
+                    :style="{ background: colors.btn_reservar}"
                 >
                     <i class="fa-solid fa-calendar-days"></i>
                     Reservar
@@ -113,15 +113,8 @@
 import {computed, ref} from 'vue'
 import Modal from '../Modal.vue';
 import AulaModalContent from './AulaModalContent.vue';
-
-//Colores para buttons
-const colorButtons = {
-    ver: '#D93F3F',        // Ver detalles
-    editar: '#FE6244',     // Naranja - Editar
-    reservar: '#FF6C0C',   // Verde - Reservar/Aprobar
-    eliminar: '#DC2626',   // Rojo - Eliminar
-    cancelar: '#6B7280',   // Gris - Cancelar
-};
+import { colors } from '@/UI/color';
+import { getEstadoColor, getEstadoTexto } from '@/UI/estadosAulas';
 
 // const reactivas para controlar la visibilidad del modal y el aula seleccionada
 const showModal = ref(false);
@@ -153,7 +146,7 @@ const props = defineProps({
     // permisos de edicion creados
     canEdit: {
         type: Boolean,
-        default: true // Por defecto puede editar 
+        default: true // Por defecto puede editar
     }
 })
 
@@ -163,28 +156,4 @@ const ubicacionTruncada = computed(() => {
     return texto.length > limite ? texto.slice(0, limite) + '...' : texto
 })
 
-const getEstadoColor = (estado) => {
-    // Asignamos un color específico para cada estado del aula
-    const tipo = {
-        disponible: 'bg-green-100 text-green-800',
-        ocupada: 'bg-red-100 text-red-800',
-        ocupado: 'bg-red-100 text-red-800',
-        mantenimiento: 'bg-yellow-100 text-yellow-800',
-        inactiva: 'bg-gray-100 text-gray-800'
-    };
-    return tipo[estado] || 'bg-gray-100 text-gray-800';
-}
-
-// Función para obtener el texto correspondiente al estado del aula
-const getEstadoTexto = (estado) => {
-    // Texto representativo para cada estado del aula
-    const texto = {
-        disponible: 'Disponible',
-        ocupada: 'Ocupado',
-        ocupado: 'Ocupado',
-        mantenimiento: 'En mantenimiento',
-        inactiva: 'Inactiva'
-    }
-    return texto[estado] || estado;
-};
 </script>
