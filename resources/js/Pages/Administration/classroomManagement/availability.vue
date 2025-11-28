@@ -33,7 +33,7 @@
                                 ? 'border-b-2 text-blue-600'
                                 : 'text-gray-500 hover:text-gray-700'
                         ]"
-                        :style="tabActiva === 'disponibilidad' ? {borderBottomColor: colorButton} : {}"
+                        :style="tabActiva === 'disponibilidad' ? {borderBottomColor: colors.btn_editar} : {}"
                     >
                         <i class="fa-solid fa-door-open mr-2"></i>
                         Disponibilidad
@@ -46,12 +46,12 @@
                                 ? 'border-b-2 text-blue-600'
                                 : 'text-gray-500 hover:text-gray-700'
                         ]"
-                        :style="tabActiva === 'solicitudes' ? {borderBottomColor: colorButton} : {}"
+                        :style="tabActiva === 'solicitudes' ? {borderBottomColor: colors.btn_editar} : {}"
                     >
                         <i class="fa-solid fa-clipboard-list mr-2"></i>
                         Solicitudes
                         <span v-if="solicitudesPendientesCount > 0"
-                            :style="{background: colorButton}"
+                            :style="{background: colors.btn_eliminar}"
                             class="ml-2 px-2 py-0.5 text-xs rounded-full text-white">
                             {{ solicitudesPendientesCount }}
                         </span>
@@ -248,7 +248,7 @@
                             <!-- Estado vacío -->
                             <tr v-if="aulasFiltradas.length === 0">
                                 <td class="px-4 sm:px-6 py-8 sm:py-12 text-center" colspan="7">
-                                    <i :style="{color: colorButton}" class="fa-solid fa-face-meh text-3xl sm:text-4xl"></i>
+                                    <i :style="{color: colors.btn_editar}" class="fa-solid fa-face-meh text-3xl sm:text-4xl"></i>
                                     <p class="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">No se encontraron aulas</p>
                                     <p class="text-xs text-gray-400 mt-1">Intente ajustar los filtros de búsqueda</p>
                                 </td>
@@ -455,7 +455,7 @@
                             <!-- Estado vacío -->
                             <tr v-if="solicitudesFiltradas.length === 0">
                                 <td class="px-4 sm:px-6 py-8 sm:py-12 text-center" colspan="6">
-                                    <i :style="{color: colorButton}" class="fa-solid fa-inbox text-3xl sm:text-4xl"></i>
+                                    <i :style="{color: colors.btn_editar}" class="fa-solid fa-inbox text-3xl sm:text-4xl"></i>
                                     <p class="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-500">No se encontraron solicitudes</p>
                                     <p class="text-xs text-gray-400 mt-1">Intente ajustar los filtros de búsqueda</p>
                                 </td>
@@ -712,8 +712,6 @@ import SearchableSelectMejorado from "@/Components/SearchableSelectMejorado.vue"
 import { colors } from '@/UI/color';
 
 const isLoading = ref(true);
-// Constantes reactivas para los colores de la interfaz
-const colorButton = ref('#FE6244');
 
 // API URL
 const API_URL = '/api';

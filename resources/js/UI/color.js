@@ -15,9 +15,15 @@ export const colors = {
     btn_busqueda:'#B33756',
     btn_carreras:'#db9d3bff',
     btn_actualizar:'#FA672F',
+    btn_ver_mas:'#e3ac14ff',
+    btn_cancelar:'#787a7dff',
 
     //Variables con los colores de texto
     text_color_dark:'#2C2D2F',
     text_color_light:'#FFFF',
+
+    //variables de colores para hovers
+    hover_seleccion:'#D93F3F',
+    hover_seleccion_recursos:'#E06B3F',
 
 }

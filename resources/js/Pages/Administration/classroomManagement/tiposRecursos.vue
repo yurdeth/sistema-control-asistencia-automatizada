@@ -13,7 +13,7 @@
     <MainLayoutDashboard>
         <div class="p-6">
             <div class="mb-6">
-                <h1 class="text-2xl font-bold text-gray-900 mb-1" :style="{color:colorText}">Tipos de Recursos</h1>
+                <h1 class="text-2xl font-bold text-gray-900 mb-1" :style="{color:colors.text_color_dark}">Tipos de Recursos</h1>
                 <p class="text-gray-600 text-sm">Listado de los tipos de recursos dentro de la facultad</p>
             </div>
 
@@ -28,7 +28,7 @@
                     <button
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#ff9966'}"
+                        :style="{background: colors.btn_agregar}"
                     >
                         <span class="text-xl">+</span>
                         Agregar Tipo
@@ -74,7 +74,7 @@
                                         <button
                                             @click="openEditModal(tipo)"
                                             class=" text-white px-4 py-2 rounded-lg transition-colors"
-                                            :style="{background: '#FE6244'}"
+                                            :style="{background: colors.btn_editar}"
                                             :disabled="loading"
                                         >
                                             Editar
@@ -82,7 +82,7 @@
                                         <button
                                             @click="deleteItem(tipo.id)"
                                             class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                            :style="{ background: '#9b3b3e' }"
+                                            :style="{ background: colors.btn_eliminar }"
                                             :disabled="loading"
                                         >
                                             Eliminar
@@ -195,15 +195,17 @@
                     <button
                         type="button"
                         @click="closeModal"
-                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                        class="px-6 py-2 border border-gray-300 rounded-lg"
+                        :style="{background: colors.btn_cancelar, color:colors.text_color_light}"
                         :disabled="submitting"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
-                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                        class="px-6 py-2 text-white rounded-lg transition-colors disabled:opacity-50"
                         :disabled="submitting"
+                        :style="{background: colors.btn_actualizar}"
                     >
                         {{ submitting ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear') }}
                     </button>
@@ -220,9 +222,9 @@
     import axios from 'axios';
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
     import { authService } from "@/Services/authService.js";
+import { colors } from '@/UI/color';
 
     const isLoading = ref(true);
-    const colorText = ref('#1F2937');
     const searchTerm = ref('');
     const loading = ref(false);
     const error = ref(null);

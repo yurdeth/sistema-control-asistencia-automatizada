@@ -82,7 +82,8 @@
                         <span
                             v-for="recurso in selectedResources"
                             :key="recurso"
-                            class="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm"
+                            class="inline-flex items-center gap-1 px-3 py-1  text-indigo-700 rounded-full text-sm"
+                            :style="{background: colors.hover_seleccion, color:colors.text_color_light}"
                         >
                             {{ recurso }}
                             <button
@@ -102,7 +103,7 @@
                         @click="handleSearch"
                         :disabled="!groupSize || groupSize <= 0 || cargandoAulas || aulas.length === 0"
                         class="flex-1 py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-                        :style="groupSize > 0 ? { background: '#eb9733' } : {}"
+                        :style="groupSize > 0 ? { background: colors.btn_busqueda } : {}"
                         :class="groupSize > 0
                             ? 'text-white'
                             : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
@@ -193,7 +194,7 @@
                             <button
                                 @click="abrirModal({ aula })"
                                 class="text-white hover:bg-blue-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
-                                :style="{ background: colorButtons.ver }"
+                                :style="{ background: colors.btn_ver_detalle }"
                             >
                                 <i class="fa-solid fa-eye"></i>
                                 Ver
@@ -201,7 +202,7 @@
                             <button
                                 @click="solicitarAula(aula)"
                                 class="text-white hover:bg-yellow-600 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
-                                :style="{ background: colorButtons.editar }"
+                                :style="{ background: colors.btn_reservar }"
                             >
                                 Solicitar
                             </button>
@@ -212,7 +213,8 @@
 
                 <!-- Botón VER MÁS -->
                 <div v-if="perfectMatches.length > visiblePerfect" class="text-center mt-4">
-                    <button @click="showMorePerfect" class="px-6 py-2 bg-green-600 text-white rounded-lg">
+                    <button @click="showMorePerfect" class="px-6 py-2 text-white rounded-lg"
+                    :style="{background: colors.btn_ver_mas}">
                         Ver más
                     </button>
                 </div>
@@ -397,6 +399,7 @@
     import axios from "axios";
     import Modal from "@/Components/Modal.vue";
     import LightboxModal from "@/Components/AdministrationComponent/LightboxModal.vue";
+import { colors } from '@/UI/color';
 
     //Colores para buttons
     const colorButtons = {

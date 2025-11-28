@@ -47,7 +47,7 @@
 						<button
 							@click="openCreateModal"
 							class="text-white px-4 py-3 sm:px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px]"
-							:style="{background: '#ff9966'}"
+							:style="{background: colors.btn_agregar}"
 						>
 							<i class="fa-solid fa-plus hidden sm:inline text-sm sm:text-xl"></i>
 							<span class="hidden sm:inline">Nuevo</span>
@@ -94,7 +94,7 @@
 										<div class="flex justify-center gap-1 flex-wrap">
 											<button
 												@click="openEditModal(h)"
-                                                :style="{background: '#FE6244'}"
+                                                :style="{background: colors.btn_editar}"
 												class=" text-white px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm transition-colors min-w-[60px] flex items-center justify-center"
 												:disabled="loading"
 											>
@@ -104,7 +104,7 @@
 											<button
 												@click="deleteItem(h.id)"
 												class="hover:bg-red-600 text-white px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm transition-colors min-w-[60px] flex items-center justify-center"
-												:style="{ background: '#9b3b3e' }"
+												:style="{ background: colors.btn_eliminar }"
 												:disabled="loading"
 											>
 												<i class="fa-solid fa-trash sm:mr-1"></i>
@@ -401,8 +401,9 @@
 								<button
 									type="submit"
 									:disabled="submitting"
-									class="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
-								>
+									class="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+                                    :style="{background:colors.btn_actualizar}"
+                                    >
 									<i :class="submitting ? 'fas fa-spinner fa-spin' : 'fas fa-check'" class="mr-2"></i>
 									{{ submitting ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear Horario') }}
 								</button>
@@ -424,6 +425,7 @@ import SearchableSelect from '@/Components/SearchableSelect.vue';
 import TimeBlockSelector from '@/Components/TimeBlockSelector.vue';
 import axios from 'axios';
 import { authService } from '@/Services/authService';
+import { colors } from '@/UI/color';
 
 const API_URL = '/api';
 const getAuthHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
