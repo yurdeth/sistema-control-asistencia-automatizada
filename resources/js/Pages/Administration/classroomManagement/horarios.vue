@@ -195,18 +195,65 @@
 									<div class="ml-3 flex-1">
 										<h3 class="text-sm font-medium text-blue-900 mb-3">Seleccione la materia</h3>
 
-										<SearchableSelect
-											v-model="selectedMateriaId"
-											:options="materiasOptions"
-											label=""
-											placeholder="Buscar materia por nombre o código..."
-											value-key="id"
-											label-key="nombre"
-											sublabel-key="info"
-											:error="errors.materia_id ? errors.materia_id[0] : ''"
-											required
-											@change="onMateriaChange(); validateField('materia_id')"
-										/>
+										<!-- Dropdown personalizado con carga progresiva -->
+										<div class="relative">
+											<input
+												v-model="searchMaterias"
+												type="text"
+												placeholder="Buscar materia por nombre o código..."
+												class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+												:class="[
+													errors.materia_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300',
+													materiasPagination.loading ? 'bg-gray-100' : 'bg-white'
+												]"
+												@focus="showDropdownMaterias = true"
+												:disabled="materiasPagination.loading"
+											/>
+
+											<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+												<div v-if="materiasPagination.loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+												<i v-else class="fas fa-chevron-down text-gray-400 text-sm"></i>
+											</div>
+
+											<div v-if="showDropdownMaterias" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+												<div v-if="filteredMaterias.length === 0 && !materiasPagination.loading" class="px-3 py-4 text-center text-gray-500 text-sm">
+													No hay materias disponibles
+												</div>
+												<div v-if="materiasPagination.loading && filteredMaterias.length === 0" class="px-3 py-4 text-center">
+													<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mx-auto"></div>
+													<p class="text-sm text-gray-500 mt-1">Cargando...</p>
+												</div>
+												<div
+													v-for="materia in filteredMaterias"
+													:key="materia.id"
+													@click="selectMateria(materia)"
+													class="px-3 py-2 hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+												>
+													<div class="flex items-center justify-between">
+														<div class="flex-1">
+															<p class="text-sm font-medium text-gray-900">{{ materia.nombre }}</p>
+															<p v-if="materia.codigo" class="text-xs text-gray-500 mt-0.5">
+																Código: {{ materia.codigo }}
+															</p>
+														</div>
+														<i v-if="selectedMateriaId === materia.id" class="fas fa-check text-blue-600 ml-2"></i>
+													</div>
+												</div>
+												<button
+													v-if="materiasPagination.hasMore && !materiasPagination.loading && filteredMaterias.length > 0"
+													@click="loadMoreMaterias"
+													type="button"
+													class="w-full text-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors border-t border-gray-200">
+													<i class="fas fa-plus mr-1"></i>
+													Cargar más materias ({{ materiasPagination.total - filteredMaterias.length }} restantes)
+												</button>
+											</div>
+										</div>
+
+										<!-- Error validation -->
+										<div v-if="errors.materia_id && errors.materia_id[0]" class="mt-1 text-sm text-red-600">
+											{{ errors.materia_id[0] }}
+										</div>
 
 										<!-- Info de materia seleccionada -->
 										<div v-if="selectedMateriaInfo" class="mt-2 p-2 bg-white rounded border border-blue-200">
@@ -461,6 +508,20 @@ const profesores = ref([]); // docentes list for lookup/display
 const subjectGroups = ref([]); // groups filtered by selected materia in modal
 const selectedMateriaId = ref(''); // materia actualmente seleccionada en modal
 
+// Variables para paginación de materias
+const materiasPagination = ref({
+	currentPage: 1,
+	lastPage: 1,
+	perPage: 50,
+	total: 0,
+	hasMore: true,
+	loading: false
+});
+
+// Variables para dropdown personalizado de materias
+const searchMaterias = ref('');
+const showDropdownMaterias = ref(false);
+
 const showModal = ref(false);
 const isEditMode = ref(false);
 const submitting = ref(false);
@@ -543,14 +604,13 @@ const fetchAll = async () => {
 
 // 🔥 ELIMINAR función populateRelatedNames() - ya no es necesaria
 
-/* Select options fetch - OPTIMIZADO con Promise.all */
+/* Select options fetch - OPTIMIZADO con Promise.all y carga progresiva */
 const fetchSelectOptions = async () => {
 	try {
-		// 🔥 Hacer todas las peticiones en paralelo
-		const [groupsRes, classroomsRes, materiasRes] = await Promise.all([
+		// 🔥 Hacer todas las peticiones en paralelo (excepto materias que usarán paginación)
+		const [groupsRes, classroomsRes] = await Promise.all([
 			axios.get(`${API_URL}/groups/get/all?with_relations=true`, getAuthHeaders()),
-			axios.get(`${API_URL}/classrooms/get/all`, getAuthHeaders()),
-			axios.get(`${API_URL}/subjects/get/all`, getAuthHeaders())
+			axios.get(`${API_URL}/classrooms/get/all`, getAuthHeaders())
 		]);
 
 		// Procesar grupos con sus relaciones
@@ -563,13 +623,81 @@ const fetchSelectOptions = async () => {
 		}));
 
 		classrooms.value = classroomsRes.data.data || [];
-		materias.value = materiasRes.data.data || [];
+
+		// Cargar primera página de materias con paginación
+		await loadFirstPageMaterias();
 
 	} catch (e) {
 		console.error('fetchSelectOptions error', e);
 		groups.value = [];
 		classrooms.value = [];
 		materias.value = [];
+	}
+};
+
+// Función para cargar la primera página de materias
+const loadFirstPageMaterias = async () => {
+	try {
+		materiasPagination.value.loading = true;
+		const response = await axios.get(`${API_URL}/subjects/for-select?page=1`, getAuthHeaders());
+
+		materias.value = response.data.data || [];
+
+		// Actualizar datos de paginación
+		if (response.data.pagination) {
+			materiasPagination.value.currentPage = response.data.pagination.current_page || 1;
+			materiasPagination.value.lastPage = response.data.pagination.last_page || 1;
+			materiasPagination.value.perPage = response.data.pagination.per_page || 50;
+			materiasPagination.value.total = response.data.pagination.total || 0;
+			materiasPagination.value.hasMore = response.data.pagination.current_page < response.data.pagination.last_page;
+		} else {
+			// Fallback si no hay datos de paginación
+			materiasPagination.value.hasMore = false;
+		}
+	} catch (e) {
+		console.error('Error loading first page of materias:', e);
+		materias.value = [];
+		materiasPagination.value.hasMore = false;
+	} finally {
+		materiasPagination.value.loading = false;
+	}
+};
+
+// Función para cargar más materias (página siguiente)
+const loadMoreMaterias = async () => {
+	if (!materiasPagination.value.hasMore || materiasPagination.value.loading) {
+		return;
+	}
+
+	try {
+		materiasPagination.value.loading = true;
+		const nextPage = materiasPagination.value.currentPage + 1;
+
+		const response = await axios.get(`${API_URL}/subjects/for-select?page=${nextPage}`, getAuthHeaders());
+
+		const newMaterias = response.data.data || [];
+
+		// Acumular materias (evitar duplicados)
+		const existingIds = new Set(materias.value.map(m => m.id));
+		const uniqueNewMaterias = newMaterias.filter(m => !existingIds.has(m.id));
+
+		materias.value = [...materias.value, ...uniqueNewMaterias];
+
+		// Actualizar datos de paginación
+		if (response.data.pagination) {
+			materiasPagination.value.currentPage = response.data.pagination.current_page;
+			materiasPagination.value.lastPage = response.data.pagination.last_page;
+			materiasPagination.value.total = response.data.pagination.total;
+			materiasPagination.value.hasMore = response.data.pagination.current_page < response.data.pagination.last_page;
+		} else {
+			// Si no hay más datos o no hay paginación, desactivar el botón
+			materiasPagination.value.hasMore = false;
+		}
+	} catch (e) {
+		console.error('Error loading more materias:', e);
+		materiasPagination.value.hasMore = false;
+	} finally {
+		materiasPagination.value.loading = false;
 	}
 };
 
@@ -611,6 +739,15 @@ const onMateriaChange = async () => {
 	form.value.grupo_id = '';
 	// limpiar errores previos de grupo
 	delete errors.value.grupo_id;
+};
+
+// Métodos para manejar el dropdown personalizado de materias
+const selectMateria = (materia) => {
+	selectedMateriaId.value = materia.id;
+	searchMaterias.value = '';
+	showDropdownMaterias.value = false;
+	onMateriaChange();
+	validateField('materia_id');
 };
 
 /* Búsqueda filtrada con debounce */
@@ -701,6 +838,8 @@ const openCreateModal = () => {
 	serverErrorMessage.value = '';
 	selectedMateriaId.value = '';
 	subjectGroups.value = [];
+	searchMaterias.value = '';
+	showDropdownMaterias.value = false;
 	showModal.value = true;
 };
 const openEditModal = async (h) => {
@@ -730,9 +869,14 @@ const openEditModal = async (h) => {
 	}
 	selectedMateriaId.value = materiaId || '';
 	if (selectedMateriaId.value) await fetchGroupsForSubject(selectedMateriaId.value);
+	searchMaterias.value = '';
+	showDropdownMaterias.value = false;
 	showModal.value = true;
 };
-const closeModal = () => { showModal.value = false; };
+const closeModal = () => {
+	showModal.value = false;
+	showDropdownMaterias.value = false;
+};
 
 /* Normalizar tiempos y submit */
 const friendlyField = {
@@ -893,6 +1037,23 @@ onMounted(async () => {
 	]);
 
 	isLoading.value = false;
+
+	// Cerrar dropdowns al hacer click fuera
+	document.addEventListener('click', (e) => {
+		if (!e.target.closest('.relative')) {
+			showDropdownMaterias.value = false;
+		}
+	});
+});
+
+// Computed para filtrar materias en el dropdown
+const filteredMaterias = computed(() => {
+	if (!searchMaterias.value) return materias.value;
+	const term = searchMaterias.value.toLowerCase();
+	return materias.value.filter(m =>
+		m.nombre.toLowerCase().includes(term) ||
+		(m.codigo && m.codigo.toLowerCase().includes(term))
+	);
 });
 
 // Computed para preparar opciones de los selects con información adicional
