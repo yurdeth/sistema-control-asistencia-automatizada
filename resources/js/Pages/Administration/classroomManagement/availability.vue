@@ -15,7 +15,7 @@
         <div class="p-3 sm:p-4 md:p-6">
             <!-- Header de la vista-->
             <div class="mb-4 sm:mb-6">
-                <h1 :style="{color:colorText}" class="text-xl sm:text-2xl font-bold text-gray-900 mb-1"> Disponibilidad
+                <h1 :style="{color: colors.text_color_dark}" class="text-xl sm:text-2xl font-bold text-gray-900 mb-1"> Disponibilidad
                     de Aulas </h1>
                 <p class="text-gray-600 text-xs sm:text-sm">
                     Visualice y gestione las aulas, solicitudes de reserva y disponibilidad
@@ -102,7 +102,7 @@
                                 </select>
 
                                 <button
-                                    :style="{background:colorButton}"
+                                    :style="{background:colors.btn_agregar}"
                                     class="px-6 py-2 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap hover:opacity-90"
                                     @click="abrirModalReserva"
                                 >
@@ -117,7 +117,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                         <div class="text-sm text-gray-600 mb-1">Total Aulas</div>
-                        <div class="text-2xl font-bold text-gray-900">{{ aulas.length }}</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ todasLasAulas.length }}</div>
                     </div>
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                         <div class="text-sm text-gray-600 mb-1">Total Reservas</div>
@@ -210,18 +210,18 @@
 
                                 <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap">
                                         <span v-if="aula.disponible"
-                                              class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                             Disponible
                                         </span>
                                     <span v-else
-                                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                             Ocupada
                                         </span>
                                 </td>
 
                                 <td class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
                                     <button
-                                        :style="{background:'#D93F3F'}"
+                                        :style="{background:colors.btn_ver_detalle}"
                                         class="mr-2 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:opacity-90 transition-opacity text-xs sm:text-sm"
                                         @click="abrirModal({ aula, modo: 'ver' })"
                                     >
@@ -229,7 +229,7 @@
                                     </button>
                                     <button
                                         v-if="aula.disponible"
-                                        :style="{background:colorButton}"
+                                        :style="{background:colors.btn_reservar}"
                                         class="text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:opacity-90 transition-opacity text-xs sm:text-sm"
                                         @click="openAssignClassroomModal(aula)"
                                     >
@@ -591,20 +591,22 @@
     <Modal :show="assignClassrooms" class="p-50 max-w-lg m-5" @close="cerrarModal">
         <div class="p-6 space-y-4">
             <!--Header-->
-            <div class="flex items-start justify-between">
-                <div>
-                    <h2 class="text-xl font-extralight text-gray-900 tracking-tight mb-3">Asignar Aula: {{ aula.nombre }}</h2>
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-2 h-2 rounded-full transition-all"
-                            :class="aula.estado === 'Activo' ? 'bg-gray-900 shadow-[0_0_8px_rgba(17,23,39,0.4)]' : 'bg-gray-400'"
-                        />
-                        <input type="hidden" v-model="aula_id" /> {{aula.id}}
-                    </div>
+        <div class="flex items-start justify-between">
+            <div>
+                <h2 class="text-xl font-extralight text-gray-900 tracking-tight mb-3">
+                    Asignar Aula: {{ aula.nombre }}
+                </h2>
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-2 h-2 rounded-full transition-all"
+                        :class="aula.estado === 'disponible' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-gray-400'"
+                    />
+                    <span class="text-sm text-gray-600">ID: {{ aula.id }}</span>
                 </div>
             </div>
+        </div>
 
-            <form class="space-y-4">
+            <div class="space-y-4">
                 <div class="mb-4">
                     <SearchableSelectMejorado
                         v-model="selectedSubject"
@@ -643,7 +645,7 @@
                         @change="fetchSchedules(selectedGroup)"
                     >
                         <option disabled selected value="">Seleccione el responsable del aula</option>
-                        <option v-if="responsible" :value="responsible.id">{{ responsible.nombre_docente }}</option>
+                        <option v-if="responsible" :value="responsible.id"> {{ responsible.nombre_completo }}</option>
                     </select>
                 </div>
 
@@ -682,17 +684,19 @@
                         Cancelar
                     </button>
                     <button
-                        class="px-4 py-2 text-white rounded-md hover:bg-blue-700 transition-colors"
-                        type="submit"
-                        :style="{background: '#D93F3F'}"
-                        @click="sendReservation()"
+                        class="px-4 py-2 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        type="button"
+                        :style="{background: colors.btn_agregar}"
+                        :disabled="!selectedSchedule || !selectedDate || !aula.id"
+                        @click.prevent="sendReservation"
                     >
                         Asignar Aula
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
     </Modal>
+
 </template>
 
 <script setup>
@@ -705,10 +709,10 @@ import AulaModalContent from "@/Components/AdministrationComponent/AulaModalCont
 import Modal from "@/Components/Modal.vue";
 import LightboxModal from "@/Components/AdministrationComponent/LightboxModal.vue";
 import SearchableSelectMejorado from "@/Components/SearchableSelectMejorado.vue";
+import { colors } from '@/UI/color';
 
 const isLoading = ref(true);
 // Constantes reactivas para los colores de la interfaz
-const colorText = ref('#2C2D2F');
 const colorButton = ref('#FE6244');
 
 // API URL
@@ -723,6 +727,7 @@ const fechaSeleccionada = ref(new Date());
 const capacidadSeleccionada = ref('all');
 const estadoFiltro = ref('disponibles');
 const busquedaAula = ref('');
+const todasLasAulas = ref([]);
 const aulas = ref([]);
 let aula = ref({});
 const sectores = ref([]);
@@ -742,7 +747,7 @@ const groups = ref([]);
 const responsible = ref({});
 const selectedResponsible = ref('');
 const schedules = ref([]);
-const selectedSchedule = ref([]);
+const selectedSchedule = ref('');
 const selectedDate = ref('');
 const aula_id = ref('');
 
@@ -808,11 +813,11 @@ const reservasDia = computed(() => {
 const totalReservas = computed(() => reservasDia.value.length);
 
 const aulasDisponiblesCount = computed(() => {
-    return aulas.value.filter(a => a.disponible).length;
+    return todasLasAulas.value.filter(a => a.estado === 'disponible').length;
 });
 
 const aulasOcupadasCount = computed(() => {
-    return aulas.value.filter(a => !a.disponible).length;
+    return todasLasAulas.value.filter(a => a.estado === 'ocupada' || a.estado === 'ocupado').length;
 });
 
 const totalPaginas = computed(() => {
@@ -846,6 +851,24 @@ const paginasVisibles = computed(() => {
     }
     return paginas;
 });
+
+// nueva función para obtener TODAS las aulas
+const fetchAllClassrooms = async () => {
+    const response = await axios.get("/api/classrooms/get/all", { // Cambia esta ruta según tu API
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
+    });
+
+    const data = response.data;
+
+    if (!data.success) {
+        alert("No se pudieron cargar las aulas");
+        console.debug(data.message);
+    }
+
+    return data.data;
+}
 
 // ==================== COMPUTED DE SOLICITUDES ====================
 const solicitudesPendientesCount = computed(() => {
@@ -1058,12 +1081,29 @@ const fetchSchedules = async (id) => {
 };
 
 const sendReservation = async () => {
+    // Validaciones
+    if (!aula.value?.id) {
+        alert("No se ha seleccionado un aula válida");
+        return false;
+    }
+
+    if (!selectedSchedule.value) {
+        alert("Debe seleccionar un horario");
+        return false;
+    }
+
+    if (!selectedDate.value) {
+        alert("Debe seleccionar una fecha");
+        return false;
+    }
+
     try {
-        const response = await axios.post('/api/class-sessions/new', {
-            aula_id: aula.id,
+        const payload = {
             horario_id: selectedSchedule.value,
             fecha_clase: selectedDate.value
-        }, {
+        };
+
+        const response = await axios.post('/api/class-sessions/new', payload, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json'
@@ -1078,12 +1118,58 @@ const sendReservation = async () => {
         }
 
         alert("Reserva creada exitosamente");
+
+        await recargarAulas();
+
         cerrarModal();
         return true;
     } catch (error) {
-        console.error('Error creating reservation:', error);
-        alert(error.response?.data?.message || "Ocurrió un error al crear la reserva");
+        if (error.response?.data?.errors) {
+            console.error('Errores de validación:', error.response.data.errors);
+            const errores = Object.values(error.response.data.errors).flat().join('\n');
+            alert(`Errores de validación:\n${errores}`);
+        } else if (error.response?.data?.message) {
+            alert(error.response.data.message);
+        } else {
+            alert("Ocurrió un error al crear la reserva");
+        }
+
         return false;
+    }
+};
+
+// Nueva función para recargar aulas
+const recargarAulas = async () => {
+    try {
+        console.log('Recargando aulas...');
+
+        const todasResponse = await fetchAllClassrooms();
+        todasLasAulas.value = todasResponse.map(classroom => ({
+            id: classroom.id,
+            nombre: classroom.nombre,
+            codigo: classroom.codigo,
+            sector: classroom.sector ?? '',
+            capacidad_pupitres: classroom.capacidad_pupitres,
+            ubicacion: classroom.ubicacion,
+            estado: classroom.estado,
+            disponible: classroom.estado === 'disponible'
+        }));
+
+        const disponiblesResponse = await fetchAllAvailableClassrooms();
+        aulas.value = disponiblesResponse.map(classroom => ({
+            id: classroom.id,
+            nombre: classroom.nombre,
+            codigo: classroom.codigo,
+            sector: classroom.sector ?? '',
+            capacidad_pupitres: classroom.capacidad_pupitres,
+            ubicacion: classroom.ubicacion,
+            estado: classroom.estado,
+            disponible: true
+        }));
+
+        console.log('Aulas recargadas');
+    } catch (error) {
+        console.error('Error al recargar aulas:', error);
     }
 };
 
@@ -1096,15 +1182,17 @@ const cerrarModal = () => {
     showModal.value = false;
     assignClassrooms.value = false;
 
-    // Reset arrays
+    // Reset
+    aula.value = {};
     subjects.value = [];
     groups.value = [];
     schedules.value = [];
+    responsible.value = {};
 
     // Reset selected values
     selectedSubject.value = '';
     selectedGroup.value = '';
-    selectedResponsible.value = ''
+    selectedResponsible.value = '';
     selectedSchedule.value = '';
     selectedDate.value = '';
 };
@@ -1116,7 +1204,7 @@ const abrirLightbox = (index) => {
 const cerrarLightbox = () => (mostrarLightbox.value = false);
 
 const openAssignClassroomModal = (aulaData) => {
-    aula = aulaData;
+    aula.value = aulaData;
     assignClassrooms.value = true;
 };
 
@@ -1268,15 +1356,29 @@ const irAPaginaSolicitudes = (pagina) => {
 // ==================== LIFECYCLE ====================
 onMounted(async () => {
     try {
-        const response = await fetchAllAvailableClassrooms();
-        // Handle array of classrooms
-        aulas.value = response.map(classroom => ({
+        // Cargar TODAS las aulas del sistema
+        const todasResponse = await fetchAllClassrooms();
+        todasLasAulas.value = todasResponse.map(classroom => ({
             id: classroom.id,
             nombre: classroom.nombre,
             codigo: classroom.codigo,
             sector: classroom.sector ?? '',
             capacidad_pupitres: classroom.capacidad_pupitres,
             ubicacion: classroom.ubicacion,
+            estado: classroom.estado,
+            disponible: classroom.estado === 'disponible'
+        }));
+
+        // Cargar aulas disponibles para la tabla
+        const disponiblesResponse = await fetchAllAvailableClassrooms();
+        aulas.value = disponiblesResponse.map(classroom => ({
+            id: classroom.id,
+            nombre: classroom.nombre,
+            codigo: classroom.codigo,
+            sector: classroom.sector ?? '',
+            capacidad_pupitres: classroom.capacidad_pupitres,
+            ubicacion: classroom.ubicacion,
+            estado: classroom.estado,
             disponible: true
         }));
 
@@ -1286,6 +1388,7 @@ onMounted(async () => {
     } catch (error) {
         console.error('Error fetching classrooms:', error);
         aulas.value = [];
+        todasLasAulas.value = [];
     } finally {
         isLoading.value = false;
     }

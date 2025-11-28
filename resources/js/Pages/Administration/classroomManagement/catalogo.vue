@@ -2,15 +2,6 @@
     <Head title="Catalogo"/>
 
     <!-- Loader mientras verifica -->
-    <!-- <div v-if="!isAuthenticated">
-        <div v-if="isLoading" class="flex items-center justify-center min-h-screen bg-gray-100">
-            <div class="text-center">
-                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto"></div>
-                <p class="mt-4 text-gray-600 text-lg">Verificando sesión...</p>
-            </div>
-        </div>
-    </div> -->
-
     <Loader
         v-if="!isAuthenticated"
         @authenticated="handleAuthenticated"
@@ -24,7 +15,7 @@
             <div class="mb-4 sm:mb-6">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4">
                     <div class="flex-1">
-                        <h1 class="text-xl sm:text-2xl font-bold" :style="{color:colorText}">Catálogo de Aulas</h1>
+                        <h1 class="text-xl sm:text-2xl font-bold" :style="{color:colors.text_color_dark}">Catálogo de Aulas</h1>
                         <p class="text-gray-600 text-sm mt-1">Gestiona y visualiza todas las aulas disponibles dentro de
                             la facultad</p>
                     </div>
@@ -33,7 +24,7 @@
                     <button
                         v-if="canEdit"
                         class="hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm sm:text-base whitespace-nowrap w-full sm:w-auto"
-                        :style="{background: colorButton}"
+                        :style="{background: colors.btn_agregar}"
                         @click="openCreateModal"
                     >
                         <i class="fa-solid fa-plus"></i>
@@ -175,7 +166,7 @@
                 <div class="flex flex-col items-center gap-3">
                     <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     <p class="text-gray-600 text-lg font-medium">
                         <span v-if="paginacionBackend.pagina_actual === 1">No hay aulas registradas</span>
@@ -626,8 +617,8 @@ import {authService} from "@/Services/authService.js";
 import Modal from "@/Components/Modal.vue";
 import ImagePreviewModal from "@/Components/AdministrationComponent/ImagePreviewModal.vue";
 import QRCode from 'qrcode';
+import { colors } from '@/UI/color';
 
-const colorText = ref('#2C2D2F');
 const colorButton = ref('#d93f3f');
 const showModal = ref(false);
 const isEditMode = ref(false);
@@ -715,7 +706,7 @@ watch(filtros, () => {
 
 onMounted(async () => {
     await authService.verifyToken(localStorage.getItem("token"));
-    
+
     if (usarPaginacionBackend.value) {
         await cargarAulasPaginadas();
     } else {
@@ -727,7 +718,6 @@ onMounted(async () => {
 // ======| Para la paginación |======
 const paginaActual = ref(1)
 const porPagina = ref(9)
-
 
 const totalPaginas = computed(() => Math.ceil(aulasFiltradas.value.length / porPagina.value))
 

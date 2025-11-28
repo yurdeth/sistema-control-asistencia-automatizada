@@ -12,7 +12,7 @@
         <div class="p-6" v-if="isAuthenticated">
             <!-- Header de la vista-->
             <div class="mb-6">
-                <h1 class="text-2xl font-bold text-gray-900 mb-1" :style="{color:colorText}">Departamentos</h1>
+                <h1 class="text-2xl font-bold text-gray-900 mb-1" :style="{color:colors.text_color_dark}">Departamentos</h1>
                 <p class="text-gray-600 text-sm">Listado de los departamentos dentro de la facultad</p>
             </div>
 
@@ -28,7 +28,7 @@
                     <button
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                        :style="{background: '#D93F3F'}"
+                        :style="{background: colors.btn_agregar}"
                         v-if="['root', 'administrador_academico', 'jefe_departamento'].includes(currentUserRolName)"
                     >
                         <span class="text-xl">+</span>
@@ -108,14 +108,19 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium text-gray-900 flex justify-center items-center">
-                                        {{ department.estado }}
+                                        <span
+                                            :class="getEstadoDepartamentoColor(department.estado)"
+                                            class="px-2 py-1 rounded-full text-xs font-semibold"
+                                        >
+                                            {{ getEstadoDepartamentoTexto(department.estado) }}
+                                        </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm">
                                         <div class="flex gap-2 justify-center items-center">
                                             <button
                                                 @click="openEditModal(department)"
                                                 class="text-white px-4 py-2 rounded-lg transition-colors"
-                                                :style="{background: '#FE6244'}"
+                                                :style="{background: colors.btn_editar}"
                                                 :disabled="loading"
                                                 v-if="['root', 'administrador_academico', 'jefe_departamento'].includes(currentUserRolName)"
                                             >
@@ -124,7 +129,7 @@
                                             <button
                                                 @click="deleteItem(department.id)"
                                                 class="hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                                :style="{ background: '#BF1A1A' }"
+                                                :style="{ background: colors.btn_eliminar }"
                                                 :disabled="loading"
                                                 v-if="['root', 'administrador_academico', 'jefe_departamento'].includes(currentUserRolName)"
                                             >
@@ -133,7 +138,7 @@
                                             <button
                                                 @click="openCarreraModal(department.id)"
                                                 class="text-white px-4 py-2 rounded-lg"
-                                                :style="{background:'#FF6C0C'}"
+                                                :style="{background:colors.btn_carreras}"
                                             >
                                                 Carreras
                                             </button>
@@ -277,7 +282,8 @@
                     <button type="button" @click="closeModal" class="px-4 py-2 bg-gray-300 rounded">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded" :disabled="loading">
+                    <button type="submit" class="px-4 py-2  text-white rounded" :disabled="loading"
+                    :style="{background:colors.btn_actualizar}">
                         {{ isEditMode ? 'Actualizar' : 'Crear' }}
                     </button>
                 </div>
@@ -334,6 +340,8 @@ import {authService} from "@/Services/authService.js";
 
 import Loader from '@/Components/AdministrationComponent/Loader.vue';
 import axios from "axios";
+import { colors } from '@/UI/color';
+import { getEstadoDepartamentoColor, getEstadoDepartamentoTexto } from '@/UI/estadosAulas';
 
 // Estado de autenticación
 const isAuthenticated = ref(false);
@@ -344,7 +352,6 @@ const handleAuthenticated = (status) => {
 };
 
 // Definimos las propiedades necesarias
-const colorText = ref('#1F2937')
 const searchTerm = ref('')
 const loading = ref(false)
 const error = ref(null)

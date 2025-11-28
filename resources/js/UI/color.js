@@ -12,6 +12,12 @@ export const colors = {
     btn_eliminar:'#9B3B3E',
     btn_limpiar:'#9CA3AF',
     btn_aprobar:'#EDAE4A',
-    btn_busqueda:'#B33756'
+    btn_busqueda:'#B33756',
+    btn_carreras:'#db9d3bff',
+    btn_actualizar:'#FA672F',
+
+    //Variables con los colores de texto
+    text_color_dark:'#2C2D2F',
+    text_color_light:'#FFFF',
 
 }
