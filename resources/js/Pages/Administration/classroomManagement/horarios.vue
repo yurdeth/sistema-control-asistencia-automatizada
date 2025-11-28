@@ -47,7 +47,7 @@
 						<button
 							@click="openCreateModal"
 							class="text-white px-4 py-3 sm:px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 min-h-[44px]"
-							:style="{background: colors.btn_agregar}"
+							:style="{background: '#ff9966'}"
 						>
 							<i class="fa-solid fa-plus hidden sm:inline text-sm sm:text-xl"></i>
 							<span class="hidden sm:inline">Nuevo</span>
@@ -94,7 +94,7 @@
 										<div class="flex justify-center gap-1 flex-wrap">
 											<button
 												@click="openEditModal(h)"
-                                                :style="{background: colors.btn_editar}"
+                                                :style="{background: '#FE6244'}"
 												class=" text-white px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm transition-colors min-w-[60px] flex items-center justify-center"
 												:disabled="loading"
 											>
@@ -104,7 +104,7 @@
 											<button
 												@click="deleteItem(h.id)"
 												class="hover:bg-red-600 text-white px-2 py-1 sm:px-3 sm:py-2 rounded text-xs sm:text-sm transition-colors min-w-[60px] flex items-center justify-center"
-												:style="{ background: colors.btn_eliminar }"
+												:style="{ background: '#9b3b3e' }"
 												:disabled="loading"
 											>
 												<i class="fa-solid fa-trash sm:mr-1"></i>
@@ -242,10 +242,18 @@
 											label-key="nombre"
 											sublabel-key="info"
 											:error="errors.grupo_id ? errors.grupo_id[0] : ''"
-											:disabled="!selectedMateriaId"
+											:disabled="!selectedMateriaId || (selectedMateriaId && subjectGroups.length === 0)"
 											required
 											@change="validateField('grupo_id')"
 										/>
+
+										<!-- Mensaje cuando no hay grupos -->
+										<div v-if="selectedMateriaId && subjectGroups.length === 0" class="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded">
+											<p class="text-xs text-yellow-800 font-medium">
+												<i class="fas fa-exclamation-triangle mr-1"></i>
+												Esta materia no tiene grupos disponibles.
+											</p>
+										</div>
 
 										<!-- Info de grupo seleccionado -->
 										<div v-if="selectedGrupoInfo" class="mt-2 p-2 bg-white rounded border border-green-200">
@@ -401,9 +409,8 @@
 								<button
 									type="submit"
 									:disabled="submitting"
-									class="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
-                                    :style="{background:colors.btn_actualizar}"
-                                    >
+									class="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+								>
 									<i :class="submitting ? 'fas fa-spinner fa-spin' : 'fas fa-check'" class="mr-2"></i>
 									{{ submitting ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear Horario') }}
 								</button>
@@ -425,7 +432,6 @@ import SearchableSelect from '@/Components/SearchableSelect.vue';
 import TimeBlockSelector from '@/Components/TimeBlockSelector.vue';
 import axios from 'axios';
 import { authService } from '@/Services/authService';
-import { colors } from '@/UI/color';
 
 const API_URL = '/api';
 const getAuthHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
@@ -603,6 +609,8 @@ const onMateriaChange = async () => {
 	await fetchGroupsForSubject(selectedMateriaId.value);
 	// reset grupo selection when materia changes
 	form.value.grupo_id = '';
+	// limpiar errores previos de grupo
+	delete errors.value.grupo_id;
 };
 
 /* Búsqueda filtrada con debounce */
@@ -740,7 +748,14 @@ const validateForm = () => {
 	const errs = {};
 	// campos obligatorios básicos
 	if (!selectedMateriaId.value) errs.materia_id = [friendlyField.materia_id];
-	if (!form.value.grupo_id) errs.grupo_id = [friendlyField.grupo_id];
+	
+	// Validar que la materia seleccionada tenga grupos
+	if (selectedMateriaId.value && subjectGroups.value.length === 0) {
+		errs.grupo_id = ['Esta materia no tiene grupos disponibles.'];
+	} else if (!form.value.grupo_id) {
+		errs.grupo_id = [friendlyField.grupo_id];
+	}
+	
 	if (!form.value.aula_id) errs.aula_id = [friendlyField.aula_id];
 	if (!form.value.dia_semana) errs.dia_semana = [friendlyField.dia_semana];
 	if (!form.value.hora_inicio) errs.hora_inicio = [friendlyField.hora_inicio];
@@ -980,7 +995,9 @@ const validateField = (field) => {
 			}
 			break;
 		case 'grupo_id':
-			if (!form.value.grupo_id) {
+			if (selectedMateriaId.value && subjectGroups.value.length === 0) {
+				errs.grupo_id = ['Esta materia no tiene grupos disponibles.'];
+			} else if (!form.value.grupo_id) {
 				errs.grupo_id = [friendlyField.grupo_id];
 			} else {
 				delete errs.grupo_id;
