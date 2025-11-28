@@ -254,9 +254,13 @@
 								class="w-full rounded px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
 								@focus="showDropdownMaterias = true"
 							/>
-							<div v-if="showDropdownMaterias" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-48 overflow-y-auto">
-								<div v-if="filteredMaterias.length === 0" class="px-3 py-2 text-gray-500 text-sm">
+							<div v-if="showDropdownMaterias" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-64 overflow-y-auto">
+								<div v-if="filteredMaterias.length === 0 && !materiasPagination.loading" class="px-3 py-2 text-gray-500 text-sm">
 									No hay materias disponibles
+								</div>
+								<div v-if="materiasPagination.loading" class="px-3 py-4 text-center">
+									<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mx-auto"></div>
+									<p class="text-sm text-gray-500 mt-1">Cargando...</p>
 								</div>
 								<button
 									v-for="m in filteredMaterias"
@@ -267,6 +271,14 @@
 									:class="{ 'bg-blue-200': form.materia_id === m.id }">
 									<span>{{ m.nombre }}</span>
 									<i v-if="form.materia_id === m.id" class="fas fa-check text-blue-600"></i>
+								</button>
+								<button
+									v-if="materiasPagination.hasMore && !materiasPagination.loading && filteredMaterias.length > 0"
+									@click="loadMoreMaterias"
+									type="button"
+									class="w-full text-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors border-t border-gray-200">
+									<i class="fas fa-plus mr-1"></i>
+									Cargar más materias ({{ materiasPagination.total - filteredMaterias.length }} restantes)
 								</button>
 							</div>
 						</div>
@@ -843,6 +855,16 @@ const showDropdownMaterias = ref(false);
 const showDropdownDocentes = ref(false);
 const showDropdownCiclos = ref(false);
 
+// Variables para paginación de materias
+const materiasPagination = ref({
+	currentPage: 1,
+	lastPage: 1,
+	perPage: 50,
+	total: 0,
+	hasMore: true,
+	loading: false
+});
+
 // Computed para filtrar opciones
 const filteredMaterias = computed(() => {
 	if (!searchMaterias.value) return materias.value;
@@ -1015,17 +1037,85 @@ const fetchAll = async () => {
 
 const fetchSelectOptions = async () => {
 	try {
-		const [materiasRes, docentesRes, ciclosRes] = await Promise.all([
-			axios.get(`${API_URL}/subjects/get/all`, getAuthHeaders()),
+		// Cargar primera página de materias con paginación
+		await loadFirstPageMaterias();
+
+		// Cargar docentes y ciclos normalmente (no tienen paginación)
+		const [docentesRes, ciclosRes] = await Promise.all([
 			axios.get(`${API_URL}/users/get/professors/all`, getAuthHeaders()),
 			axios.get(`${API_URL}/academic-terms/get/all`, getAuthHeaders())
 		]);
 
-		materias.value = materiasRes.data.data || [];
 		docentes.value = docentesRes.data.data || [];
 		ciclos.value = ciclosRes.data.data || [];
 	} catch (e) {
 		console.error('Error fetching select options:', e);
+	}
+};
+
+// Función para cargar la primera página de materias
+const loadFirstPageMaterias = async () => {
+	try {
+		materiasPagination.value.loading = true;
+		const response = await axios.get(`${API_URL}/subjects/for-select?page=1`, getAuthHeaders());
+
+		materias.value = response.data.data || [];
+
+		// Actualizar datos de paginación
+		if (response.data.pagination) {
+			materiasPagination.value.currentPage = response.data.pagination.current_page || 1;
+			materiasPagination.value.lastPage = response.data.pagination.last_page || 1;
+			materiasPagination.value.perPage = response.data.pagination.per_page || 50;
+			materiasPagination.value.total = response.data.pagination.total || 0;
+			materiasPagination.value.hasMore = response.data.pagination.current_page < response.data.pagination.last_page;
+		} else {
+			// Fallback si no hay datos de paginación
+			materiasPagination.value.hasMore = false;
+		}
+	} catch (e) {
+		console.error('Error loading first page of materias:', e);
+		materias.value = [];
+		materiasPagination.value.hasMore = false;
+	} finally {
+		materiasPagination.value.loading = false;
+	}
+};
+
+// Función para cargar más materias (página siguiente)
+const loadMoreMaterias = async () => {
+	if (!materiasPagination.value.hasMore || materiasPagination.value.loading) {
+		return;
+	}
+
+	try {
+		materiasPagination.value.loading = true;
+		const nextPage = materiasPagination.value.currentPage + 1;
+
+		const response = await axios.get(`${API_URL}/subjects/for-select?page=${nextPage}`, getAuthHeaders());
+
+		const newMaterias = response.data.data || [];
+
+		// Acumular materias (evitar duplicados)
+		const existingIds = new Set(materias.value.map(m => m.id));
+		const uniqueNewMaterias = newMaterias.filter(m => !existingIds.has(m.id));
+
+		materias.value = [...materias.value, ...uniqueNewMaterias];
+
+		// Actualizar datos de paginación
+		if (response.data.pagination) {
+			materiasPagination.value.currentPage = response.data.pagination.current_page;
+			materiasPagination.value.lastPage = response.data.pagination.last_page;
+			materiasPagination.value.total = response.data.pagination.total;
+			materiasPagination.value.hasMore = response.data.pagination.current_page < response.data.pagination.last_page;
+		} else {
+			// Si no hay más datos o no hay paginación, desactivar el botón
+			materiasPagination.value.hasMore = false;
+		}
+	} catch (e) {
+		console.error('Error loading more materias:', e);
+		materiasPagination.value.hasMore = false;
+	} finally {
+		materiasPagination.value.loading = false;
 	}
 };
 
