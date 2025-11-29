@@ -64,7 +64,7 @@
             <button
                 @click="abrirModalCreacion"
                 class="w-full sm:w-auto text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
-                :style="{ background: '#ff9966' }"
+                :style="{ background: colors.btn_agregar }"
             >
                 <span class="text-xl">+</span>
                 Programar Mantenimiento
@@ -121,15 +121,17 @@
                                         <div class="flex justify-center gap-2">
                                             <button
                                                 @click="abrirModalEdicion(mantenimiento)"
-                                                class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-xs transition-colors"
+                                                class=" text-white px-3 py-2 rounded-lg text-xs transition-colors"
+                                                :style="{background: colors.btn_editar}"
                                                 :disabled="cargando"
                                             >
                                                 Editar
                                             </button>
                                             <button
                                                 @click="eliminarMantenimiento(mantenimiento.id)"
-                                                class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-xs transition-colors"
+                                                class="text-white px-3 py-2 rounded-lg text-xs transition-colors"
                                                 :disabled="cargando"
+                                                :style="{background: colors.btn_eliminar}"
                                             >
                                                 Eliminar
                                             </button>
@@ -339,6 +341,7 @@
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
     import Loader from '@/Components/AdministrationComponent/Loader.vue';
     import { authService } from "@/Services/authService.js";
+import { colors } from '@/UI/color';
 
     const isAuthenticated = ref(localStorage.getItem('isAuthenticated') === 'true');
     const colorTexto = ref('#1F2937');

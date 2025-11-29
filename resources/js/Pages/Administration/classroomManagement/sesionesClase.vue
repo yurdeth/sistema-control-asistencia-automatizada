@@ -105,7 +105,7 @@
                     <button
                         @click="openCreateModal"
                         class="text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                        :style="{background: '#ff9966'}"
+                        :style="{background: colors.btn_agregar}"
                     >
                         <span class="text-xl">+</span>
                         Nueva
@@ -151,6 +151,7 @@
                                         @change="cambiarEstado(sesion.id, sesion.estado)"
                                         class="px-2 py-1 rounded text-xs font-semibold border-0 cursor-pointer"
                                         :class="getEstadoBadgeClass(sesion.estado)"
+                                        :style="{background: colors.hover_seleccion, color: colors.text_color_light}"
                                     >
                                         <option value="programada">Programada</option>
                                         <option value="en_curso">En Curso</option>
@@ -164,7 +165,7 @@
                                         <button
                                             @click="verDetalles(sesion.id)"
                                             class="text-white px-3 py-2 rounded-lg transition-colors text-xs"
-                                            :style="{ background: '#D93F3F' }"
+                                            :style="{ background: colors.btn_ver_detalle }"
                                             :disabled="loading"
                                         >
                                             Ver
@@ -173,7 +174,7 @@
                                             v-if="sesion.estado === 'programada'"
                                             @click="iniciarSesion(sesion)"
                                             class="text-white px-3 py-2 rounded-lg transition-colors text-xs"
-                                            :style="{ background: '#FF6C0C' }"
+                                            :style="{ background: colors.btn_ver_mas }"
                                             :disabled="loading"
                                         >
                                             Iniciar
@@ -189,7 +190,7 @@
                                         <button
                                             @click="openEditModal(sesion)"
                                             class=" text-white px-3 py-2 rounded-lg transition-colors text-xs"
-                                            :style="{background: '#FE6244'}"
+                                            :style="{background: colors.btn_editar}"
                                             :disabled="loading"
                                         >
                                             Editar
@@ -197,7 +198,7 @@
                                         <button
                                             @click="deleteItem(sesion.id)"
                                             class="hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-colors text-xs"
-                                            :style="{ background: '#9b3b3e' }"
+                                            :style="{ background: colors.btn_eliminar }"
                                             :disabled="loading"
                                         >
                                             Eliminar
@@ -489,6 +490,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
 import { authService } from "@/Services/authService.js";
+import { colors } from '@/UI/color';
 
 const isLoading = ref(true);
 const colorText = ref('#1F2937');

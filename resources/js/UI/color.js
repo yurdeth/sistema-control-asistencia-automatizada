@@ -23,7 +23,7 @@ export const colors = {
     text_color_light:'#FFFF',
 
     //variables de colores para hovers
-    hover_seleccion:'#D93F3F',
+    hover_seleccion:'#e07c4da6',
     hover_seleccion_recursos:'#E06B3F',
 
 }
