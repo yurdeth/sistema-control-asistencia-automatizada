@@ -256,7 +256,7 @@
 								@focus="showDropdownMaterias = true"
 								@input="searchMateriasBackend(searchMaterias)"
 							/>
-							<div v-if="showDropdownMaterias" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-64 overflow-y-auto">
+							<div ref="dropdownMateriasRef" v-if="showDropdownMaterias" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-64 overflow-y-auto">
 								<!-- Indicador de búsqueda activa -->
 								<div v-if="searchMode && currentSearch" class="px-3 py-2 bg-blue-50 border-b border-blue-200 text-sm text-blue-700">
 									<span class="font-medium">Buscando:</span> "{{ currentSearch }}"
@@ -309,7 +309,7 @@
 									<!-- Botón de cargar más (solo en modo normal) -->
 									<button
 										v-if="!searchMode && materiasPagination.hasMore && !materiasPagination.loading && filteredMaterias.length > 0"
-										@click="loadMoreMaterias"
+										@click.stop.prevent="loadMoreMaterias"
 										type="button"
 										class="w-full text-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors border-t border-gray-200">
 										<i class="fas fa-plus mr-1"></i>
@@ -907,6 +907,11 @@ const currentSearch = ref('');              // término de búsqueda actual
 const searchLoading = ref(false);           // loading específico de búsqueda
 let searchDebounceTimer = null;             // timer para debouncing
 
+// Variables para mantener posición del scroll al cargar más
+const scrollToIndexAfterLoad = ref(null);    // índice a donde hacer scroll después de cargar
+const lastVisibleIndexBeforeLoad = ref(0);  // último índice visible antes de cargar
+const dropdownMateriasRef = ref(null);      // ref al dropdown container
+
 // Computed para filtrar opciones (maneja búsqueda backend vs filtrado local)
 const filteredMaterias = computed(() => {
 	// Si estamos en modo búsqueda backend, los datos ya vienen filtrados del servidor
@@ -1140,6 +1145,9 @@ const loadMoreMaterias = async () => {
 		return;
 	}
 
+	// Guardar la posición actual antes de cargar
+	lastVisibleIndexBeforeLoad.value = materias.value.length;
+
 	try {
 		materiasPagination.value.loading = true;
 		const nextPage = materiasPagination.value.currentPage + 1;
@@ -1154,6 +1162,9 @@ const loadMoreMaterias = async () => {
 
 		materias.value = [...materias.value, ...uniqueNewMaterias];
 
+		// Establecer a qué índice hacer scroll después de cargar
+		scrollToIndexAfterLoad.value = lastVisibleIndexBeforeLoad.value;
+
 		// Actualizar datos de paginación
 		if (response.data.pagination) {
 			materiasPagination.value.currentPage = response.data.pagination.current_page;
@@ -1164,6 +1175,12 @@ const loadMoreMaterias = async () => {
 			// Si no hay más datos o no hay paginación, desactivar el botón
 			materiasPagination.value.hasMore = false;
 		}
+
+		// Hacer scroll a la nueva posición
+		setTimeout(() => {
+			scrollToMateriaIndex(scrollToIndexAfterLoad.value);
+		}, 150); // Aumentar timeout para asegurar que Vue actualice el DOM
+
 	} catch (e) {
 		console.error('Error loading more materias:', e);
 		materiasPagination.value.hasMore = false;
@@ -1211,6 +1228,73 @@ const searchMateriasBackend = (searchTerm) => {
 			searchLoading.value = false;
 		}
 	}, 300); // 300ms de debouncing
+};
+
+// Función para hacer scroll a una materia específica
+const scrollToMateriaIndex = (index) => {
+	if (!dropdownMateriasRef.value || index === null) return;
+
+	// Usar un timeout mayor para asegurar que el DOM está completamente actualizado
+	setTimeout(() => {
+		const dropdownElement = dropdownMateriasRef.value;
+
+		// Buscar los elementos de materia - probar diferentes selectores
+		let materiaElements = dropdownElement.querySelectorAll('div[onclick*="selectMateria"], button[onclick*="selectMateria"]');
+
+		// Si no encuentra con onclick, buscar por estructura del template
+		if (materiaElements.length === 0) {
+			materiaElements = dropdownElement.querySelectorAll('div.hover\\:bg-blue-100, div.px-3.py-2');
+		}
+
+		// Intento adicional con más clases específicas de grupos.vue
+		if (materiaElements.length === 0) {
+			materiaElements = dropdownElement.querySelectorAll('div.hover\\:bg-blue-100, div.flex.items-center.justify-between');
+		}
+
+		// Otro intento con clases más generales
+		if (materiaElements.length === 0) {
+			const allClickable = dropdownElement.querySelectorAll('[class*="hover:bg"]');
+			materiaElements = Array.from(allClickable).filter(el =>
+				el.textContent.trim().length > 5 && // Texto sustancial
+				!el.textContent.includes('Cargar más') // Excluir el botón de cargar más
+			);
+		}
+
+		// Último intento: buscar todos los div clickeables dentro del dropdown
+		if (materiaElements.length === 0) {
+			const allDivs = dropdownElement.querySelectorAll('div');
+			materiaElements = Array.from(allDivs).filter(div => {
+				// Buscar divs que tengan la estructura de materia (con texto y posible check)
+				const hasText = div.textContent.trim().length > 5;
+				const hasClickClass = Array.from(div.classList).some(className =>
+					className.includes('hover:bg-') ||
+					className.includes('px-3') ||
+					className.includes('py-2')
+				);
+				const isNotLoadMoreButton = !div.textContent.includes('Cargar más') &&
+										   !div.textContent.includes('restantes');
+				return hasText && (hasClickClass || isNotLoadMoreButton);
+			});
+		}
+
+		if (materiaElements[index]) {
+			// Hacer scroll al elemento
+			materiaElements[index].scrollIntoView({
+				behavior: 'smooth',
+				block: 'start'
+			});
+
+			// Resaltar brevemente el elemento
+			materiaElements[index].style.backgroundColor = '#f0f9ff';
+			setTimeout(() => {
+				if (materiaElements[index]) {
+					materiaElements[index].style.backgroundColor = '';
+				}
+			}, 1000);
+
+			scrollToIndexAfterLoad.value = null;
+		}
+	}, 300); // Aumentar el timeout para dar más tiempo al DOM
 };
 
 // Función para resetear a modo normal
