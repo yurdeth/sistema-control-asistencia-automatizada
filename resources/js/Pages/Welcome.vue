@@ -103,7 +103,7 @@
                     </div>
                 </div>
                 <div class="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 bg-gray-50 flex items-center justify-center">
-                    <img class="h-56 w-full object-contain sm:h-72 md:h-96 lg:w-full lg:h-full p-8" src="/Images/hero-illustration.png" alt="SICA Dashboard Illustration">
+                    <img class="w-full h-auto object-contain sm:h-72 md:h-96 lg:w-full lg:h-full p-4 sm:p-8" src="/Images/hero-illustration.png" alt="SICA Dashboard Illustration">
                 </div>
             </div>
 
