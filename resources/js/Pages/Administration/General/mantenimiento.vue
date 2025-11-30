@@ -335,14 +335,19 @@
 </template>
 
 <script setup>
+    // imports necesarios
     import { Head } from '@inertiajs/vue3';
     import { ref, computed, onMounted, watch } from 'vue';
     import axios from 'axios';
+    // Importa layouts y componentes
     import MainLayoutDashboard from '@/Layouts/MainLayoutDashboard.vue';
     import Loader from '@/Components/AdministrationComponent/Loader.vue';
+    // Importa servicio de autenticación
     import { authService } from "@/Services/authService.js";
-import { colors } from '@/UI/color';
+    // Importa colores para UI (no se utiliza explícitamente aquí)
+    import { colors } from '@/UI/color';
 
+    // Variables reactivas
     const isAuthenticated = ref(localStorage.getItem('isAuthenticated') === 'true');
     const colorTexto = ref('#1F2937');
     const terminoBusqueda = ref('');
@@ -352,17 +357,18 @@ import { colors } from '@/UI/color';
     const listaAulas = ref([]);
     const usuarioId = ref(null);
 
-    // Paginación
+    // --- Paginación ---
     const paginaActual = ref(1);
     const porPagina = ref(5);
-
-    const filtroEstado = ref(''); // Para el nuevo filtro por estado (programado, en_proceso, etc.)
-    const filtroAulaId = ref(''); // Para el nuevo filtro por ID de aula
-
-    // Configuración de axios
+    // Filtros por estado y aula
+    const filtroEstado = ref('');
+    const filtroAulaId = ref('');
+    // --- Configuración de Axios ---
     const URL_API = '/api';
     const ENDPOINT_BASE = '/maintenance';
     const ENDPOINT_AULAS = '/classrooms';
+
+    // Función para obtener cabeceras con token
     const obtenerCabecerasAuth = () => ({
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -371,12 +377,12 @@ import { colors } from '@/UI/color';
         }
     });
 
-    // Estados del Modal
+    // --- Modal y formulario ---
     const mostrarModal = ref(false);
-    const modoEdicion = ref(false);
-    const enviando = ref(false);
-    const erroresFormulario = ref({});
-    const idMantenimientoActual = ref(null);
+    const modoEdicion = ref(false); // false = crear, true = editar
+    const enviando = ref(false); // indicador de envío de formulario
+    const erroresFormulario = ref({}); // errores de validación
+    const idMantenimientoActual = ref(null); // ID de mantenimiento que se está editando
 
     // Datos del formulario
     const datosFormulario = ref({
@@ -388,62 +394,66 @@ import { colors } from '@/UI/color';
         estado: 'programado',
     });
 
+    // --- Funciones auxiliares ---
+
+    // Obtiene el nombre de un aula según su ID
     const obtenerNombreAula = (aulaId) => {
         const aula = listaAulas.value.find(a => a.id == aulaId);
         return aula ? aula.nombre : `ID ${aulaId} (Desconocida)`;
     };
 
+    // Filtra mantenimientos según término de búsqueda
     const mantenimientosFiltrados = computed(() => {
         const datos = Array.isArray(todosMantenimientos.value) ? todosMantenimientos.value : [];
         if (!terminoBusqueda.value) return datos;
         const termino = terminoBusqueda.value.toLowerCase();
-        return datos.filter(mantenimiento =>
-            mantenimiento.motivo.toLowerCase().includes(termino) ||
-            mantenimiento.aula_id.toString().includes(termino) ||
-            obtenerNombreAula(mantenimiento.aula_id).toLowerCase().includes(termino)
+        return datos.filter(m =>
+            m.motivo.toLowerCase().includes(termino) ||
+            m.aula_id.toString().includes(termino) ||
+            obtenerNombreAula(m.aula_id).toLowerCase().includes(termino)
         );
     });
 
-    const totalPaginas = computed(() => {
-        return Math.ceil(mantenimientosFiltrados.value.length / porPagina.value);
-    });
+    // Calcula total de páginas según resultados filtrados
+    const totalPaginas = computed(() => Math.ceil(mantenimientosFiltrados.value.length / porPagina.value));
 
+    // Obtiene mantenimientos paginados
     const mantenimientosPaginados = computed(() => {
         const inicio = (paginaActual.value - 1) * porPagina.value;
         const fin = inicio + porPagina.value;
         return mantenimientosFiltrados.value.slice(inicio, fin);
     });
 
+    // Control de paginación visible
     const maxPaginasVisibles = 5;
     const paginasVisibles = computed(() => {
         const paginas = [];
         let paginaInicial = Math.max(1, paginaActual.value - Math.floor(maxPaginasVisibles / 2));
         let paginaFinal = Math.min(totalPaginas.value, paginaInicial + maxPaginasVisibles - 1);
-
         if (paginaFinal - paginaInicial + 1 < maxPaginasVisibles) {
             paginaInicial = Math.max(1, paginaFinal - maxPaginasVisibles + 1);
         }
-
         for (let i = paginaInicial; i <= paginaFinal; i++) {
             paginas.push(i);
         }
         return paginas;
     });
 
+    // --- Formateo de fechas ---
+
+    // Convierte fecha ISO a formato legible
     const formatearFecha = (fechaIso) => {
         if (!fechaIso) return 'N/A';
         try {
             const fecha = new Date(fechaIso);
             if (isNaN(fecha)) return 'Formato Inválido';
-            return new Intl.DateTimeFormat('es-SV', {
-                year: 'numeric', month: 'short', day: '2-digit',
-                hour: '2-digit', minute: '2-digit', hour12: false
-            }).format(fecha);
+            return new Intl.DateTimeFormat('es-SV', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(fecha);
         } catch (e) {
             return fechaIso;
         }
     };
 
+    // Obtiene clases CSS según estado del mantenimiento
     const obtenerClasesEstado = (estado) => {
         switch (estado) {
             case 'finalizado': return 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold';
@@ -454,6 +464,7 @@ import { colors } from '@/UI/color';
         }
     };
 
+    // Obtiene texto legible según estado
     const obtenerTextoEstado = (estado) => {
         switch (estado) {
             case 'finalizado': return 'Finalizado';
@@ -464,18 +475,17 @@ import { colors } from '@/UI/color';
         }
     };
 
+    // Convierte ISO a datetime-local (para inputs)
     const aDatetimeLocal = (fechaIso) => {
         if (!fechaIso) return '';
         try {
             const fecha = new Date(fechaIso);
             if (isNaN(fecha)) return '';
-
             const year = fecha.getFullYear();
             const month = String(fecha.getMonth() + 1).padStart(2, '0');
             const day = String(fecha.getDate()).padStart(2, '0');
             const hours = String(fecha.getHours()).padStart(2, '0');
             const minutes = String(fecha.getMinutes()).padStart(2, '0');
-
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         } catch (e) {
             console.error('Error al convertir fecha:', e);
@@ -483,14 +493,13 @@ import { colors } from '@/UI/color';
         }
     };
 
+    // Convierte datetime-local a formato ISO
     const datetimeLocalAISO = (datetimeLocal) => {
         if (!datetimeLocal) return null;
-
         try {
             const [fecha, hora] = datetimeLocal.split('T');
             const [year, month, day] = fecha.split('-');
             const [hours, minutes] = hora.split(':');
-
             return `${year}-${month}-${day}T${hours}:${minutes}:00`;
         } catch (e) {
             console.error('Error al convertir datetime-local a ISO:', e);
@@ -498,36 +507,8 @@ import { colors } from '@/UI/color';
         }
     };
 
-    const handleAuthenticated = (status) => {
-        isAuthenticated.value = status;
-        if (status) {
-            cargarAulas();
-            cargarMantenimientos();
-        }
-    };
-
-    watch(mantenimientosFiltrados, () => {
-        paginaActual.value = 1;
-    });
-
-    const paginaAnterior = () => {
-        if (paginaActual.value > 1) {
-            paginaActual.value--;
-        }
-    };
-
-    const paginaSiguiente = () => {
-        if (paginaActual.value < totalPaginas.value) {
-            paginaActual.value++;
-        }
-    };
-
-    const irAPagina = (pagina) => {
-        if (pagina >= 1 && pagina <= totalPaginas.value) {
-            paginaActual.value = pagina;
-        }
-    };
-
+    // --- Funciones de Modal ---
+    // Reinicia formulario a valores por defecto
     const reiniciarFormulario = () => {
         datosFormulario.value = {
             aula_id: '',
@@ -541,17 +522,18 @@ import { colors } from '@/UI/color';
         idMantenimientoActual.value = null;
     };
 
+    // Abrir modal para crear nuevo mantenimiento
     const abrirModalCreacion = () => {
         reiniciarFormulario();
         modoEdicion.value = false;
         mostrarModal.value = true;
     };
 
+    // Abrir modal para editar mantenimiento existente
     const abrirModalEdicion = (item) => {
-        reiniciarFormulario();
+    reiniciarFormulario();
         modoEdicion.value = true;
         idMantenimientoActual.value = item.id;
-
         datosFormulario.value = {
             aula_id: item.aula_id.toString() || '',
             motivo: item.motivo || '',
@@ -560,245 +542,158 @@ import { colors } from '@/UI/color';
             fecha_fin_real: item.fecha_fin_real ? aDatetimeLocal(item.fecha_fin_real) : '',
             estado: item.estado || 'programado',
         };
-
         mostrarModal.value = true;
     };
 
+    // Cerrar modal
     const cerrarModal = () => {
         mostrarModal.value = false;
         reiniciarFormulario();
     };
 
+    // --- Carga de datos ---
+
+    // Cargar todas las aulas
     async function cargarAulas() {
         try {
             const res = await axios.get(`${URL_API}${ENDPOINT_AULAS}/get/all`, obtenerCabecerasAuth());
             const datos = res.data?.data;
-            listaAulas.value = Array.isArray(datos) ? datos.map(a => ({
-                id: a.id.toString(),
-                nombre: a.nombre || `Aula ${a.id}`
-            })) : [];
+            listaAulas.value = Array.isArray(datos) ? datos.map(a => ({ id: a.id.toString(), nombre: a.nombre || `Aula ${a.id}` })) : [];
         } catch (err) {
             console.error("Error al cargar la lista de aulas:", err);
         }
     }
 
+    // Cargar mantenimientos según filtros
     async function cargarMantenimientos() {
         cargando.value = true;
         error.value = null;
-
-            axios.get('/api/maintenance/get/classroom/1', {
-        headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-        })
-        .then(res => console.log("RESPUESTA BACKEND:", res.data))
-        .catch(err => console.log("ERROR:", err.response?.status, err.response?.data));
-
         try {
             let url = `${URL_API}${ENDPOINT_BASE}/get/all`;
+            if (filtroEstado.value && !filtroAulaId.value) url = `${URL_API}${ENDPOINT_BASE}/get/status/${filtroEstado.value}`;
+            if (!filtroEstado.value && filtroAulaId.value) url = `${URL_API}${ENDPOINT_BASE}/get/classroom/${filtroAulaId.value}`;
+            if (filtroEstado.value && filtroAulaId.value) url = `${URL_API}${ENDPOINT_BASE}/get/classroom/${filtroAulaId.value}`;
 
-            // Si solo hay filtro por estado
-            if (filtroEstado.value && !filtroAulaId.value) {
-                url = `${URL_API}${ENDPOINT_BASE}/get/status/${filtroEstado.value}`;
-            }
-
-            // Si solo hay filtro por aula
-            if (!filtroEstado.value && filtroAulaId.value) {
-                url = `${URL_API}${ENDPOINT_BASE}/get/classroom/${filtroAulaId.value}`;
-            }
-
-            // Si ambos filtros están seleccionados → usar solo el de AULA
-            if (filtroEstado.value && filtroAulaId.value) {
-                url = `${URL_API}${ENDPOINT_BASE}/get/classroom/${filtroAulaId.value}`;
-            }
-
-            // Consumimos el endpoint seleccionado
             const res = await axios.get(url, obtenerCabecerasAuth());
-            let datos = Array.isArray(res.data?.data)
-                ? res.data.data
-                : Object.values(res.data?.data || {});
+            let datos = Array.isArray(res.data?.data) ? res.data.data : Object.values(res.data?.data || {});
 
             if (filtroEstado.value && filtroAulaId.value) {
-                datos = datos.filter(item => item.estado === filtroEstado.value);
+            datos = datos.filter(item => item.estado === filtroEstado.value);
             }
-
-            // if (filtroEstado.value && filtroAulaId.value) {
-            //     datos = datos.filter(item =>
-            //         item.estado === filtroEstado.value &&
-            //         item.aula_id == filtroAulaId.value
-            //     );
-            // }
 
             todosMantenimientos.value = datos;
-        }
-        catch (err) {
+        } catch (err) {
             if (err.response?.status === 404) {
-                todosMantenimientos.value = [];
-                error.value = null;
+            todosMantenimientos.value = [];
+            error.value = null;
             } else {
-                error.value = "Error al cargar mantenimientos";
+            error.value = "Error al cargar mantenimientos";
             }
-        }
-        finally {
+        } finally {
             cargando.value = false;
         }
     }
 
-    // async function cargarMantenimientos() {
-    //     cargando.value = true;
-    //     error.value = null;
+    // --- Usuario ---
+    // Obtiene ID del usuario desde localStorage o token
+    const obtenerUsuarioId = () => {
+        const posiblesClaves = ['user_id', 'userId', 'id', 'usuario_id'];
+        for (const clave of posiblesClaves) {
+            const valor = localStorage.getItem(clave);
+            if (valor) return valor;
+        }
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.sub || payload.id || payload.user_id || payload.userId;
+            } catch (e) {
+            console.error('Error al decodificar el token:', e);
+            }
+        }
+        return null;
+    };
 
-    //     try {
-    //         let url = `${URL_API}${ENDPOINT_BASE}/get/all`;
-
-    //         // Si hay filtro por estado
-    //         if (filtroEstado.value) {
-    //             url = `${URL_API}${ENDPOINT_BASE}/get/status/${filtroEstado.value}`;
-    //         }
-
-    //         // Si hay filtro por aula
-    //         if (filtroAulaId.value) {
-    //             url = `${URL_API}${ENDPOINT_BASE}/get/classroom/${filtroAulaId.value}`;
-    //         }
-
-    //         // Si hay ambos filtros → usar endpoint mixto (si existe) o hacer doble fetch
-    //         if (filtroEstado.value && filtroAulaId.value) {
-    //             url = `${URL_API}${ENDPOINT_BASE}/get/status/${filtroEstado.value}/classroom/${filtroAulaId.value}`;
-    //         }
-
-    //         const res = await axios.get(url, obtenerCabecerasAuth());
-
-    //         const datos = Array.isArray(res.data?.data)
-    //             ? res.data.data
-    //             : Object.values(res.data?.data || {});
-
-    //         todosMantenimientos.value = datos;
-
-    //     } catch (err) {
-    //         // 👉 Si el backend devuelve 404 = no hay datos
-    //         if (err.response?.status === 404) {
-    //             todosMantenimientos.value = [];   // Mostrar vacío
-    //             error.value = null;               // No mostrar error rojo
-    //         } else {
-    //             error.value = "Error al cargar mantenimientos";
-    //         }
-    //     } finally {
-    //         cargando.value = false;
-    //     }
-    // }
-
-    // async function cargarMantenimientos() {
-    //     cargando.value = true;
-    //     error.value = null;
-
-    //     try {
-    //         console.log('🔍 Intentando cargar mantenimientos desde:', `${URL_API}${ENDPOINT_BASE}/get/all`);
-
-    //         const res = await axios.get(`${URL_API}${ENDPOINT_BASE}/get/all`, obtenerCabecerasAuth());
-
-    //         const payload = res.data?.data;
-    //         const datosCrudos = Array.isArray(payload) ? payload : (payload ? Object.values(payload) : []);
-
-    //         todosMantenimientos.value = datosCrudos.map(item => ({
-    //             id: item.id ?? 'N/A',
-    //             aula_id: item.aula_id.toString() ?? 'N/A',
-    //             motivo: item.motivo ?? 'Sin motivo',
-    //             fecha_inicio: item.fecha_inicio ?? null,
-    //             fecha_fin_programada: item.fecha_fin_programada ?? null,
-    //             fecha_fin_real: item.fecha_fin_real ?? null,
-    //             estado: item.estado ?? 'programado',
-    //         }));
-
-    //         console.log('✅ Mantenimientos cargados:', todosMantenimientos.value.length);
-    //         error.value = null;
-
-    //     } catch (err) {
-    //         console.error("❌ Error al cargar mantenimientos:", err);
-    //         const status = err.response?.status;
-
-    //         if (status === 404) {
-    //             console.warn('⚠️ Endpoint no encontrado o no hay mantenimientos registrados');
-    //             todosMantenimientos.value = [];
-    //             error.value = null;
-    //         } else if (status === 401 || status === 403) {
-    //             error.value = 'Error de autenticación. Por favor, verifica tu sesión.';
-    //         } else {
-    //             error.value = err.response?.data?.message || 'Error desconocido al cargar los mantenimientos';
-    //         }
-
-    //         todosMantenimientos.value = [];
-    //     } finally {
-    //         cargando.value = false;
-    //     }
-    // }
-
+    // --- Envío de formulario ---
+    // Crear o editar mantenimiento
     const enviarFormulario = async () => {
         erroresFormulario.value = {};
         enviando.value = true;
 
         try {
             if (!modoEdicion.value && !usuarioId.value) {
-                console.error('❌ ID de usuario no disponible:', {
-                    usuarioId: usuarioId.value,
-                    localStorage: {
-                        user_id: localStorage.getItem('user_id'),
-                        userId: localStorage.getItem('userId'),
-                        id: localStorage.getItem('id')
-                    }
-                });
-
-                erroresFormulario.value.usuario_registro_id = [
-                    'No se pudo identificar al usuario. Por favor, cierre sesión e inicie sesión nuevamente.'
-                ];
-                return;
+            erroresFormulario.value.usuario_registro_id = [
+                'No se pudo identificar al usuario. Por favor, cierre sesión e inicie sesión nuevamente.'
+            ];
+            return;
             }
 
             const cargaUtil = {
-                aula_id: parseInt(datosFormulario.value.aula_id),
-                motivo: datosFormulario.value.motivo,
-                fecha_inicio: datetimeLocalAISO(datosFormulario.value.fecha_inicio),
-                fecha_fin_programada: datetimeLocalAISO(datosFormulario.value.fecha_fin_programada),
+            aula_id: parseInt(datosFormulario.value.aula_id),
+            motivo: datosFormulario.value.motivo,
+            fecha_inicio: datetimeLocalAISO(datosFormulario.value.fecha_inicio),
+            fecha_fin_programada: datetimeLocalAISO(datosFormulario.value.fecha_fin_programada),
             };
 
             if (!modoEdicion.value) {
-                cargaUtil.usuario_registro_id = parseInt(usuarioId.value);
+            cargaUtil.usuario_registro_id = parseInt(usuarioId.value);
+            } else {
+            cargaUtil.fecha_fin_real = datosFormulario.value.fecha_fin_real
+                ? datetimeLocalAISO(datosFormulario.value.fecha_fin_real)
+                : null;
+            cargaUtil.estado = datosFormulario.value.estado;
             }
 
-            if (modoEdicion.value) {
-                cargaUtil.fecha_fin_real = datosFormulario.value.fecha_fin_real
-                    ? datetimeLocalAISO(datosFormulario.value.fecha_fin_real)
-                    : null;
-                cargaUtil.estado = datosFormulario.value.estado;
-            }
-
-            console.log('📤 Enviando datos:', cargaUtil);
-
+            // URL según acción
             const url = modoEdicion.value
-                ? `${URL_API}${ENDPOINT_BASE}/edit/${idMantenimientoActual.value}`
-                : `${URL_API}${ENDPOINT_BASE}/new`;
+            ? `${URL_API}${ENDPOINT_BASE}/edit/${idMantenimientoActual.value}`
+            : `${URL_API}${ENDPOINT_BASE}/new`;
 
             const respuesta = modoEdicion.value
-                ? await axios.patch(url, cargaUtil, obtenerCabecerasAuth())
-                : await axios.post(url, cargaUtil, obtenerCabecerasAuth());
+            ? await axios.patch(url, cargaUtil, obtenerCabecerasAuth())
+            : await axios.post(url, cargaUtil, obtenerCabecerasAuth());
 
-            if (respuesta.data.success || respuesta.status === 200 || respuesta.status === 201) {
-                cerrarModal();
+            if (respuesta.data.success || [200, 201].includes(respuesta.status)) {
+
+            // Actualiza estado del aula si corresponde
+            if (modoEdicion.value) {
+                let aulaEstado = null;
+
+                // Determinar el estado del aula según el estado del mantenimiento
+                switch (datosFormulario.value.estado) {
+                    case 'en_proceso':
+                        aulaEstado = 'mantenimiento';
+                        break;
+                    case 'finalizado':
+                    case 'cancelado':
+                        aulaEstado = 'disponible';
+                        break;
+                    default:
+                        aulaEstado = null; // no hacer nada para otros estados
+                }
+
+                // Solo hacer PATCH si aulaEstado tiene un valor válido
+                if (aulaEstado) {
+                    try {
+                        await axios.patch(
+                            `${URL_API}/classrooms/change-status/${parseInt(datosFormulario.value.aula_id)}`,
+                            { estado: aulaEstado },
+                            obtenerCabecerasAuth()
+                        );
+                        console.log('Estado del aula actualizado a:', aulaEstado);
+                    } catch (err) {
+                        console.error('Error al cambiar estado del aula:', err.response?.data || err);
+                    }
+                }
+            }
+
+            cerrarModal();
                 await cargarMantenimientos();
-
-                alert(modoEdicion.value
-                    ? "Mantenimiento actualizado exitosamente"
-                    : "Mantenimiento programado exitosamente");
+                alert(modoEdicion.value ? "Mantenimiento actualizado exitosamente" : "Mantenimiento programado exitosamente");
             }
         } catch (err) {
-            console.error("❌ Error al guardar el Mantenimiento:", err);
-            console.error("📋 Detalles del error:", {
-                response: err.response?.data,
-                status: err.response?.status,
-                message: err.message
-            });
-
+            console.error("Error al guardar el Mantenimiento:", err);
             const data = err.response?.data || {};
-
             if (data.errors) {
                 erroresFormulario.value = data.errors;
             } else if (data.message) {
@@ -811,13 +706,12 @@ import { colors } from '@/UI/color';
         }
     };
 
+    // --- Eliminar mantenimiento ---
     const eliminarMantenimiento = async (id) => {
         if (!confirm('¿Está seguro de eliminar este Mantenimiento? Esta acción no se puede deshacer.')) return;
-
         try {
             cargando.value = true;
             const respuesta = await axios.delete(`${URL_API}${ENDPOINT_BASE}/delete/${id}`, obtenerCabecerasAuth());
-
             if (respuesta.data.success || respuesta.status === 200) {
                 alert('Mantenimiento eliminado exitosamente');
                 await cargarMantenimientos();
@@ -830,64 +724,30 @@ import { colors } from '@/UI/color';
         }
     };
 
-    const obtenerUsuarioId = () => {
-        const posiblesClaves = ['user_id', 'userId', 'id', 'usuario_id'];
+    // --- Paginación ---
+    const paginaAnterior = () => { if (paginaActual.value > 1) paginaActual.value--; };
+    const paginaSiguiente = () => { if (paginaActual.value < totalPaginas.value) paginaActual.value++; };
+    const irAPagina = (pagina) => { if (pagina >= 1 && pagina <= totalPaginas.value) paginaActual.value = pagina; };
 
-        for (const clave of posiblesClaves) {
-            const valor = localStorage.getItem(clave);
-            if (valor) {
-                console.log(`✅ ID de usuario encontrado: ${valor} (clave: ${clave})`);
-                return valor;
-            }
-        }
-
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const id = payload.sub || payload.id || payload.user_id || payload.userId;
-                if (id) {
-                    console.log(`✅ ID de usuario obtenido del token: ${id}`);
-                    return id;
-                }
-            } catch (e) {
-                console.error('❌ Error al decodificar el token:', e);
-            }
-        }
-
-        console.error('❌ No se pudo obtener el ID del usuario');
-        return null;
-    };
-
-    // const verificarConfiguracion = () => {
-    //     console.log('=== CONFIGURACIÓN ACTUAL ===');
-    //     console.log('Usuario ID:', usuarioId.value);
-    //     console.log('Token:', localStorage.getItem('token') ? '✅ Presente' : '❌ Ausente');
-    //     console.log('Authenticated:', isAuthenticated.value);
-    //     console.log('API Base:', URL_API);
-    //     console.log('Endpoint:', ENDPOINT_BASE);
-    //     console.log('URL Completa:', `${URL_API}${ENDPOINT_BASE}/get/all`);
-    //     console.log('LocalStorage keys:', Object.keys(localStorage));
-    //     console.log('==========================');
-    // };
-
+    // --- Filtros ---
     const limpiarFiltros = () => {
         filtroEstado.value = "";
         filtroAulaId.value = "";
         cargarMantenimientos();
     };
 
+    // --- Watchers ---
+    // Resetear página al cambiar filtro de búsqueda
+    watch(mantenimientosFiltrados, () => { paginaActual.value = 1; });
+
+    // --- Mounted ---
     onMounted(async () => {
         const token = localStorage.getItem("token");
         await authService.verifyToken(token);
         isAuthenticated.value = localStorage.getItem('isAuthenticated') === 'true';
-
         usuarioId.value = obtenerUsuarioId();
 
-        // verificarConfiguracion();
-
         if (!usuarioId.value) {
-            console.error('❌ No se pudo obtener el ID del usuario');
             alert('Error: No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.');
             return;
         }
@@ -898,5 +758,5 @@ import { colors } from '@/UI/color';
             await cargarMantenimientos();
         }
     });
-
 </script>
+
