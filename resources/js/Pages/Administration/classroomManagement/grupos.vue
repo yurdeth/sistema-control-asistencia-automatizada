@@ -252,34 +252,70 @@
 								type="text"
 								placeholder="Buscar materia..."
 								class="w-full rounded px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+								:class="[materiasPagination.loading ? 'bg-gray-100' : 'bg-white']"
 								@focus="showDropdownMaterias = true"
+								@input="searchMateriasBackend(searchMaterias)"
 							/>
 							<div v-if="showDropdownMaterias" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-64 overflow-y-auto">
-								<div v-if="filteredMaterias.length === 0 && !materiasPagination.loading" class="px-3 py-2 text-gray-500 text-sm">
+								<!-- Indicador de búsqueda activa -->
+								<div v-if="searchMode && currentSearch" class="px-3 py-2 bg-blue-50 border-b border-blue-200 text-sm text-blue-700">
+									<span class="font-medium">Buscando:</span> "{{ currentSearch }}"
+									<button
+										@click="resetToNormalMode"
+										class="ml-2 text-blue-500 hover:text-blue-700 underline text-xs"
+									>
+										Limpiar búsqueda
+									</button>
+								</div>
+
+								<!-- Loading de búsqueda -->
+								<div v-if="searchLoading" class="px-3 py-4 text-center">
+									<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mx-auto"></div>
+									<p class="text-sm text-gray-500 mt-1">Buscando materias...</p>
+								</div>
+
+								<!-- Sin resultados en búsqueda -->
+								<div v-else-if="searchMode && materias.length === 0" class="px-3 py-4 text-center text-gray-500">
+									<svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+									</svg>
+									<p class="text-sm">No se encontraron materias para "<span class="font-medium">{{ currentSearch }}</span>"</p>
+								</div>
+
+								<!-- Loading normal (paginación) -->
+								<div v-else-if="materiasPagination.loading && !searchMode" class="px-3 py-4 text-center">
+									<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mx-auto"></div>
+									<p class="text-sm text-gray-500 mt-1">Cargando materias...</p>
+								</div>
+
+								<!-- Sin resultados en modo normal -->
+								<div v-else-if="materias.length === 0 && !materiasPagination.loading" class="px-3 py-2 text-gray-500 text-sm">
 									No hay materias disponibles
 								</div>
-								<div v-if="materiasPagination.loading" class="px-3 py-4 text-center">
-									<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mx-auto"></div>
-									<p class="text-sm text-gray-500 mt-1">Cargando...</p>
-								</div>
-								<button
-									v-for="m in filteredMaterias"
-									:key="m.id"
-									type="button"
-									@click="selectMateria(m)"
-									class="w-full text-left px-3 py-2 hover:bg-blue-100 transition-colors flex items-center justify-between"
-									:class="{ 'bg-blue-200': form.materia_id === m.id }">
-									<span>{{ m.nombre }}</span>
-									<i v-if="form.materia_id === m.id" class="fas fa-check text-blue-600"></i>
-								</button>
-								<button
-									v-if="materiasPagination.hasMore && !materiasPagination.loading && filteredMaterias.length > 0"
-									@click="loadMoreMaterias"
-									type="button"
-									class="w-full text-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors border-t border-gray-200">
-									<i class="fas fa-plus mr-1"></i>
-									Cargar más materias ({{ materiasPagination.total - filteredMaterias.length }} restantes)
-								</button>
+
+								<!-- Lista de materias -->
+								<template v-else-if="!searchLoading && materias.length > 0">
+									<button
+										v-for="m in filteredMaterias"
+										:key="m.id"
+										type="button"
+										@click="selectMateria(m)"
+										class="w-full text-left px-3 py-2 hover:bg-blue-100 transition-colors flex items-center justify-between"
+										:class="{ 'bg-blue-200': form.materia_id === m.id }">
+										<span>{{ m.nombre }}</span>
+										<i v-if="form.materia_id === m.id" class="fas fa-check text-blue-600"></i>
+									</button>
+
+									<!-- Botón de cargar más (solo en modo normal) -->
+									<button
+										v-if="!searchMode && materiasPagination.hasMore && !materiasPagination.loading && filteredMaterias.length > 0"
+										@click="loadMoreMaterias"
+										type="button"
+										class="w-full text-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium transition-colors border-t border-gray-200">
+										<i class="fas fa-plus mr-1"></i>
+										Cargar más materias ({{ materiasPagination.total - filteredMaterias.length }} restantes)
+									</button>
+								</template>
 							</div>
 						</div>
 						<div v-if="form.materia_id && materiaSeleccionada" class="mt-2 p-2 bg-blue-50 rounded text-sm text-blue-700 flex items-center gap-2">
@@ -865,11 +901,28 @@ const materiasPagination = ref({
 	loading: false
 });
 
-// Computed para filtrar opciones
+// Variables para búsqueda backend con debouncing
+const searchMode = ref(false);              // true = búsqueda backend, false = paginación normal
+const currentSearch = ref('');              // término de búsqueda actual
+const searchLoading = ref(false);           // loading específico de búsqueda
+let searchDebounceTimer = null;             // timer para debouncing
+
+// Computed para filtrar opciones (maneja búsqueda backend vs filtrado local)
 const filteredMaterias = computed(() => {
+	// Si estamos en modo búsqueda backend, los datos ya vienen filtrados del servidor
+	if (searchMode.value) {
+		return materias.value;
+	}
+
+	// Si no hay término de búsqueda, mostrar todos los datos cargados
 	if (!searchMaterias.value) return materias.value;
+
+	// Filtrado local sobre los datos ya cargados (modo normal)
 	const term = searchMaterias.value.toLowerCase();
-	return materias.value.filter(m => m.nombre.toLowerCase().includes(term));
+	return materias.value.filter(m =>
+		m.nombre.toLowerCase().includes(term) ||
+		(m.codigo && m.codigo.toLowerCase().includes(term))
+	);
 });
 
 const filteredDocentes = computed(() => {
@@ -1117,6 +1170,60 @@ const loadMoreMaterias = async () => {
 	} finally {
 		materiasPagination.value.loading = false;
 	}
+};
+
+// Función de búsqueda backend con debouncing
+const searchMateriasBackend = (searchTerm) => {
+	// Limpiar timer anterior
+	if (searchDebounceTimer) {
+		clearTimeout(searchDebounceTimer);
+	}
+
+	searchDebounceTimer = setTimeout(async () => {
+		// Si el término está vacío o muy corto, volver a modo normal
+		if (!searchTerm || searchTerm.length < 2) {
+			await resetToNormalMode();
+			return;
+		}
+
+		try {
+			searchLoading.value = true;
+			searchMode.value = true;
+			currentSearch.value = searchTerm;
+
+			// Hacer petición al backend con búsqueda
+			const response = await axios.get(
+				`${API_URL}/subjects/for-select?search=${encodeURIComponent(searchTerm)}`,
+				getAuthHeaders()
+			);
+
+			// Reemplazar materias con resultados de búsqueda (no acumular)
+			materias.value = response.data.data || [];
+
+			// Ocultar paginación durante búsqueda
+			materiasPagination.value.hasMore = false;
+
+		} catch (error) {
+			console.error('Error searching materias:', error);
+			materias.value = [];
+			materiasPagination.value.hasMore = false;
+		} finally {
+			searchLoading.value = false;
+		}
+	}, 300); // 300ms de debouncing
+};
+
+// Función para resetear a modo normal
+const resetToNormalMode = async () => {
+	searchMode.value = false;
+	currentSearch.value = '';
+	searchLoading.value = false;
+
+	// Limpiar también el texto del input
+	searchMaterias.value = '';
+
+	// Volver a cargar primera página sin búsqueda
+	await loadFirstPageMaterias();
 };
 
 const fetchGroupsBySubject = async (id) => {
