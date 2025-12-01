@@ -11,13 +11,31 @@
 
     <MainLayoutDashboard>
         <div class="p-6" v-if="isAuthenticated">
+            <!-- Banner para usuarios invitados -->
+            <div v-if="isInvitado" class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            Estás navegando como <strong>invitado</strong>. Solo puedes ver la información del catálogo de aulas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Header -->
             <div class="mb-4 sm:mb-6">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4">
                     <div class="flex-1">
                         <h1 class="text-xl sm:text-2xl font-bold" :style="{color:colors.text_color_dark}">Catálogo de Aulas</h1>
-                        <p class="text-gray-600 text-sm mt-1">Gestiona y visualiza todas las aulas disponibles dentro de
-                            la facultad</p>
+                        <p class="text-gray-600 text-sm mt-1">
+                            <span v-if="isInvitado">Explora las aulas disponibles dentro de la facultad</span>
+                            <span v-else>Gestiona y visualiza todas las aulas disponibles dentro de la facultad</span>
+                        </p>
                     </div>
 
                     <!-- ====== BOTÓN AGREGAR  -->
@@ -634,6 +652,9 @@ const isAuthenticated = ref(false);
 
 // permisos del usuario con rol 6
 const canEdit = computed(() => authService.canEdit());
+
+// verificación si es invitado
+const isInvitado = computed(() => authService.getUserRole() === 7);
 
 // Maneja cuando la autenticación es exitosa
 const handleAuthenticated = (status) => {
