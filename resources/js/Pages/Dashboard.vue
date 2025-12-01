@@ -114,7 +114,9 @@ const loadDashboardMetrics = async () => {
             })
             let count = 0
 
-            if (Array.isArray(response.data)) {
+            if (response.data.pagination && response.data.pagination.total !== undefined) {
+                count = response.data.pagination.total
+            } else if (Array.isArray(response.data)) {
                 count = response.data.length
             } else if (response.data.data && Array.isArray(response.data.data)) {
                 count = response.data.data.length
