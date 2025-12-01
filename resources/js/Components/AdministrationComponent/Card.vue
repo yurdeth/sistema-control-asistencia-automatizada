@@ -59,8 +59,11 @@
             </div>
 
             <!-- Botones para las acciones a realizar -->
-            <!-- ====== GRID DINÁMICO: 3 columnas si puede editar, 2 si no ====== -->
-            <div :class="canEdit ? 'grid-cols-3' : 'grid-cols-2'" class="grid gap-2">
+            <!-- ====== GRID DINÁMICO:
+                  3 columnas si puede editar y no es invitado (VER, EDITAR, RESERVAR)
+                  2 columnas si no puede editar o es invitado (VER, [EDITAR|RESERVAR])
+            ====== -->
+            <div :class="(canEdit && userRole !== 7) ? 'grid-cols-3' : 'grid-cols-2'" class="grid gap-2">
                 <!-- Botón VER  -->
                 <button
                     @click="abrirModal({ aula, modo: 'ver' })"
@@ -84,6 +87,7 @@
 
                 <!-- Botón RESERVAR  -->
                 <button
+                    v-if="userRole !== 7"
                     @click="abrirModal({ aula, modo: 'reservar' })"
                     class="text-white hover:bg-green-700 px-3 py-2 rounded flex items-center justify-center gap-1 transition-colors text-sm font-medium"
                     :style="{ background: colors.btn_reservar}"
@@ -147,6 +151,11 @@ const props = defineProps({
     canEdit: {
         type: Boolean,
         default: true // Por defecto puede editar
+    },
+    // rol del usuario logueado para ocultar/mostrar botones específicos
+    userRole: {
+        type: Number,
+        required: true
     }
 })
 

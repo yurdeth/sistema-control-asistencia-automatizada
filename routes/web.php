@@ -55,7 +55,7 @@ Route::middleware(['web', NoBrowserCacheMiddleware::class, 'auth.passport'])
             return Inertia::render('Administration/classroomManagement/catalogo', [
                 'mustCheckAuth' => true
             ]);
-        })->middleware('role:1,6')->name('catalogo'); // ROOT y Estudiantes
+        })->middleware('role:1,6,7')->name('catalogo'); // ROOT, Estudiantes e Invitados
 
         Route::get('/disponibilidad', function () {
             return Inertia::render('Administration/classroomManagement/availability', [

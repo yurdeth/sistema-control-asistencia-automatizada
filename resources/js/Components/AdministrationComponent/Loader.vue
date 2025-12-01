@@ -68,22 +68,35 @@ onMounted(async () => {
             throw new Error('No hay datos de usuario');
         }
 
-        // Verificando token con el backend usando el ID del usuario
-        const url = `/api/users/get/${user.id}`;
-        console.log('Haciendo petición GET...');
+        // Para usuarios invitados, omitimos la segunda verificación ya que
+        // authService.verifyToken() ya validó el token y los invitados no tienen
+        // permiso para acceder al endpoint /api/users/get/{id}
+        if (user.role_id === 7) {
+            console.log('Usuario invitado detectado, omitiendo segunda verificación');
 
-        const response = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        console.log('Status:', response.status);
+            // Autenticación exitosa para invitado
+            isLoading.value = false;
+            emit('loading', false);
+            emit('authenticated', true);
+            console.log('Usuario invitado autenticado correctamente');
+        } else {
+            // Para usuarios regulares, hacemos la verificación adicional
+            const url = `/api/users/get/${user.id}`;
+            console.log('Haciendo petición GET...');
 
-        // Autenticación exitosa
-        isLoading.value = false;
-        emit('loading', false);
-        emit('authenticated', true);
-        console.log('Usuario autenticado correctamente');
+            const response = await axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            console.log('Status:', response.status);
+
+            // Autenticación exitosa
+            isLoading.value = false;
+            emit('loading', false);
+            emit('authenticated', true);
+            console.log('Usuario autenticado correctamente');
+        }
 
     } catch (error) {
         console.error('Error al verificar token:');
