@@ -10,7 +10,7 @@ const userRole = ref(null)
 const userName = ref('')
 const userId = ref(null)
 const dashboardData = ref({})
-const showDebug = ref(false) 
+const showDebug = ref(false)
 
 const roleMetrics = {
     1: [ // root
@@ -20,7 +20,7 @@ const roleMetrics = {
         { key: 'total_materias', label: 'Materias', icon: '📚', endpoint: '/subjects/get/all', color: 'yellow' },
         { key: 'total_grupos', label: 'Grupos Activos', icon: '👨‍🎓', endpoint: '/groups/get/all', color: 'red' },
     ],
-    
+
     2: [ //administrador_academico
         { key: 'total_docentes', label: 'Docentes', icon: '👨‍🏫', endpoint: '/users/get/professors/all', color: 'blue' },
         { key: 'total_estudiantes', label: 'Estudiantes', icon: '👨‍🎓', endpoint: '/users/get/students/all', color: 'green' },
@@ -29,16 +29,16 @@ const roleMetrics = {
         { key: 'coordinadores', label: 'Coordinadores', icon: '👤', endpoint: '/users/get/career-managers/all', color: 'red' },
         { key: 'jefes_depto', label: 'Jefes Depto.', icon: '🎯', endpoint: '/users/get/department-managers/all', color: 'orange' },
     ],
-    
-    3: [ //jefe_departamento 
+
+    3: [ //jefe_departamento
         { key: 'total_aulas', label: 'Total Aulas', icon: '🚪', endpoint: '/classrooms/get/all', color: 'blue' },
         { key: 'aulas_disponibles', label: 'Aulas Disponibles', icon: '✅', endpoint: '/classrooms/get/available/all', color: 'green' },
         { key: 'incidencias', label: 'Incidencias', icon: '📅', endpoint: '/classroom-reports/get/all', color: 'yellow' },
         { key: 'mantenimientis', label: 'Mantenimientos', icon: '🛠️', endpoint: '/maintenance/get/all', color: 'red' },
         { key: 'sesiones_clase', label: 'Sesiones de Clase', icon: '🎓', endpoint: '/class-sessions/get/all', color: 'orange' },
     ],
-    
-    4: [ //coordinador_carreras 
+
+    4: [ //coordinador_carreras
         { key: 'estudiantes', label: 'Estudiantes', icon: '👨‍🎓', endpoint: '/users/get/students/all', color: 'blue' },
         { key: 'docentes', label: 'Docentes', icon: '👨‍🏫', endpoint: '/users/get/professors/all', color: 'green' },
         { key: 'grupos', label: 'Grupos', icon: '📋', endpoint: '/groups/get/all', color: 'purple' },
@@ -46,7 +46,7 @@ const roleMetrics = {
         { key: 'solicitudes', label: 'Solicitudes', icon: '📝', endpoint: '/enrollment-requests/get/all', color: 'red' },
         { key: 'horarios', label: 'Horarios', icon: '📅', endpoint: '/schedules/get/all', color: 'orange' },
     ],
-    
+
     5: [ //docente
         { key: 'sesiones_clase', label: 'Sesiones de Clase', icon: '🎓', endpoint: '/class-sessions/get/all', color: 'green' },
         { key: 'aulas_disponibles', label: 'Aulas Disponibles', icon: '🚪', endpoint: '/classrooms/get/available/all', color: 'purple' },
@@ -54,7 +54,7 @@ const roleMetrics = {
         { key: 'solicitudes_inscripcion', label: 'Solicitudes Inscripción', icon: '📝', endpoint: '/enrollment-requests/get/all', color: 'red' },
         { key: 'horarios', label: 'Horarios', icon: '📅', endpoint: '/schedules/get/all', color: 'orange' },
     ],
-    
+
     6: [ //estudiante
         { key: 'aulas_disponibles', label: 'Aulas Disponibles', icon: '🚪', endpoint: '/classrooms/get/available/all', color: 'purple' },
     ],
@@ -78,13 +78,17 @@ const currentMetrics = computed(() => {
 
 const loadUserData = async () => {
     try {
-        const response = await axios.get('/api/users/get/profile/me')
+        const response = await axios.get('/api/users/get/profile/me', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
         const data = response.data.data || response.data
-        
+
         userRole.value = parseInt(data.rol_id || data.role_id || 1)
         userId.value = data.id
         userName.value = data.nombre_completo || data.nombre || 'Usuario'
-        
+
     } catch (error) {
         console.error(' Error cargando perfil:', error)
         userRole.value = 1
@@ -95,17 +99,21 @@ const loadUserData = async () => {
 const loadDashboardMetrics = async () => {
     const metrics = currentMetrics.value
     console.log(` Cargando ${metrics.length} métricas para rol ${userRole.value}`)
-    
+
     for (const metric of metrics) {
         try {
             let endpoint = metric.endpoint
-            
+
             if (metric.needsUserId && userId.value) {
                 endpoint = endpoint.replace('{id}', userId.value)
             }
-            const response = await axios.get(`/api${endpoint}`)
+            const response = await axios.get(`/api${endpoint}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
             let count = 0
-            
+
             if (Array.isArray(response.data)) {
                 count = response.data.length
             } else if (response.data.data && Array.isArray(response.data.data)) {
@@ -115,10 +123,10 @@ const loadDashboardMetrics = async () => {
             } else if (response.data.total !== undefined) {
                 count = response.data.total
             }
-            
+
             dashboardData.value[metric.key] = count
             console.log(`✔️ ${metric.label}: ${count}`)
-            
+
         } catch (error) {
             console.error(` Error cargando ${metric.key}:`, error.response?.status, error.response?.data)
             dashboardData.value[metric.key] = 0
@@ -131,11 +139,11 @@ onMounted(async () => {
         console.log(' Inicializando dashboard...')
         isAuthenticated.value = true
         await loadUserData()
-        
+
         if (currentMetrics.value.length > 0) {
             await loadDashboardMetrics()
         }
-        
+
         console.log(' Dashboard cargado correctamente')
     } catch (error) {
         console.error(' Error en la inicialización:', error)
@@ -238,10 +246,10 @@ const roleName = computed(() => {
                                     <span class="text-3xl">{{ metric.icon }}</span>
                                 </div>
                             </div>
-                            
+
                             <div class="mt-4">
                                 <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div 
+                                    <div
                                         :class="[colorClasses[metric.color], 'h-full transition-all duration-700 ease-out']"
                                         :style="{ width: dashboardData[metric.key] > 0 ? '75%' : '0%' }"
                                     ></div>
