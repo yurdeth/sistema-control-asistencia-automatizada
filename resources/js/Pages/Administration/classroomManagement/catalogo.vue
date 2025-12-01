@@ -138,12 +138,13 @@
 
             <!-- Lista de aulas -->
             <div v-else-if="(usarPaginacionBackend ? aulasBackend.length > 0 : aulas.length > 0)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <!--  agrego el canEdit al componente card  -->
+                <!--  agrego el canEdit y el userRole al componente card  -->
                 <Card
                     v-for="aula in usarPaginacionBackend ? aulasBackend : aulasPaginadas"
                     :key="aula.id"
                     :aula="aula"
                     :can-edit="canEdit"
+                    :user-role="authService.getUserRole()"
                 />
             </div>
 

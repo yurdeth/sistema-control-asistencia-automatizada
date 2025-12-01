@@ -123,9 +123,9 @@
 
                     <div class="hidden lg:block"></div>
 
-                    <div class="flex items-center gap-2 sm:gap-4" v-if="user && user.nombre_completo">
-                        <!-- Notificaciones -->
-                        <div class="relative" ref="notificationsRef">
+                    <div class="flex items-center gap-2 sm:gap-4" v-if="user">
+                        <!-- Notificaciones - Solo se muestra si NO es invitado -->
+                        <div v-if="user.role_id !== 7" class="relative" ref="notificationsRef">
                             <!-- Botón que abre el panel de notificaciones -->
                             <button
                                 @click.prevent="toggleNotifications"
@@ -186,7 +186,7 @@
                                 type="button"
                                 class="inline-flex items-center justify-between w-full sm:w-auto rounded-md border border-transparent bg-[#76180D] text-white px-3 sm:px-4 py-2 sm:py-3 text-sm font-medium leading-4 transition duration-150 ease-in-out hover:bg-[#5f130b] focus:outline-none min-w-[44px] min-h-[44px] truncate"
                             >
-                                <span class="truncate max-w-[120px] sm:max-w-none">{{ user.nombre_completo }}</span>
+                                <span class="truncate max-w-[120px] sm:max-w-none">{{ user.role_id === 7 ? 'Invitado' : user.nombre_completo }}</span>
                                 <svg class="ms-2 h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                     <path
                                         fill-rule="evenodd"
@@ -201,7 +201,7 @@
                                 class="absolute right-0 mt-2 w-48 sm:w-56 bg-white text-black rounded-md shadow-lg z-50"
                             >
                                 <div class="px-4 py-2 text-xs text-gray-500 border-b">
-                                    {{ user.nombre_completo }}
+                                    {{ user.role_id === 7 ? 'Invitado' : user.nombre_completo }}
                                 </div>
 
                                 <button
