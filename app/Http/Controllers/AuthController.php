@@ -44,6 +44,13 @@ class AuthController extends Controller {
             Auth::login($randomUser);
             $user = $randomUser;
 
+            // Obtener y asignar el rol_id del usuario (igual que en login normal)
+            $role_id = DB::table('usuario_roles')
+                ->where('usuario_id', $user->id)
+                ->value('rol_id');
+
+            $user->role_id = $role_id;
+
             // Crear token de invitado
             $tokenResult = $user->createToken('Personal Access Token');
             $guestToken = $tokenResult->token;
