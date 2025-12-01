@@ -109,7 +109,7 @@ export const authService = {
 //metodo para verificar el rol de estudiante
     canEdit() {
         const roleId = this.getUserRole();
-        return roleId !== null && roleId !== 6;
+        return roleId !== null && roleId !== 6 && roleId !== 7; // Excluir estudiantes (6) e invitados (7)
     },
 
     isStudent() {
