@@ -7,6 +7,7 @@
     //Imports para el funcionamiento del login
     import { ref, onMounted } from 'vue'
     import { authService } from '@/Services/authService';
+    import axios from 'axios';
 
     defineProps({
         canResetPassword: {
@@ -110,6 +111,40 @@
                 errorMessage.value = 'Por favor verifica los datos ingresados'
             } else {
                 errorMessage.value = 'Error inesperado, inténtalo más tarde'
+            }
+        } finally {
+            processing.value = false
+        }
+    }
+
+    // Función para login como invitado
+    const loginAsGuest = async () => {
+        processing.value = true
+        errorMessage.value = null
+
+        try {
+            const response = await axios.post('/api/login-as-guest')
+            const { user, token } = response.data
+
+            // Guardar token y usuario en localStorage
+            localStorage.setItem('token', token)
+            localStorage.setItem('user', JSON.stringify(user))
+
+            // Configurar token en axios y authService
+            authService.setAxiosToken(token)
+
+            console.log('✅ Login como invitado exitoso - Usuario:', user.nombre_completo, '| Role ID:', user.role_id)
+
+            // Redirigir directamente al catálogo
+            router.visit('/dashboard/catalogo')
+
+        } catch (error) {
+            console.error('Error en login como invitado:', error)
+
+            if (error.response?.status === 500) {
+                errorMessage.value = 'Error del servidor al iniciar sesión como invitado'
+            } else {
+                errorMessage.value = 'No se pudo iniciar sesión como invitado, inténtalo más tarde'
             }
         } finally {
             processing.value = false
@@ -220,6 +255,20 @@
                                     </Link>
                                 </div>
                     </form>
+
+                    <!-- Link de acceso como invitado - FUERA del formulario para evitar conflictos con Enter -->
+                    <div class="mt-4 text-center">
+                        <button
+                            type="button"
+                            @click="loginAsGuest"
+                            class="guest-login-link"
+                            :disabled="processing"
+                            tabindex="-1"
+                        >
+                            <i class="fa-solid fa-user-circle mr-1"></i>
+                            Iniciar sesión como invitado
+                        </button>
+                    </div>
                 </div>
             </div>
             <Link
@@ -474,5 +523,38 @@
     .btn-home-float svg {
         width: 24px;
         height: 24px;
+    }
+
+    /* Estilos para link de invitado */
+    .guest-login-link {
+        font-size: 0.875rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .guest-login-link:hover {
+        color: #5B0B0B;
+        text-decoration: underline;
+        background-color: rgba(91, 11, 11, 0.05);
+    }
+
+    .guest-login-link:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        text-decoration: none;
+    }
+
+    .guest-login-link:disabled:hover {
+        color: #6b7280;
+        background-color: transparent;
     }
 </style>
