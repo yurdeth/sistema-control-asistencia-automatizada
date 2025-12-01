@@ -14,7 +14,7 @@ const showDebug = ref(false)
 
 const roleMetrics = {
     1: [ // root
-        { key: 'total_usuarios', label: 'Total Usuarios', icon: '👥', endpoint: '/users/get/all', color: 'blue' },
+        { key: 'total_usuarios', label: 'Total Usuarios', icon: '👥', endpoint: '/users/count/all', color: 'blue' },
         { key: 'total_departamentos', label: 'Departamentos', icon: '🏢', endpoint: '/departaments/get/all', color: 'green' },
         { key: 'total_aulas', label: 'Aulas', icon: '🚪', endpoint: '/classrooms/get/all', color: 'purple' },
         { key: 'total_materias', label: 'Materias', icon: '📚', endpoint: '/subjects/get/all', color: 'yellow' },

@@ -66,6 +66,7 @@ Route::middleware(['auth:api', 'throttle:1200,1', NoBrowserCacheMiddleware::clas
 
     //************************************ MANAGE USERS ************************************//
     Route::get('/users/get/all', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/count/all', [UserController::class, 'countAll'])->name('users.countAll');
     Route::get('/users/get/{id}', [UserController::class, 'show'])->name('users.show');
     Route::post('/users/new', [UserController::class, 'store'])->name('users.store');
     Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');

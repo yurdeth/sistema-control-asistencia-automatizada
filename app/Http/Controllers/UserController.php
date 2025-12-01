@@ -65,6 +65,52 @@ class UserController extends Controller {
         ]);
     }
 
+    /**
+     * Count total users based on user role without limit
+     */
+    public function countAll(): JsonResponse
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 401);
+        }
+
+        $user_rolName = $this->getUserRoleName();
+        $rolesPermitidos = [
+            RolesEnum::ROOT->value,
+            RolesEnum::ADMINISTRADOR_ACADEMICO->value,
+            RolesEnum::JEFE_DEPARTAMENTO->value,
+            RolesEnum::COORDINADOR_CARRERAS->value,
+            RolesEnum::DOCENTE->value,
+        ];
+
+        if (!in_array($user_rolName?->value ?? $user_rolName, $rolesPermitidos)) {
+            return response()->json([
+                'message' => 'Acceso no autorizado',
+                'success' => false
+            ], 403);
+        }
+
+        $user_rol = $this->getUserRoleId();
+
+        // Si es ROOT, contar todos los usuarios sin filtro
+        if ($user_rol == 1) {
+            $totalUsers = User::count();
+        } else {
+            // Para otros roles, aplicar el filtro existente
+            $totalUsers = (new User())->getUsersBasedOnMyUserRole($user_rol)->count();
+        }
+
+        return response()->json([
+            'message' => 'Conteo de usuarios obtenido exitosamente',
+            'success' => true,
+            'data' => $totalUsers,
+            'total' => $totalUsers
+        ]);
+    }
+
     private function getUserRoleName(): string|null {
         return DB::table('usuario_roles')
             ->join('users', 'usuario_roles.usuario_id', '=', 'users.id')
