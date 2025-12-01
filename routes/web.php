@@ -17,6 +17,10 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/team', function () {
+    return Inertia::render('Creditos');
+})->name('team');
+
 Route::get('/activation', function () {
     return view('auth.userActivation');
 });

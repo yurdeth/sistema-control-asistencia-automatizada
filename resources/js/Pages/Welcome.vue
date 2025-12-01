@@ -195,6 +195,7 @@
                         <ul class="space-y-2 text-sm text-gray-400">
                             <li><Link href="/login" class="hover:text-white transition-colors">Iniciar Sesión</Link></li>
                             <li><a href="#features" class="hover:text-white transition-colors">Características</a></li>
+                            <li><Link href="/team" class="hover:text-white transition-colors">Equipo de desarrollo</Link></li>
                         </ul>
                     </div>
                     <div>
