@@ -305,7 +305,7 @@ onBeforeUnmount(() => {
             title: "Dashboard",
             icon: "fa-solid fa-grip",
             href: "/dashboard",
-            roles: [] // Visible para todos los roles autenticados
+            roles: [1,2,3,4,5,6] // Visible para todos los roles autenticados
         },
         {
             key: "departamentos",
@@ -319,7 +319,7 @@ onBeforeUnmount(() => {
             title: "Notificaciones",
             icon: "fa-solid fa-inbox",
             href: "/dashboard/notificaciones",
-            roles: [] // Visible para todos los roles autenticados
+            roles: [1,2,3,4,5,6] //Todos menos invitado
         },
         {
             key: "Aulas",
@@ -330,7 +330,7 @@ onBeforeUnmount(() => {
                     label: "Catálogo.",
                     href: "/dashboard/catalogo",
                     icon: "fa-solid fa-list",
-                    roles: [1, 6] // ROOT y Estudiantes
+                    roles: [1, 6, 7] // ROOT, Estudiantes e Invitados
                 },
                 {
                     label: "Disponibilidad",
