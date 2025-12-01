@@ -11,7 +11,6 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache as FacadesCache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -297,7 +296,6 @@ class AulasController extends Controller {
 
             // Cargar relaciones para la respuesta
             $aula->load('fotos', 'videos');
-            FacadesCache::clear();
 
             return response()->json([
                 'message' => 'Aula actualizada exitosamente',
@@ -456,7 +454,6 @@ class AulasController extends Controller {
 
             // Cargar relaciones para la respuesta
             $aula->load('fotos', 'videos');
-            FacadesCache::clear();
 
             return response()->json([
                 'message' => 'Aula creada exitosamente con código QR único',
@@ -1046,165 +1043,152 @@ class AulasController extends Controller {
         try {
             $params = $validator->validated();
 
-            // Cache key dinámica
-            $cacheKey = 'aulas_paginated_' . md5(json_encode([
-                'search' => $params['search'],
-                'estado' => $params['estado'],
-                'capacidad' => $params['capacidad'],
-                'sort_by' => $params['sort_by'],
-                'sort_dir' => $params['sort_dir'],
-                'page' => $params['page'],
-                'per_page' => $params['per_page']
-            ]));
+            // Query base replicando la lógica del método getAll() del modelo
+            $query = DB::table('aulas')
+                ->leftJoin('aula_recursos', 'aulas.id', '=', 'aula_recursos.aula_id')
+                ->leftJoin('recursos_tipos', 'aula_recursos.recurso_tipo_id', '=', 'recursos_tipos.id')
+                ->select(
+                    'aulas.id as aula_id',
+                    'aulas.codigo as codigo_aula',
+                    'aulas.nombre as nombre_aula',
+                    'aulas.capacidad_pupitres',
+                    'aulas.ubicacion as ubicacion_aula',
+                    'aulas.qr_code as qr_code',
+                    'aulas.estado as estado_aula',
+                    'aulas.created_at',
+                    'aulas.updated_at',
+                    'recursos_tipos.nombre as recurso_tipo_nombre',
+                    'aula_recursos.cantidad as recurso_cantidad',
+                    'aula_recursos.estado as estado_recurso',
+                    'aula_recursos.observaciones as observaciones_recurso'
+                );
 
-            return cache()->remember($cacheKey, 300, function () use ($params) {
-                // Query base replicando la lógica del método getAll() del modelo
-                $query = DB::table('aulas')
-                    ->leftJoin('aula_recursos', 'aulas.id', '=', 'aula_recursos.aula_id')
-                    ->leftJoin('recursos_tipos', 'aula_recursos.recurso_tipo_id', '=', 'recursos_tipos.id')
-                    ->select(
-                        'aulas.id as aula_id',
-                        'aulas.codigo as codigo_aula',
-                        'aulas.nombre as nombre_aula',
-                        'aulas.capacidad_pupitres',
-                        'aulas.ubicacion as ubicacion_aula',
-                        'aulas.qr_code as qr_code',
-                        'aulas.estado as estado_aula',
-                        'aulas.created_at',
-                        'aulas.updated_at',
-                        'recursos_tipos.nombre as recurso_tipo_nombre',
-                        'aula_recursos.cantidad as recurso_cantidad',
-                        'aula_recursos.estado as estado_recurso',
-                        'aula_recursos.observaciones as observaciones_recurso'
-                    );
+            // Aplicar filtros
+            if (!empty($params['search'])) {
+                $searchTerm = '%' . $params['search'] . '%';
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('aulas.nombre', 'LIKE', $searchTerm)
+                      ->orWhere('aulas.codigo', 'LIKE', $searchTerm)
+                      ->orWhere('aulas.ubicacion', 'LIKE', $searchTerm);
+                });
+            }
 
-                // Aplicar filtros
-                if (!empty($params['search'])) {
-                    $searchTerm = '%' . $params['search'] . '%';
-                    $query->where(function ($q) use ($searchTerm) {
-                        $q->where('aulas.nombre', 'LIKE', $searchTerm)
-                          ->orWhere('aulas.codigo', 'LIKE', $searchTerm)
-                          ->orWhere('aulas.ubicacion', 'LIKE', $searchTerm);
-                    });
+            if (!empty($params['estado'])) {
+                $query->where('aulas.estado', $params['estado']);
+            }
+
+            if (!empty($params['capacidad'])) {
+                switch ($params['capacidad']) {
+                    case 'small':
+                        $query->where('aulas.capacidad_pupitres', '<=', 30);
+                        break;
+                    case 'medium':
+                        $query->where('aulas.capacidad_pupitres', '>', 30)
+                              ->where('aulas.capacidad_pupitres', '<=', 100);
+                        break;
+                    case 'large':
+                        $query->where('aulas.capacidad_pupitres', '>', 100);
+                        break;
                 }
+            }
 
-                if (!empty($params['estado'])) {
-                    $query->where('aulas.estado', $params['estado']);
+            // Contar total antes de paginar
+            $countQuery = clone $query;
+            $total = $countQuery->distinct('aulas.id')->count('aulas.id');
+
+            // Ordenamiento
+            $sortMapping = [
+                'nombre' => 'aulas.nombre',
+                'codigo' => 'aulas.codigo',
+                'capacidad_pupitres' => 'aulas.capacidad_pupitres',
+                'ubicacion' => 'aulas.ubicacion',
+                'estado' => 'aulas.estado'
+            ];
+
+            $sortField = $sortMapping[$params['sort_by']] ?? 'aulas.nombre';
+            $query->orderBy($sortField, $params['sort_dir']);
+
+            // Calcular offset y limit
+            $offset = ($params['page'] - 1) * $params['per_page'];
+            $query->offset($offset)->limit($params['per_page']);
+
+            // Ejecutar query
+            $aulas_raw = $query->get();
+
+            // Procesar resultados (similar al método index())
+            $aulas_array = [];
+            foreach ($aulas_raw as $aula) {
+                $aula_id = $aula->aula_id;
+                if (!isset($aulas_array[$aula_id])) {
+                    $aulas_array[$aula_id] = [
+                        'id' => $aula->aula_id,
+                        'codigo' => $aula->codigo_aula,
+                        'nombre' => $aula->nombre_aula,
+                        'capacidad_pupitres' => $aula->capacidad_pupitres,
+                        'ubicacion' => $aula->ubicacion_aula,
+                        'qr_code' => $aula->qr_code,
+                        'estado' => $aula->estado_aula,
+                        'created_at' => $aula->created_at,
+                        'updated_at' => $aula->updated_at,
+                        'recursos' => []
+                    ];
                 }
-
-                if (!empty($params['capacidad'])) {
-                    switch ($params['capacidad']) {
-                        case 'small':
-                            $query->where('aulas.capacidad_pupitres', '<=', 30);
-                            break;
-                        case 'medium':
-                            $query->where('aulas.capacidad_pupitres', '>', 30)
-                                  ->where('aulas.capacidad_pupitres', '<=', 100);
-                            break;
-                        case 'large':
-                            $query->where('aulas.capacidad_pupitres', '>', 100);
-                            break;
-                    }
+                if ($aula->recurso_tipo_nombre) {
+                    $aulas_array[$aula_id]['recursos'][] = [
+                        'nombre' => $aula->recurso_tipo_nombre,
+                        'cantidad' => $aula->recurso_cantidad,
+                        'estado' => $aula->estado_recurso,
+                        'observaciones_recurso' => $aula->observaciones_recurso,
+                        'aula_recurso_id' => $aula->aula_id
+                    ];
                 }
+            }
 
-                // Contar total antes de paginar
-                $countQuery = clone $query;
-                $total = $countQuery->distinct('aulas.id')->count('aulas.id');
+            $aulas = array_values($aulas_array);
 
-                // Ordenamiento
-                $sortMapping = [
-                    'nombre' => 'aulas.nombre',
-                    'codigo' => 'aulas.codigo',
-                    'capacidad_pupitres' => 'aulas.capacidad_pupitres',
-                    'ubicacion' => 'aulas.ubicacion',
-                    'estado' => 'aulas.estado'
-                ];
+            // Agregar fotos y videos con URLs completas
+            $storage_url = env('APP_URL') . '/storage';
+            foreach ($aulas as &$aula) {
+                $aula_model = aulas::find($aula['id']);
 
-                $sortField = $sortMapping[$params['sort_by']] ?? 'aulas.nombre';
-                $query->orderBy($sortField, $params['sort_dir']);
+                // Agregar indicaciones y coordenadas
+                $aula['indicaciones'] = $aula_model->indicaciones;
+                $aula['latitud'] = $aula_model->latitud;
+                $aula['longitud'] = $aula_model->longitud;
 
-                // Calcular offset y limit
-                $offset = ($params['page'] - 1) * $params['per_page'];
-                $query->offset($offset)->limit($params['per_page']);
+                // Agregar fotos
+                $aula['fotos'] = $aula_model->fotos->map(function ($foto) use ($storage_url) {
+                    return [
+                        'id' => $foto->id,
+                        'url' => $storage_url . '/' . $foto->ruta
+                    ];
+                })->toArray();
 
-                // Ejecutar query
-                $aulas_raw = $query->get();
+                // Agregar videos
+                $aula['videos'] = $aula_model->videos->map(function ($video) {
+                    return [
+                        'id' => $video->id,
+                        'url' => $video->url
+                    ];
+                })->toArray();
+            }
 
-                // Procesar resultados (similar al método index())
-                $aulas_array = [];
-                foreach ($aulas_raw as $aula) {
-                    $aula_id = $aula->aula_id;
-                    if (!isset($aulas_array[$aula_id])) {
-                        $aulas_array[$aula_id] = [
-                            'id' => $aula->aula_id,
-                            'codigo' => $aula->codigo_aula,
-                            'nombre' => $aula->nombre_aula,
-                            'capacidad_pupitres' => $aula->capacidad_pupitres,
-                            'ubicacion' => $aula->ubicacion_aula,
-                            'qr_code' => $aula->qr_code,
-                            'estado' => $aula->estado_aula,
-                            'created_at' => $aula->created_at,
-                            'updated_at' => $aula->updated_at,
-                            'recursos' => []
-                        ];
-                    }
-                    if ($aula->recurso_tipo_nombre) {
-                        $aulas_array[$aula_id]['recursos'][] = [
-                            'nombre' => $aula->recurso_tipo_nombre,
-                            'cantidad' => $aula->recurso_cantidad,
-                            'estado' => $aula->estado_recurso,
-                            'observaciones_recurso' => $aula->observaciones_recurso,
-                            'aula_recurso_id' => $aula->aula_id
-                        ];
-                    }
-                }
+            // Calcular metadata de paginación
+            $ultimaPagina = ceil($total / $params['per_page']);
 
-                $aulas = array_values($aulas_array);
-
-                // Agregar fotos y videos con URLs completas
-                $storage_url = env('APP_URL') . '/storage';
-                foreach ($aulas as &$aula) {
-                    $aula_model = aulas::find($aula['id']);
-
-                    // Agregar indicaciones y coordenadas
-                    $aula['indicaciones'] = $aula_model->indicaciones;
-                    $aula['latitud'] = $aula_model->latitud;
-                    $aula['longitud'] = $aula_model->longitud;
-
-                    // Agregar fotos
-                    $aula['fotos'] = $aula_model->fotos->map(function ($foto) use ($storage_url) {
-                        return [
-                            'id' => $foto->id,
-                            'url' => $storage_url . '/' . $foto->ruta
-                        ];
-                    })->toArray();
-
-                    // Agregar videos
-                    $aula['videos'] = $aula_model->videos->map(function ($video) {
-                        return [
-                            'id' => $video->id,
-                            'url' => $video->url
-                        ];
-                    })->toArray();
-                }
-
-                // Calcular metadata de paginación
-                $ultimaPagina = ceil($total / $params['per_page']);
-
-                return response()->json([
-                    'message' => 'Aulas obtenidas exitosamente',
-                    'success' => true,
-                    'data' => $aulas,
-                    'pagination' => [
-                        'pagina_actual' => $params['page'],
-                        'por_pagina' => $params['per_page'],
-                        'total' => $total,
-                        'ultima_pagina' => $ultimaPagina,
-                        'desde' => $total > 0 ? $offset + 1 : null,
-                        'hasta' => $total > 0 ? min($offset + $params['per_page'], $total) : null
-                    ]
-                ], 200);
-            });
+            return response()->json([
+                'message' => 'Aulas obtenidas exitosamente',
+                'success' => true,
+                'data' => $aulas,
+                'pagination' => [
+                    'pagina_actual' => $params['page'],
+                    'por_pagina' => $params['per_page'],
+                    'total' => $total,
+                    'ultima_pagina' => $ultimaPagina,
+                    'desde' => $total > 0 ? $offset + 1 : null,
+                    'hasta' => $total > 0 ? min($offset + $params['per_page'], $total) : null
+                ]
+            ], 200);
 
         } catch (Exception $e) {
             return response()->json([
