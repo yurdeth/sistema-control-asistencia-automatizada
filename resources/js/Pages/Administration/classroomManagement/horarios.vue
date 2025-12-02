@@ -208,7 +208,6 @@
 												]"
 												@focus="showDropdownMaterias = true"
 												@input="searchMateriasBackend(searchMaterias)"
-												:disabled="materiasPagination.loading || searchLoading"
 											/>
 
 											<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -221,7 +220,7 @@
 												<div v-if="searchMode && currentSearch" class="px-3 py-2 bg-blue-50 border-b border-blue-200 text-sm text-blue-700">
 													<span class="font-medium">Buscando:</span> "{{ currentSearch }}"
 													<button
-														@click="resetToNormalMode"
+														@click="resetToNormalMode(true)"
 														class="ml-2 text-blue-500 hover:text-blue-700 underline text-xs"
 													>
 														Limpiar búsqueda
@@ -848,13 +847,15 @@ const scrollToMateriaIndex = (index) => {
 };
 
 // Función para resetear a modo normal
-const resetToNormalMode = async () => {
+const resetToNormalMode = async (clearInput = false) => {
 	searchMode.value = false;
 	currentSearch.value = '';
 	searchLoading.value = false;
 
-	// Limpiar también el texto del input
-	searchMaterias.value = '';
+	// Limpiar también el texto del input solo si se solicita explícitamente
+	if (clearInput === true) {
+		searchMaterias.value = '';
+	}
 
 	// Volver a cargar primera página sin búsqueda
 	await loadFirstPageMaterias();
